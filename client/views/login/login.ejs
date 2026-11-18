@@ -1,0 +1,40 @@
+<%- include('../partials/header') %>
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-5 col-xl-4">
+    <div class="card login-card p-4">
+      <div class="card-body p-2">
+        <div class="login-brand text-center mb-3">
+          <img class="logo-claro logo-autenticacion logo-login" src="/img/logo.svg" alt="Lonja de Veracruz">
+          <img class="logo-oscuro logo-autenticacion logo-login" src="/img/logo-oscuro.svg" alt="" aria-hidden="true">
+        </div>
+        <h1 class="h4 text-center mb-1 fw-bold">Sistema Lonja</h1>
+        <p class="text-center text-muted small mb-4">Acceso para personal de la lonja y compradores</p>
+        
+        <%- include('../partials/mensajes', { mensaje: typeof mensaje !== 'undefined' ? mensaje : null }) %>
+
+        <form action="/credenciales" method="POST">
+          <% if (typeof volver !== 'undefined' && volver) { %>
+            <input type="hidden" name="volver" value="<%= volver %>">
+          <% } %>
+          <div class="mb-3">
+            <label for="usuario" class="form-label fw-semibold">Usuario o correo</label>
+            <input type="text" class="form-control" id="usuario" name="usuario" value="" autocomplete="username" required autofocus placeholder="Nombre de usuario o correo">
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <label for="password" class="form-label fw-semibold mb-0">Contraseña</label>
+              <a href="/olvide-password" class="small text-decoration-none">¿Olvidaste tu contraseña?</a>
+            </div>
+            <input type="password" class="form-control mt-1" id="password" name="password" autocomplete="current-password" value="" required placeholder="Tu contraseña">
+          </div>
+          <button class="btn btn-primary w-100 py-2 mt-2" type="submit">Iniciar Sesión</button>
+        </form>
+
+        <p class="text-center small text-muted mt-3 mb-0">
+          ¿Eres comprador y aún no tienes cuenta? <a href="/registro" class="text-decoration-none">Regístrate</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,185 @@
+name: lonja
+
+services:
+  mariadb:
+    image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
+    environment:
+      MARIADB_DATABASE: lonja
+      MARIADB_USER: lonja
+      MARIADB_PASSWORD_FILE: /run/secrets/bd_clave
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/bd_root
+    secrets: [bd_clave, bd_root]
+    volumes: [bd:/var/lib/mysql]
+    networks: [interna]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 512m
+    restart: unless-stopped
+
+  api:
+    image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    init: true
+    command: [sh, -c, npm run migrar && exec node index.js]
+    environment: &api_entorno
+      NODE_ENV: production
+      API_PORT: 2900
+      LOG_NIVEL: ${LOG_NIVEL:-info}
+      BD_DIALEC: mariadb
+      BD_HOST: mariadb
+      BD_PORT: 3306
+      BD_NOMBRE: lonja
+      BD_USUARIO: lonja
+      BD_CLAVE_FILE: /run/secrets/bd_clave
+      SC_JWT_FILE: /run/secrets/sc_jwt
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASSWORD_FILE: /run/secrets/admin_password
+      GMAIL_USER: ${GMAIL_USER:-}
+      GMAIL_PASS_FILE: /run/secrets/gmail_pass
+      CLIENTE_URL: https://${DOMINIO:-localhost}
+      UPLOADS_DIR: /datos/uploads
+      BACKUP_DIR: /datos/respaldos
+      TRUST_PROXY: linklocal,uniquelocal
+    secrets: &api_secretos [bd_clave, sc_jwt, admin_password, gmail_pass]
+    volumes: [uploads:/datos/uploads, respaldos:/datos/respaldos]
+    networks: [interna, publica]
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    mem_limit: 512m
+    restart: unless-stopped
+
+  client:
+    image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-client:${VERSION:-local}
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    init: true
+    environment:
+      NODE_ENV: production
+      CLIENTE_PORT: 3000
+      LOG_NIVEL: ${LOG_NIVEL:-info}
+      API_URL: http://api:2900/api/v1
+      SESSION_REDIS_URL: redis://sessions:6379
+      CLIENTE_URL: https://${DOMINIO:-localhost}
+      TRUST_PROXY: linklocal,uniquelocal
+    networks: [publica, sesiones]
+    depends_on:
+      api:
+        condition: service_healthy
+      sessions:
+        condition: service_healthy
+    mem_limit: 256m
+    restart: unless-stopped
+
+  sessions:
+    image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
+    command: [redis-server, --appendonly, 'yes', --appendfsync, always]
+    volumes: [sessions:/data]
+    networks: [sesiones]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 128m
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine@sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0
+    environment:
+      DOMINIO: ${DOMINIO:-localhost}
+    ports: [80:80, 443:443]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [publica]
+    depends_on:
+      client:
+        condition: service_healthy
+    mem_limit: 128m
+    restart: unless-stopped
+
+  respaldo:
+    image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
+    init: true
+    command: [sh, -c, 'while true; do npm run backup || exit 1; sleep 86400; done']
+    environment: *api_entorno
+    secrets: *api_secretos
+    volumes: [uploads:/datos/uploads:ro, respaldos:/datos/respaldos]
+    networks: [interna]
+    depends_on:
+      api:
+        condition: service_healthy
+    mem_limit: 256m
+    restart: unless-stopped
+
+  mariadb-ensayo:
+    profiles: [ensayo]
+    image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
+    environment:
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/bd_root
+      MARIADB_ROOT_HOST: '%'
+    secrets: [bd_root]
+    tmpfs: [/var/lib/mysql]
+    networks: [interna]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 512m
+
+  restauracion:
+    profiles: [ensayo]
+    image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
+    init: true
+    command: [npm, run, 'backup:probar']
+    environment:
+      <<: *api_entorno
+      RESTORE_HOST: mariadb-ensayo
+      RESTORE_USUARIO: root
+      RESTORE_CLAVE_FILE: /run/secrets/bd_root
+      MARIADB_SSL: 'off'
+    secrets: [bd_clave, bd_root, sc_jwt, admin_password, gmail_pass]
+    volumes: [uploads:/datos/uploads:ro, respaldos:/datos/respaldos]
+    networks: [interna]
+    depends_on:
+      mariadb-ensayo:
+        condition: service_healthy
+    mem_limit: 512m
+
+secrets:
+  bd_clave:
+    file: ${SECRETO_BD_CLAVE:-./secrets/bd_clave}
+  bd_root:
+    file: ${SECRETO_BD_ROOT:-./secrets/bd_root}
+  sc_jwt:
+    file: ${SECRETO_SC_JWT:-./secrets/sc_jwt}
+  admin_password:
+    file: ${SECRETO_ADMIN_PASSWORD:-./secrets/admin_password}
+  gmail_pass:
+    file: ${SECRETO_GMAIL_PASS:-./secrets/gmail_pass}
+
+networks:
+  sesiones:
+    internal: true
+  interna:
+    internal: true
+  publica:
+
+volumes:
+  sessions:
+  bd:
+  uploads:
+  respaldos:
+  caddy_data:
+  caddy_config:

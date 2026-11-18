@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  calidad:
+    name: Calidad (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
+        ports: ['6379:6379']
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=3s --health-retries=10
+    env:
+      SESSION_REDIS_TEST_URL: redis://127.0.0.1:6379
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run docs:check
+      - run: npm test
+
+  auditoria-dependencias:
+    name: Auditoría de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+
+  cobertura:
+    name: Cobertura de líneas (mínimo 80 %)
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
+        ports: ['6379:6379']
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=3s --health-retries=10
+    env:
+      SESSION_REDIS_TEST_URL: redis://127.0.0.1:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:cov
+
+  integracion-mariadb:
+    name: Integración con MariaDB 11
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: lonja_test
+          MARIADB_USER: lonja
+          MARIADB_PASSWORD: lonja_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      BD_DIALEC: mariadb
+      BD_HOST: 127.0.0.1
+      BD_PORT: 3306
+      BD_NOMBRE: lonja_test
+      BD_USUARIO: lonja
+      BD_CLAVE: lonja_test
+      SC_JWT: ci_test_secret_not_for_production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Contrato REST, migraciones, pedidos y caja
+        working-directory: api
+        run: node --test --test-concurrency=1 test/api-*.test.js test/migraciones.test.js test/servicios-modulares.test.js

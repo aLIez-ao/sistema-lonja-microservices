@@ -1,0 +1,21 @@
+<%
+  // Fila de lotes con navegación por páginas de cuatro tarjetas.
+  // Parámetros: id, titulo, subtitulo, lotes.
+%>
+<section class="tienda-fila" data-fila>
+  <div class="tienda-fila__cabecera">
+    <div>
+      <h2 class="tienda-fila__titulo"><%= titulo %></h2>
+      <% if (typeof subtitulo !== 'undefined' && subtitulo) { %><p class="tienda-fila__sub"><%= subtitulo %></p><% } %>
+    </div>
+  </div>
+  <div class="tienda-fila__carril">
+    <button class="tienda-fila__flecha tienda-fila__flecha--izq" type="button" data-fila-prev aria-label="Ver cuatro productos anteriores"><%- icono('chevron-left', 18) %></button>
+    <div class="tienda-fila__pista" data-pista>
+    <% lotes.forEach((lote, i) => { %>
+      <%- include('_tarjeta-lote', { lote, posicion: i }) %>
+    <% }) %>
+    </div>
+    <button class="tienda-fila__flecha tienda-fila__flecha--der" type="button" data-fila-next aria-label="Ver cuatro productos siguientes"><%- icono('chevron-right', 18) %></button>
+  </div>
+</section>

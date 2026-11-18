@@ -1,0 +1,74 @@
+name: lonja-dev
+
+services:
+  mariadb:
+    image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
+    environment:
+      MARIADB_DATABASE: lonja_dev
+      MARIADB_USER: lonja
+      MARIADB_PASSWORD: desarrollo_local
+      MARIADB_ROOT_PASSWORD: desarrollo_root_local
+    ports: [127.0.0.1:3307:3306]
+    volumes: [bd_dev:/var/lib/mysql]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      retries: 20
+
+  api:
+    image: node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+    init: true
+    working_dir: /app
+    command: [sh, -c, npm ci --ignore-scripts && npm run dev --workspace api]
+    volumes: [.:/app, api_deps:/app/node_modules, uploads_dev:/datos/uploads]
+    ports: [127.0.0.1:2900:2900]
+    environment:
+      NODE_ENV: development
+      BD_DIALEC: mariadb
+      BD_HOST: mariadb
+      BD_PORT: 3306
+      BD_NOMBRE: lonja_dev
+      BD_USUARIO: lonja
+      BD_CLAVE: desarrollo_local
+      SC_JWT: solo_desarrollo_local_no_usar_en_produccion
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: AdminLocal123
+      CLIENTE_URL: http://localhost:3000
+      UPLOADS_DIR: /datos/uploads
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  client:
+    image: node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+    init: true
+    working_dir: /app
+    command: [sh, -c, npm ci --ignore-scripts && npm run dev --workspace client]
+    volumes: [.:/app, client_deps:/app/node_modules]
+    ports: [127.0.0.1:3000:3000]
+    environment:
+      NODE_ENV: development
+      API_URL: http://api:2900/api/v1
+      CLIENTE_URL: http://localhost:3000
+    depends_on: [api]
+
+  mailpit:
+    image: axllent/mailpit:latest@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
+    ports: [127.0.0.1:8025:8025]
+
+  adminer:
+    image: adminer:latest@sha256:7605e298e5a2ac74d806283362fa253a4e0a42cfd881e8fa2c155f0631899f6c
+    ports: [127.0.0.1:8080:8080]
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
+    depends_on: [mariadb]
+
+volumes:
+  bd_dev:
+  api_deps:
+  client_deps:
+  uploads_dev:

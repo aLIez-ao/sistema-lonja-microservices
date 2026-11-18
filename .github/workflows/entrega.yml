@@ -1,0 +1,206 @@
+name: Entrega
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: entrega-${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  autorizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      sha: ${{ steps.verificar.outputs.sha }}
+      registro: ${{ steps.verificar.outputs.registro }}
+      etiqueta: ${{ steps.verificar.outputs.etiqueta }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - id: verificar
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+        with:
+          script: |
+            let sha;
+            let etiqueta = '';
+            if (context.eventName === 'workflow_run') {
+              const run = context.payload.workflow_run;
+              if (run.conclusion !== 'success' || run.event !== 'push' || run.head_branch !== 'main' || run.head_repository.full_name !== context.payload.repository.full_name) {
+                core.notice('La entrega requiere CI correcto de main en este repositorio.');
+                return;
+              }
+              sha = run.head_sha;
+              const main = await github.rest.repos.getBranch({...context.repo, branch: 'main'});
+              if (main.data.commit.sha !== sha) {
+                core.notice('CI corresponde a una versión anterior de main; se omite su entrega.');
+                return;
+              }
+            } else {
+              etiqueta = context.ref.replace('refs/tags/', '');
+              if (!/^v\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/.test(etiqueta)) throw new Error('Tag semántico inválido.');
+              sha = (await github.rest.repos.getCommit({...context.repo, ref: context.ref})).data.sha;
+              const comparacion = await github.rest.repos.compareCommitsWithBasehead({...context.repo, basehead: `${sha}...main`});
+              if (!['ahead','identical'].includes(comparacion.data.status)) throw new Error('El tag no pertenece a main.');
+              const runs = await github.rest.actions.listWorkflowRuns({...context.repo, workflow_id:'ci.yml', head_sha:sha, event:'push', status:'success', branch:'main'});
+              if (!runs.data.workflow_runs.length) throw new Error('Falta CI correcto de main para este commit.');
+            }
+            core.setOutput('sha', sha);
+            core.setOutput('registro', `ghcr.io/${context.repo.owner.toLowerCase()}`);
+            core.setOutput('etiqueta', etiqueta);
+
+  publicar:
+    needs: autorizar
+    if: needs.autorizar.outputs.sha != '' && needs.autorizar.outputs.etiqueta == ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRO: ${{ needs.autorizar.outputs.registro }}
+      VERSION: sha-${{ needs.autorizar.outputs.sha }}
+    steps:
+      - name: Directorio temporal
+        run: echo "PRUEBA=$RUNNER_TEMP/lonja-prueba" >> "$GITHUB_ENV"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ needs.autorizar.outputs.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        with:
+          context: .
+          file: api/Dockerfile
+          load: true
+          tags: ${{ env.REGISTRO }}/lonja-api:${{ env.VERSION }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        with:
+          context: .
+          file: client/Dockerfile
+          load: true
+          tags: ${{ env.REGISTRO }}/lonja-client:${{ env.VERSION }}
+          cache-from: type=gha,scope=client
+          cache-to: type=gha,scope=client,mode=max
+      - name: Registro, compra y factura sobre imágenes finales
+        run: |
+          node tools/preparar-prueba-contenedores.js "$PRUEBA"
+          docker compose --project-name entrega-prueba --env-file "$PRUEBA/compose.env" -f compose.yaml -f compose.test.yaml up -d --wait --wait-timeout 180
+          docker compose --project-name entrega-prueba --env-file "$PRUEBA/compose.env" -f compose.yaml -f compose.test.yaml exec -T caddy cat /data/caddy/pki/authorities/local/root.crt > "$PRUEBA/ca.crt"
+          export NODE_EXTRA_CA_CERTS="$PRUEBA/ca.crt"
+          export LONJA_PRUEBA_ADMIN_PASSWORD="$(cat "$PRUEBA/admin_password")"
+          node tools/prueba-despliegue.js
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ env.REGISTRO }}/lonja-api:${{ env.VERSION }}
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: false
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ env.REGISTRO }}/lonja-client:${{ env.VERSION }}
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: false
+      - name: SBOM de las imágenes verificadas
+        run: |
+          trivy image --format cyclonedx --output "$RUNNER_TEMP/api.cdx.json" "$REGISTRO/lonja-api:$VERSION"
+          trivy image --format cyclonedx --output "$RUNNER_TEMP/client.cdx.json" "$REGISTRO/lonja-client:$VERSION"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sbom-${{ needs.autorizar.outputs.sha }}
+          path: ${{ runner.temp }}/*.cdx.json
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publicar exactamente las imágenes probadas
+        run: |
+          for proyecto in api client; do
+            imagen="$REGISTRO/lonja-$proyecto"
+            docker push "$imagen:$VERSION"
+            docker tag "$imagen:$VERSION" "$imagen:main"
+            docker push "$imagen:main"
+          done
+      - name: Retirar datos temporales
+        if: always()
+        run: |
+          if [ -f "$PRUEBA/compose.env" ]; then
+            docker compose --project-name entrega-prueba --env-file "$PRUEBA/compose.env" -f compose.yaml -f compose.test.yaml down --volumes
+          fi
+
+  etiquetar:
+    needs: autorizar
+    if: needs.autorizar.outputs.etiqueta != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRO: ${{ needs.autorizar.outputs.registro }}
+      VERSION: sha-${{ needs.autorizar.outputs.sha }}
+      ETIQUETA: ${{ needs.autorizar.outputs.etiqueta }}
+    steps:
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Etiquetar el digest ya probado sin reconstruir
+        run: |
+          for proyecto in api client; do
+            imagen="$REGISTRO/lonja-$proyecto"
+            if ! docker buildx imagetools inspect "$imagen:$VERSION" > /dev/null; then
+              echo "::error::Falta $imagen:$VERSION; el commit debe entregarse desde main antes de etiquetarse."
+              exit 1
+            fi
+            docker buildx imagetools create --tag "$imagen:$ETIQUETA" "$imagen:$VERSION"
+          done
+
+  desplegar:
+    needs: [autorizar, publicar]
+    if: vars.DEPLOY_HOST != '' && github.event_name == 'workflow_run'
+    environment: produccion
+    runs-on: ubuntu-latest
+    env:
+      SHA: ${{ needs.autorizar.outputs.sha }}
+      HOST: ${{ vars.DEPLOY_HOST }}
+      USUARIO: ${{ vars.DEPLOY_USER }}
+      BASE: ${{ vars.DEPLOY_PATH || '/opt/lonja' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ needs.autorizar.outputs.sha }}
+      - name: Preparar SSH y copiar entrega
+        env:
+          LLAVE: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          [[ "$HOST" =~ ^[a-zA-Z0-9.-]+$ && "$USUARIO" =~ ^[a-zA-Z0-9_-]+$ && "$BASE" =~ ^/[a-zA-Z0-9_/-]+$ ]] || exit 2
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$LLAVE" > ~/.ssh/id_ed25519
+          printf '%s\n' "$HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          ssh "$USUARIO@$HOST" "mkdir -p '$BASE/releases/$SHA'"
+          tar -czf "$RUNNER_TEMP/entrega.tgz" compose.yaml deploy docs/04-instalacion-y-despliegue.md
+          scp "$RUNNER_TEMP/entrega.tgz" "$USUARIO@$HOST:$BASE/releases/$SHA/entrega.tgz"
+          ssh "$USUARIO@$HOST" "cd '$BASE/releases/$SHA' && tar -xzf entrega.tgz && bash deploy/desplegar.sh '$SHA' /etc/lonja/compose.env '$BASE'"
+      - name: Resultado
+        if: always()
+        run: echo "Entrega $SHA — resultado ${{ job.status }}. Si falló una migración incompatible, consultar respaldo y restauración en docs/04." >> "$GITHUB_STEP_SUMMARY"

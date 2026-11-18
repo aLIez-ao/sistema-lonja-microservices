@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="<%= pref.idioma %>" data-theme="<%= pref.tema %>" data-bs-theme="<%= pref.tema === 'dark' ? 'dark' : 'light' %>" data-font-size="<%= pref.tamanoFuente %>" data-font-family="<%= pref.tipoFuente %>">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" sizes="any">
+  <title><%= t('app_nombre') %> · Veracruz</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/lonja.css">
+  <link rel="stylesheet" href="/css/tienda.css">
+</head>
+
+<%
+  const ruta = rutaActual || '';
+  const esPublica = ruta === '/' || ruta.startsWith('/tienda') || ruta.startsWith('/acceso')
+    || ruta.startsWith('/registro') || ruta.startsWith('/recuperar-password')
+    || ruta.startsWith('/olvide-password') || ruta.startsWith('/verificar-email');
+%>
+<body data-protegida="<%= usuario && !esPublica ? 1 : 0 %>">
+  <%
+    const banderas = { es: { src: '/img/flags/mx.svg', nombre: 'Español' }, en: { src: '/img/flags/us.svg', nombre: 'English' } };
+    const activo = (ruta) => (rutaActual || '').startsWith(ruta) ? 'active' : '';
+  %>
+
+  <nav class="navbar navbar-expand-xl navbar-lonja d-print-none">
+    <div class="container-fluid px-lg-4">
+      <!-- El logo redirige al inicio -->
+      <a class="navbar-brand" href="/" title="Lonja de Veracruz">
+        <img class="logo-claro" src="/img/logo.svg" alt="Lonja de Veracruz" width="204" height="42">
+        <img class="logo-oscuro" src="/img/logo-oscuro.svg" alt="" aria-hidden="true" width="204" height="42">
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal"
+        aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="menuPrincipal">
+        <% if (usuario) { %>
+          <ul class="navbar-nav me-auto mb-2 mb-xl-0 ms-xl-3">
+            <% if (usuario.rol === 'comprador') { %>
+              <li class="nav-item"><a class="nav-link <%= rutaActual === '/' ? 'active' : '' %>" href="/"><%- icono('basket', 15, 'me-1') %><%= t('tienda') %></a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/carrito') %>" href="/carrito"><%- icono('cart-plus', 15, 'me-1') %>Carrito <span class="badge text-bg-primary" data-carrito-count><%= typeof carritoCount === 'number' ? carritoCount : 0 %></span></a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/cuenta') %>" href="/cuenta"><%- icono('person', 15, 'me-1') %>Mi cuenta</a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/cuenta/listas') %>" href="/cuenta/listas"><%- icono('heart', 15, 'me-1') %>Favoritos <span class="badge text-bg-secondary" data-favoritos-count><%= favoritosCount || 0 %></span></a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/cuenta/opiniones') %>" href="/cuenta/opiniones"><%- icono('star', 15, 'me-1') %>Mis opiniones</a></li>
+            <% } else { %>
+              <li class="nav-item"><a class="nav-link <%= activo('/dashboard') %>" href="/dashboard"><%- icono('speedometer2', 15, 'me-1') %>Dashboard</a></li>
+              <li class="nav-item"><a class="nav-link" href="/"><%- icono('basket', 15, 'me-1') %>Tienda <span class="small text-muted">ver como cliente</span></a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/compras') %>" href="/compras"><%= t('compras') %></a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/pedidos') %>" href="/pedidos">Pedidos</a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/lotes') %>" href="/lotes"><%= t('lotes') %></a></li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle <%= activo('/especies') || activo('/catalogo') %>" href="/especies" role="button" data-bs-toggle="dropdown" aria-expanded="false"><%= t('especies') %></a>
+                <ul class="dropdown-menu shadow-sm">
+                  <li><a class="dropdown-item" href="/especies">Especies por lote</a></li>
+                  <li><a class="dropdown-item" href="/catalogo">Catálogo de especies</a></li>
+                </ul>
+              </li>
+              <li class="nav-item"><a class="nav-link <%= activo('/compradores') %>" href="/compradores"><%= t('compradores') %></a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/tipos') %>" href="/tipos"><%= t('tipos') %></a></li>
+              <li class="nav-item"><a class="nav-link <%= activo('/reportes') %>" href="/reportes/diario"><%= t('reportes') %></a></li>
+              <% if (usuario.rol === 'admin') { %>
+                <li class="nav-item"><a class="nav-link <%= activo('/usuarios') %>" href="/usuarios"><%= t('usuarios') %></a></li>
+              <% } %>
+            <% } %>
+          </ul>
+        <% } %>
+
+        <div class="tienda-buscador-header"><%- include('buscador-tienda') %></div>
+
+        <% if (usuario) { %>
+          <div class="d-flex align-items-center gap-2 flex-nowrap">
+            <!-- Moneda -->
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill py-1 px-2" type="button" data-bs-toggle="dropdown" title="<%= t('moneda') %>">
+                <%= pref.moneda %>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><button class="dropdown-item <%= pref.moneda === 'MXN' ? 'active' : '' %>" data-pref="moneda" data-valor="MXN">MXN (Pesos mexicanos)</button></li>
+                <li><button class="dropdown-item <%= pref.moneda === 'USD' ? 'active' : '' %>" data-pref="moneda" data-valor="USD">USD (Dólares)</button></li>
+                <li><button class="dropdown-item <%= pref.moneda === 'EUR' ? 'active' : '' %>" data-pref="moneda" data-valor="EUR">EUR (Euros)</button></li>
+              </ul>
+            </div>
+
+            <!-- Idioma: bandera del país en lugar de siglas -->
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill py-1 px-2 d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" title="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>" aria-label="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>">
+                <img class="bandera" src="<%= banderas[pref.idioma].src %>" alt="<%= banderas[pref.idioma].nombre %>" width="24" height="18">
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <% Object.entries(banderas).forEach(([cod, b]) => { %>
+                  <li><button class="dropdown-item d-flex align-items-center gap-2 <%= pref.idioma === cod ? 'active' : '' %>" data-pref="idioma" data-valor="<%= cod %>">
+                    <img class="bandera" src="<%= b.src %>" alt="" width="24" height="18"> <%= b.nombre %>
+                  </button></li>
+                <% }) %>
+              </ul>
+            </div>
+
+            <!-- Cuenta: avatar circular con menú rápido (perfil, configuración y cerrar sesión) -->
+            <div class="dropdown ms-1">
+              <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="<%= usuario.nombre_completo || usuario.usuario %>" aria-label="Menú de cuenta">
+                <%- include('avatar', { u: usuario }) %>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-2 mt-2 menu-cuenta">
+                <li class="px-3 py-2 border-bottom">
+                  <div class="fw-bold text-truncate"><%= usuario.nombre_completo || usuario.usuario %></div>
+                  <div class="small text-muted">@<%= usuario.usuario %> &bull; <span class="badge bg-secondary text-uppercase"><%= usuario.rol %></span></div>
+                  <% if (usuario.correo) { %>
+                    <div class="small text-muted text-truncate mt-1"><%= usuario.correo %></div>
+                  <% } %>
+                </li>
+                <li>
+                  <a class="dropdown-item py-2 d-flex align-items-center gap-2 mt-1" href="<%= usuario.rol === 'comprador' ? '/cuenta' : '/configuracion#pane-cuenta' %>">
+                    <%- icono('person') %> <%= t('mi_cuenta') %>
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="/configuracion">
+                    <%- icono('gear') %> <%= t('configuracion') %>
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li>
+                  <form action="/cerrarsesion" method="POST" class="m-0">
+                    <button class="dropdown-item py-2 text-danger d-flex align-items-center gap-2" type="submit">
+                      <%- icono('box-arrow-right') %> <%= t('cerrar_sesion') %>
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+        <% } else { %>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <a class="btn btn-sm btn-outline-secondary rounded-pill px-3 text-decoration-none" href="/acceso">Iniciar sesión</a>
+          <a class="btn btn-sm btn-primary rounded-pill px-3 text-decoration-none" href="/registro">Crear cuenta</a>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4">

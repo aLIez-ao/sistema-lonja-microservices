@@ -1,0 +1,321 @@
+Project sistema_lonja {
+  database_type: 'MariaDB'
+  Note: 'Esquema v3: 20 tablas de aplicación y demo_registro opcional, creado por el generador de demostración. No contiene filas de datos.'
+}
+
+Table carrito_item {
+  id_usuario int(11) [not null]
+  id_lte int(11) [not null]
+  fecha datetime [not null]
+
+  Indexes {
+    (id_lte) [name: 'id_lte']
+    (id_usuario, id_lte) [pk]
+  }
+}
+
+Table catalogo_especie {
+  id_cat int(11) [pk, increment, not null]
+  nombre varchar(40) [not null]
+  imagen varchar(100)
+  descripcion varchar(300)
+  activo tinyint(1) [not null, default: 1]
+  id_tpo smallint(6) [not null]
+
+  Indexes {
+    (id_tpo) [name: 'id_tpo']
+    (nombre) [name: 'uq_catalogo_nombre', unique]
+  }
+}
+
+Table compra {
+  id_cmp int(11) [not null]
+  codigo_cpr smallint(6) [not null]
+  precio_kilo_final decimal(10,2) [not null]
+  precio_total decimal(12,2) [not null]
+  fecha datetime [not null]
+  id_ped int(11)
+
+  Indexes {
+    (codigo_cpr) [name: 'codigo_cpr']
+    (id_ped) [name: 'compra_id_ped_foreign_idx']
+    (id_cmp, codigo_cpr) [pk]
+    (id_cmp) [name: 'uq_compra_lote', unique]
+  }
+}
+
+Table comprador {
+  codigo_cpr smallint(6) [pk, increment, not null]
+  nombre varchar(40) [not null]
+  apellido_paterno varchar(40) [not null]
+  apellido_materno varchar(40)
+  direccion varchar(200)
+  correo varchar(80) [not null]
+
+  Indexes {
+    (correo) [name: 'correo', unique]
+  }
+}
+
+Table demo_registro {
+  tipo varchar(24) [not null]
+  id_registro varchar(40) [not null]
+
+  Indexes {
+    (tipo, id_registro) [pk]
+  }
+
+  Note: 'Registro polimórfico usado por scripts/demo.js para rastrear entidades de prueba de varias tablas y borrarlas al limpiar la demo. No lleva claves foráneas porque id_registro apunta a tablas distintas según tipo.'
+}
+
+Table direccion_entrega {
+  id_dir int(11) [pk, increment, not null]
+  alias varchar(30) [not null]
+  destinatario varchar(60) [not null]
+  telefono varchar(20) [not null]
+  calle varchar(80) [not null]
+  num_ext varchar(10) [not null]
+  num_int varchar(10)
+  colonia varchar(60) [not null]
+  cp varchar(5) [not null]
+  municipio varchar(60) [not null]
+  estado varchar(40) [not null]
+  referencias varchar(200)
+  principal tinyint(1) [not null, default: 0]
+  id_usuario int(11) [not null]
+
+  Indexes {
+    (id_usuario) [name: 'ix_direccion_usuario']
+  }
+}
+
+Table especie {
+  id_epe int(11) [pk, increment, not null]
+  nombre varchar(40) [not null]
+  imagen varchar(100)
+  id_tpo smallint(6) [not null]
+  id_lte int(11) [not null]
+  id_cat int(11)
+
+  Indexes {
+    (id_cat) [name: 'especie_id_cat_foreign_idx']
+    (id_lte) [name: 'especie_id_lte']
+    (id_tpo) [name: 'id_tpo']
+  }
+
+  Note: 'En el modelo actual id_cat es opcional y restringe el borrado del catálogo. La migración de instalaciones antiguas puede haber creado esta FK con SET NULL.'
+}
+
+Table lista {
+  id_lista int(11) [pk, increment, not null]
+  id_usuario int(11) [not null]
+  nombre varchar(40) [not null]
+  fecha datetime [not null]
+
+  Indexes {
+    (id_usuario, nombre) [name: 'lista_id_usuario_nombre', unique]
+  }
+}
+
+Table lista_item {
+  id_lista int(11) [not null]
+  tipo enum('especie','lote') [not null]
+  id_ref int(11) [not null]
+  fecha datetime [not null]
+
+  Indexes {
+    (id_lista, tipo, id_ref) [pk]
+  }
+}
+
+Table lote {
+  id_lte int(11) [pk, increment, not null]
+  kilos decimal(10,2) [not null]
+  numero_cajas smallint(6) [not null]
+  precio_kilo_salida decimal(10,2) [not null]
+  fecha datetime [not null]
+}
+
+Table opinion {
+  id_op int(11) [pk, increment, not null]
+  id_usuario int(11) [not null]
+  id_cat int(11) [not null]
+  estrellas int(11) [not null]
+  titulo varchar(80) [not null]
+  texto varchar(1000) [not null]
+  fecha datetime [not null]
+  visible tinyint(1) [not null, default: 1]
+
+  Indexes {
+    (id_cat) [name: 'id_cat']
+    (id_usuario, id_cat) [name: 'opinion_id_usuario_id_cat', unique]
+  }
+}
+
+Table pedido {
+  id_ped int(11) [pk, increment, not null]
+  codigo_cpr smallint(6) [not null]
+  estado varchar(20) [not null, default: 'pendiente_pago']
+  entrega varchar(20) [not null]
+  id_dir int(11)
+  dir_destinatario varchar(60)
+  dir_telefono varchar(20)
+  dir_texto text
+  subtotal decimal(12,2) [not null]
+  costo_envio decimal(12,2) [not null, default: 0.00]
+  total decimal(12,2) [not null]
+  pago_metodo varchar(50)
+  pago_ref varchar(80)
+  pago_ultimos4 varchar(4)
+  reservado_hasta datetime
+  fecha datetime [not null]
+  fecha_pago datetime
+  notas varchar(500)
+  id_usuario int(11) [not null]
+
+  Indexes {
+    (codigo_cpr) [name: 'codigo_cpr']
+    (id_dir) [name: 'id_dir']
+    (id_usuario) [name: 'id_usuario']
+    (estado, reservado_hasta) [name: 'pedido_estado_reservado_hasta']
+  }
+}
+
+Table pedido_item {
+  id_ped int(11) [not null]
+  id_lte int(11) [not null]
+  kilos decimal(10,2) [not null]
+  precio_kilo decimal(10,2) [not null]
+  subtotal decimal(12,2) [not null]
+
+  Indexes {
+    (id_lte) [name: 'pedido_item_id_lte']
+    (id_ped, id_lte) [pk]
+  }
+}
+
+Table pregunta {
+  id_preg int(11) [pk, increment, not null]
+  id_usuario int(11) [not null]
+  id_lte int(11)
+  id_cat int(11)
+  texto varchar(500) [not null]
+  fecha datetime [not null]
+  estado enum('pendiente','respondida','oculta') [not null, default: 'pendiente']
+  respuesta varchar(500)
+  id_usuario_resp int(11)
+  fecha_resp datetime
+
+  Indexes {
+    (id_cat) [name: 'id_cat']
+    (id_lte) [name: 'id_lte']
+    (id_usuario) [name: 'id_usuario']
+    (id_usuario_resp) [name: 'id_usuario_resp']
+  }
+}
+
+Table tipo {
+  id_tpo smallint(6) [pk, increment, not null]
+  nombre varchar(30) [not null]
+}
+
+Table usuario {
+  id int(11) [pk, increment, not null]
+  usuario varchar(40) [not null]
+  nombre_completo varchar(80) [not null]
+  password varchar(100) [not null]
+  rol varchar(20) [not null, default: 'capturista']
+  activo tinyint(1) [not null, default: 1]
+  correo varchar(80)
+  email_verificado tinyint(1) [not null, default: 0]
+  token_verificacion varchar(100)
+  token_recuperacion varchar(100)
+  token_recuperacion_expira datetime
+  preferencias text
+  token_verificacion_expira datetime
+  telefono varchar(20)
+  puesto varchar(60)
+  foto varchar(120)
+  sesion_version int(11) [not null, default: 0]
+  token_verificacion_envio datetime
+  codigo_cpr smallint(6)
+  rfc varchar(13)
+  razon_social varchar(100)
+
+  Indexes {
+    (codigo_cpr) [name: 'codigo_cpr', unique]
+    (correo) [name: 'correo', unique]
+    (usuario) [name: 'usuario', unique]
+  }
+}
+
+Table migracion {
+  id varchar(100) [pk]
+  aplicado_en datetime [not null]
+}
+
+Table trabajo {
+  id_trabajo bigint [pk, increment]
+  tipo varchar(80) [not null]
+  carga json [not null]
+  estado varchar(20) [not null, default: 'pendiente']
+  intentos integer [not null, default: 0]
+  proximo_intento datetime [not null]
+  ultimo_error text
+  creado_en datetime [not null]
+  actualizado_en datetime [not null]
+  indexes { (estado, proximo_intento) }
+}
+
+Table sesion {
+  id char(36) [pk]
+  id_usuario integer [not null]
+  hash varchar(64) [not null]
+  version integer [not null]
+  expira datetime [not null]
+}
+
+Table refresh_usado {
+  hash varchar(64) [pk]
+  id_sesion char(36) [not null]
+}
+
+Table idempotencia {
+  id bigint [pk, increment]
+  id_usuario integer [not null]
+  ambito varchar(120) [not null]
+  clave varchar(64) [not null]
+  entrada_hash varchar(64) [not null]
+  estado integer [not null]
+  respuesta json [not null]
+  creado_en datetime [not null]
+  indexes { (id_usuario, ambito, clave) [unique] }
+}
+
+Ref: sesion.id_usuario > usuario.id [delete: cascade]
+Ref: refresh_usado.id_sesion > sesion.id [delete: cascade]
+Ref: idempotencia.id_usuario > usuario.id [delete: cascade]
+Ref: carrito_item.id_usuario > usuario.id [delete: cascade, update: cascade]
+Ref: carrito_item.id_lte > lote.id_lte [delete: cascade, update: cascade]
+Ref: catalogo_especie.id_tpo > tipo.id_tpo [delete: restrict, update: cascade]
+Ref: lote.id_lte - compra.id_cmp [delete: restrict, update: cascade]
+Ref: compra.codigo_cpr > comprador.codigo_cpr [update: cascade]
+Ref: compra.id_ped >? pedido.id_ped [delete: set null, update: cascade]
+Ref: direccion_entrega.id_usuario > usuario.id [delete: cascade, update: cascade]
+Ref: especie.id_tpo > tipo.id_tpo [delete: restrict, update: cascade]
+Ref: especie.id_lte > lote.id_lte [delete: cascade, update: cascade]
+Ref: especie.id_cat >? catalogo_especie.id_cat [delete: restrict, update: cascade]
+Ref: lista.id_usuario > usuario.id [delete: cascade, update: cascade]
+Ref: lista_item.id_lista > lista.id_lista [delete: cascade, update: cascade]
+Ref: opinion.id_usuario > usuario.id [delete: cascade, update: cascade]
+Ref: opinion.id_cat > catalogo_especie.id_cat [delete: cascade, update: cascade]
+Ref: pedido.codigo_cpr > comprador.codigo_cpr [delete: restrict, update: cascade]
+Ref: pedido.id_dir >? direccion_entrega.id_dir [delete: set null, update: cascade]
+Ref: pedido.id_usuario > usuario.id [delete: restrict, update: cascade]
+Ref: pedido_item.id_ped > pedido.id_ped [delete: cascade, update: cascade]
+Ref: pedido_item.id_lte > lote.id_lte [delete: restrict, update: cascade]
+Ref: pregunta.id_usuario > usuario.id [delete: cascade, update: cascade]
+Ref: pregunta.id_lte >? lote.id_lte [delete: cascade, update: cascade]
+Ref: pregunta.id_cat >? catalogo_especie.id_cat [delete: cascade, update: cascade]
+Ref: pregunta.id_usuario_resp >? usuario.id [update: cascade]
+Ref: usuario.codigo_cpr >? comprador.codigo_cpr [delete: set null, update: cascade]

@@ -1,0 +1,28 @@
+[Unit]
+Description=Lonja API
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lonja-api
+Group=lonja-api
+WorkingDirectory=/opt/sistema-lonja/api
+Environment=NODE_ENV=production
+Environment=API_PORT=2900
+EnvironmentFile=/etc/sistema-lonja/api.env
+Environment=UPLOADS_DIR=/var/lib/sistema-lonja/uploads
+Environment=BACKUP_DIR=/var/lib/sistema-lonja/respaldos
+ExecStart=/usr/bin/node /opt/sistema-lonja/api/index.js
+Restart=on-failure
+KillSignal=SIGTERM
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/sistema-lonja/uploads /var/lib/sistema-lonja/respaldos
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,25 @@
+services:
+  mariadb:
+    ports: ['127.0.0.1:${PRUEBA_PUERTO_BD:-33317}:3306']
+    networks: [interna, publica]
+  api:
+    environment:
+      CLIENTE_URL: https://localhost:${PRUEBA_PUERTO_HTTPS:-34443}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+  client:
+    environment:
+      CLIENTE_URL: https://localhost:${PRUEBA_PUERTO_HTTPS:-34443}
+  caddy:
+    environment:
+      DOMINIO: localhost
+    ports: !override
+      - 127.0.0.1:${PRUEBA_PUERTO_HTTPS:-34443}:443
+      - 127.0.0.1:${PRUEBA_PUERTO_HTTP:-38080}:80
+  respaldo:
+    profiles: [operacion]
+  mailpit:
+    image: axllent/mailpit:latest@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
+    ports:
+      - 127.0.0.1:${PRUEBA_PUERTO_CORREO:-38025}:8025
+    networks: [publica]

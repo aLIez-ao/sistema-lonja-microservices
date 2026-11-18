@@ -1,0 +1,11 @@
+[Unit]
+Description=Ensayo aislado de restauración de Lonja
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/lonja/actual/deploy/ensayar-restauracion.sh
+TimeoutStartSec=1800
+StandardOutput=journal
+StandardError=journal

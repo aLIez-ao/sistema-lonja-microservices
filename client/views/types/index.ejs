@@ -1,0 +1,57 @@
+<%- include('../partials/header') %>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0 fw-bold"><%= t('tipos') %></h1>
+    <p class="text-muted small mb-0">Categorías biológicas principales (Pescado, Marisco, Molusco)</p>
+  </div>
+  <a class="btn btn-primary" href="/tipos/crear">
+    <%- icono('plus-lg', 16, 'me-1') %>
+    Nuevo tipo
+  </a>
+</div>
+<%- include('../partials/mensajes', { errores: (typeof error !== 'undefined' && error) ? [error] : [] }) %>
+<%- include('../partials/barra-listado', { l, entidad: 'tipos', etiqueta: 'tipos' }) %>
+<div class="card overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover table-striped align-middle mb-0" data-orden-servidor>
+      <thead>
+        <tr>
+          <%- include('../partials/encabezado-orden', { l, campo: 'id', titulo: 'ID' }) %>
+          <%- include('../partials/encabezado-orden', { l, campo: 'nombre', titulo: 'Nombre de Categoría' }) %>
+          <%- include('../partials/encabezado-orden', { l, campo: 'especies', titulo: 'Especies', claseExtra: 'text-end' }) %>
+          <th class="text-end" data-no-sort>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      <% if (!tipos.length) { %>
+        <tr class="fila-vacia">
+          <td colspan="4" class="text-center py-4 text-muted">
+            <%= (l.q || Object.keys(l.filtros).length) ? 'No hay registros que coincidan con la búsqueda.' : 'No hay tipos registrados en el sistema.' %>
+          </td>
+        </tr>
+      <% } %>
+      <% tipos.forEach(tipo => { %>
+        <tr>
+          <td><span class="badge bg-secondary">#<%= tipo.id_tpo %></span></td>
+          <td><strong><%= tipo.nombre %></strong></td>
+          <td class="text-end fw-semibold"><a class="enlace-registro" href="/tipos/<%= tipo.id_tpo %>"><%= tipo.especies.length %></a></td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-sm btn-outline-secondary" href="/tipos/<%= tipo.id_tpo %>/editar" title="Editar tipo" aria-label="Editar tipo">
+              <%- icono('pencil', 14) %>
+            </a>
+            <% if (usuario.rol === 'admin') { %>
+            <form action="/tipos/<%= tipo.id_tpo %>?_method=DELETE" method="POST" class="d-inline" data-confirmar="¿Eliminar este tipo?">
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar tipo" aria-label="Eliminar tipo">
+                <%- icono('trash', 14) %>
+              </button>
+            </form>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/paginacion', { l, etiqueta: 'tipos' }) %>
+<%- include('../partials/footer') %>

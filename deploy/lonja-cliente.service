@@ -1,0 +1,26 @@
+[Unit]
+Description=Lonja Cliente
+After=network-online.target lonja-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lonja-cliente
+Group=lonja-cliente
+WorkingDirectory=/opt/sistema-lonja/cliente
+Environment=NODE_ENV=production
+Environment=CLIENTE_PORT=3000
+Environment=API_URL=http://127.0.0.1:2900/api/v1
+EnvironmentFile=/etc/sistema-lonja/cliente.env
+ExecStart=/usr/bin/node /opt/sistema-lonja/client/index.js
+Restart=on-failure
+KillSignal=SIGTERM
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

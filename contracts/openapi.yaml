@@ -1,0 +1,4426 @@
+openapi: 3.1.0
+info:
+  title: Lonja API
+  version: 3.0.0
+  description: API REST de cuentas, catálogo, tienda, pedidos, ventas y reportes de Lonja. Autenticación Bearer con renovación y errores RFC 9457.
+servers:
+  - url: /api/v1
+paths:
+  /salud:
+    get:
+      operationId: salud
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salud'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /auth/sesion:
+    post:
+      operationId: entrar
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sesion'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - usuario
+                - password
+              properties:
+                usuario:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                password:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+              additionalProperties: false
+    delete:
+      operationId: salir
+      responses:
+        '204':
+          description: Sesión cerrada
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      security:
+        - bearer: []
+  /auth/refresh:
+    post:
+      operationId: renovar
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sesion'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh
+              properties:
+                refresh:
+                  type: string
+                  pattern: ^[a-f0-9]{64}$
+              additionalProperties: false
+  /auth/yo:
+    get:
+      operationId: yo
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Yo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      security:
+        - bearer: []
+  /tipos:
+    get:
+      operationId: listarTipo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaTipo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      parameters:
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: tamano
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: orden
+          schema:
+            type: string
+        - in: query
+          name: tipo
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: activo
+          schema:
+            type: boolean
+    post:
+      operationId: crearTipo
+      security:
+        - bearer: []
+      responses:
+        '201':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosTipo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+              additionalProperties: false
+              required:
+                - nombre
+  /tipos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenerTipo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosTipo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarTipo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosTipo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+              additionalProperties: false
+    delete:
+      operationId: eliminarTipo
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Eliminado
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /catalogo:
+    get:
+      operationId: listarCatalogo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaCatalogo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      parameters:
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: tamano
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: orden
+          schema:
+            type: string
+        - in: query
+          name: tipo
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: activo
+          schema:
+            type: boolean
+    post:
+      operationId: crearCatalogo
+      security:
+        - bearer: []
+      responses:
+        '201':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosCatalogo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+                id_tpo:
+                  type: integer
+                  minimum: 1
+                descripcion:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 300
+                activo:
+                  type: boolean
+              additionalProperties: false
+              required:
+                - nombre
+                - id_tpo
+  /catalogo/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenerCatalogo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosCatalogo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarCatalogo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosCatalogo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+                id_tpo:
+                  type: integer
+                  minimum: 1
+                descripcion:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 300
+                activo:
+                  type: boolean
+              additionalProperties: false
+    delete:
+      operationId: eliminarCatalogo
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Eliminado
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /especies:
+    get:
+      operationId: listarEspecie
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaEspecie'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      parameters:
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: tamano
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: orden
+          schema:
+            type: string
+        - in: query
+          name: tipo
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: activo
+          schema:
+            type: boolean
+    post:
+      operationId: crearEspecie
+      security:
+        - bearer: []
+      responses:
+        '201':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosEspecie'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_lte:
+                  type: integer
+                  minimum: 1
+                id_cat:
+                  type: integer
+                  minimum: 1
+              additionalProperties: false
+              required:
+                - id_lte
+                - id_cat
+  /especies/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenerEspecie
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosEspecie'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarEspecie
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosEspecie'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_lte:
+                  type: integer
+                  minimum: 1
+                id_cat:
+                  type: integer
+                  minimum: 1
+              additionalProperties: false
+    delete:
+      operationId: eliminarEspecie
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Eliminado
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /lotes:
+    get:
+      operationId: listarLote
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaLote'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      parameters:
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: tamano
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: orden
+          schema:
+            type: string
+        - in: query
+          name: tipo
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: activo
+          schema:
+            type: boolean
+    post:
+      operationId: crearLote
+      security:
+        - bearer: []
+      responses:
+        '201':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosLote'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kilos:
+                  type:
+                    - number
+                    - string
+                numero_cajas:
+                  type: integer
+                  minimum: 0
+                  maximum: 32767
+                precio_kilo_salida:
+                  $ref: '#/components/schemas/Dinero'
+                especies:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: integer
+                    minimum: 1
+              additionalProperties: false
+              required:
+                - kilos
+                - numero_cajas
+                - precio_kilo_salida
+                - especies
+  /lotes/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenerLote
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosLote'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarLote
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosLote'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kilos:
+                  type:
+                    - number
+                    - string
+                numero_cajas:
+                  type: integer
+                  minimum: 0
+                  maximum: 32767
+                precio_kilo_salida:
+                  $ref: '#/components/schemas/Dinero'
+                especies:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: integer
+                    minimum: 1
+              additionalProperties: false
+      parameters:
+        - in: header
+          name: If-Match
+          required: true
+          schema:
+            type: string
+    delete:
+      operationId: eliminarLote
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Eliminado
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /tienda/portada:
+    get:
+      operationId: portadaTienda
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /tienda/lotes:
+    get:
+      operationId: lotesTienda
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaLote'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /tienda/lotes/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: loteTienda
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /tienda/especies/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: especieTienda
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /tienda/sugerencias:
+    get:
+      operationId: sugerenciasTienda
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sugerencias'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /catalogo/{id}/imagen:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    put:
+      operationId: actualizarImagenCatalogo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Respuesta documentada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosCatalogo'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '412':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '428':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - imagen_data
+              properties:
+                imagen_data:
+                  type: string
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - imagen
+              properties:
+                imagen:
+                  type: string
+                  format: binary
+    delete:
+      operationId: quitarImagenCatalogo
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': &a25
+          $ref: '#/components/responses/Problema'
+        '401': &a26
+          $ref: '#/components/responses/Problema'
+        '403': &a27
+          $ref: '#/components/responses/Problema'
+        '404': &a28
+          $ref: '#/components/responses/Problema'
+        '406': &a29
+          $ref: '#/components/responses/Problema'
+        '409': &a30
+          $ref: '#/components/responses/Problema'
+        '412': &a31
+          $ref: '#/components/responses/Problema'
+        '422': &a32
+          $ref: '#/components/responses/Problema'
+        '428': &a33
+          $ref: '#/components/responses/Problema'
+        '429': &a34
+          $ref: '#/components/responses/Problema'
+        '500': &a35
+          $ref: '#/components/responses/Problema'
+        '503': &a36
+          $ref: '#/components/responses/Problema'
+  /registro:
+    post:
+      operationId: registrarCuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+                - apellido_paterno
+                - correo
+                - password
+                - password_confirmar
+                - aviso_privacidad
+              properties:
+                nombre:
+                  type: string
+                apellido_paterno:
+                  type: string
+                apellido_materno:
+                  type: string
+                correo:
+                  type: string
+                telefono:
+                  type: string
+                password:
+                  type: string
+                password_confirmar:
+                  type: string
+                aviso_privacidad:
+                  type:
+                    - boolean
+                    - string
+                recibir_avisos:
+                  type:
+                    - boolean
+                    - string
+      responses:
+        '202':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /auth/recuperacion:
+    post:
+      operationId: recuperarCuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - identificador
+              properties:
+                identificador:
+                  type: string
+      responses:
+        '202':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /auth/restablecer/{token}:
+    parameters:
+      - &a1
+        in: path
+        name: token
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: restablecerPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+                - password_confirmar
+              properties:
+                password:
+                  type: string
+                password_confirmar:
+                  type: string
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    get:
+      operationId: verRestablecimiento
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /auth/verificacion/{token}:
+    parameters:
+      - *a1
+    post:
+      operationId: verificarCorreo
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /cuenta:
+    get:
+      operationId: verCuenta
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosCuenta'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarCuenta
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                apellido_paterno:
+                  type: string
+                apellido_materno:
+                  type: string
+                correo:
+                  type: string
+                telefono:
+                  type: string
+                rfc:
+                  type: string
+                razon_social:
+                  type: string
+              additionalProperties: false
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosCuenta'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /cuenta/verificacion:
+    post:
+      operationId: reenviarVerificacion
+      security:
+        - bearer: []
+      responses:
+        '202':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /cuenta/password:
+    put:
+      operationId: cambiarPassword
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password_actual
+                - password
+                - password_confirmar
+              properties:
+                password_actual:
+                  type: string
+                password:
+                  type: string
+                password_confirmar:
+                  type: string
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /cuenta/avatar:
+    put:
+      operationId: cambiarAvatar
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imagen_data:
+                  type: string
+                quitar:
+                  type: boolean
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                imagen:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /cuenta/direcciones:
+    get:
+      operationId: listarDirecciones
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Direcciones'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    post:
+      operationId: crearDireccion
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &a2
+                alias:
+                  type:
+                    - string
+                    - 'null'
+                destinatario:
+                  type:
+                    - string
+                    - 'null'
+                telefono:
+                  type:
+                    - string
+                    - 'null'
+                calle:
+                  type:
+                    - string
+                    - 'null'
+                num_ext:
+                  type:
+                    - string
+                    - 'null'
+                num_int:
+                  type:
+                    - string
+                    - 'null'
+                colonia:
+                  type:
+                    - string
+                    - 'null'
+                cp:
+                  type:
+                    - string
+                    - 'null'
+                municipio:
+                  type:
+                    - string
+                    - 'null'
+                estado:
+                  type:
+                    - string
+                    - 'null'
+                referencias:
+                  type:
+                    - string
+                    - 'null'
+                principal:
+                  type: boolean
+              additionalProperties: false
+              required:
+                - alias
+                - destinatario
+                - telefono
+                - calle
+                - num_ext
+                - colonia
+                - cp
+                - municipio
+                - estado
+      responses:
+        '201':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosDireccion'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /cuenta/direcciones/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenerDireccion
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosDireccion'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarDireccion
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: *a2
+              additionalProperties: false
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosDireccion'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+    delete:
+      operationId: borrarDireccion
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /configuracion:
+    get:
+      operationId: verConfiguracion
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarConfiguracion
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre_completo
+              properties:
+                nombre_completo:
+                  type: string
+                correo:
+                  type: string
+                telefono:
+                  type: string
+                recibir_avisos:
+                  type: boolean
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /configuracion/preferencias:
+    patch:
+      operationId: guardarPreferencias
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tema:
+                  type: string
+                idioma:
+                  type: string
+                moneda:
+                  type: string
+                tamanoFuente:
+                  type: string
+                tipoFuente:
+                  type: string
+              additionalProperties: false
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /configuracion/correo/prueba:
+    post:
+      operationId: probarCorreo
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /configuracion/avisos:
+    post:
+      operationId: enviarAviso
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - asunto
+                - mensaje
+              properties:
+                asunto:
+                  type: string
+                mensaje:
+                  type: string
+                titulo:
+                  type: string
+                tipo:
+                  type: string
+                  enum:
+                    - evento
+                    - politica
+                    - urgente
+      responses:
+        '202':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /configuracion/aviso-suscripcion/descartar:
+    post:
+      operationId: descartarAviso
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /usuarios:
+    get:
+      operationId: listarUsuarios
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaUsuarios'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+    post:
+      operationId: crearUsuario
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &a3
+                usuario:
+                  type: string
+                nombre_completo:
+                  type: string
+                correo:
+                  type:
+                    - string
+                    - 'null'
+                telefono:
+                  type:
+                    - string
+                    - 'null'
+                puesto:
+                  type:
+                    - string
+                    - 'null'
+                rol:
+                  type: string
+                  enum:
+                    - admin
+                    - capturista
+                    - comprador
+                activo:
+                  type: boolean
+                password:
+                  type: string
+                password_confirmar:
+                  type: string
+              required:
+                - usuario
+                - nombre_completo
+                - rol
+      responses:
+        '201':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /usuarios/{id}:
+    parameters: &a4
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenerUsuario
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+    patch:
+      operationId: actualizarUsuario
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: *a3
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+    delete:
+      operationId: eliminarUsuario
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /usuarios/{id}/invitacion:
+    parameters: *a4
+    post:
+      operationId: invitarUsuario
+      security:
+        - bearer: []
+      responses:
+        '202':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /avisos/baja/{token}:
+    parameters:
+      - in: path
+        name: token
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: verBajaAvisos
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+    post:
+      operationId: bajaAvisos
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+        '503':
+          $ref: '#/components/responses/Problema'
+  /usuarios/{id}/avatar:
+    parameters: *a4
+    put:
+      operationId: avatarUsuario
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imagen_data:
+                  type: string
+                quitar:
+                  type: boolean
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                imagen:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400':
+          $ref: '#/components/responses/Problema'
+        '401':
+          $ref: '#/components/responses/Problema'
+        '403':
+          $ref: '#/components/responses/Problema'
+        '404':
+          $ref: '#/components/responses/Problema'
+        '409':
+          $ref: '#/components/responses/Problema'
+        '413':
+          $ref: '#/components/responses/Problema'
+        '422':
+          $ref: '#/components/responses/Problema'
+        '429':
+          $ref: '#/components/responses/Problema'
+        '500':
+          $ref: '#/components/responses/Problema'
+  /cuenta/barra:
+    get:
+      operationId: barraComprador
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': &a5
+          $ref: '#/components/responses/Problema'
+        '401': &a6
+          $ref: '#/components/responses/Problema'
+        '403': &a7
+          $ref: '#/components/responses/Problema'
+        '404': &a8
+          $ref: '#/components/responses/Problema'
+        '409': &a9
+          $ref: '#/components/responses/Problema'
+        '422': &a10
+          $ref: '#/components/responses/Problema'
+        '429': &a11
+          $ref: '#/components/responses/Problema'
+        '500': &a12
+          $ref: '#/components/responses/Problema'
+  /carrito:
+    get:
+      operationId: verCarrito
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    delete:
+      operationId: vaciarCarrito
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /carrito/items:
+    post:
+      operationId: agregarCarrito
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id_lte
+              properties:
+                id_lte:
+                  type: integer
+                  minimum: 1
+      responses:
+        '201':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /carrito/items/{id}:
+    delete:
+      operationId: quitarCarrito
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+  /cuenta/listas:
+    get:
+      operationId: verListas
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    post:
+      operationId: crearLista
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: &a13
+              type: object
+              required:
+                - nombre
+              properties:
+                nombre:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+      responses:
+        '201':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /cuenta/listas/{id}:
+    get:
+      operationId: verLista
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    patch:
+      operationId: renombrarLista
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a13
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    delete:
+      operationId: borrarLista
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /cuenta/listas/{id}/items:
+    post:
+      operationId: agregarLista
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: &a14
+              type: object
+              required:
+                - tipo
+                - id_ref
+              properties:
+                tipo:
+                  type: string
+                  enum:
+                    - lote
+                    - especie
+                id_ref:
+                  type:
+                    - integer
+                    - string
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    delete:
+      operationId: quitarLista
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a14
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /cuenta/listas/{id}/carrito:
+    post:
+      operationId: listaAlCarrito
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+  /cuenta/favoritos:
+    post:
+      operationId: guardarFavorito
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a14
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /cuenta/favoritos/alternar:
+    post:
+      operationId: alternarFavorito
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a14
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /cuenta/preguntas:
+    get:
+      operationId: misPreguntas
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /cuenta/opiniones:
+    get:
+      operationId: misOpiniones
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /cuenta/opiniones/{id}:
+    delete:
+      operationId: borrarMiOpinion
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+  /preguntas:
+    get:
+      operationId: moderarPreguntas
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    post:
+      operationId: crearPregunta
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: &a15
+              type: object
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /preguntas/{id}:
+    patch:
+      operationId: responderPregunta
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a15
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+  /opiniones:
+    get:
+      operationId: moderarOpiniones
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /opiniones/{id}:
+    post:
+      operationId: opinar
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a15
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    patch:
+      operationId: visibilidadOpinion
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - visible
+              properties:
+                visible:
+                  type: boolean
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a5
+        '401': *a6
+        '403': *a7
+        '404': *a8
+        '409': *a9
+        '422': *a10
+        '429': *a11
+        '500': *a12
+  /pedidos/checkout:
+    get:
+      operationId: checkout
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': &a16
+          $ref: '#/components/responses/Problema'
+        '401': &a17
+          $ref: '#/components/responses/Problema'
+        '403': &a18
+          $ref: '#/components/responses/Problema'
+        '404': &a19
+          $ref: '#/components/responses/Problema'
+        '409': &a20
+          $ref: '#/components/responses/Problema'
+        '422': &a21
+          $ref: '#/components/responses/Problema'
+        '429': &a22
+          $ref: '#/components/responses/Problema'
+        '500': &a23
+          $ref: '#/components/responses/Problema'
+  /pedidos:
+    get:
+      operationId: listarPedidos
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaObjetos'
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+    post:
+      operationId: crearPedido
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - entrega
+              properties:
+                entrega:
+                  type: string
+                  enum:
+                    - recoger
+                    - domicilio
+                id_dir:
+                  type:
+                    - integer
+                    - string
+      responses:
+        '201':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosPedido'
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9_.:-]{1,128}$
+          description: Una clave por operación lógica; un reintento conserva clave y cuerpo.
+  /pedidos/{id}:
+    parameters:
+      - &a24
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenerPedido
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+    patch:
+      operationId: cambiarEstadoPedido
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum:
+                    - preparando
+                    - enviado
+                    - entregado
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+  /pedidos/{id}/pago:
+    parameters:
+      - *a24
+    post:
+      operationId: pagarPedido
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                metodo:
+                  type: string
+                  enum:
+                    - tarjeta
+                    - transferencia
+                    - efectivo
+                tarjeta:
+                  type: object
+                  properties:
+                    numero:
+                      type: string
+                    mes:
+                      type:
+                        - integer
+                        - string
+                    anio:
+                      type:
+                        - integer
+                        - string
+                    cvv:
+                      type: string
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosPedido'
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9_.:-]{1,128}$
+          description: Una clave por operación lógica; un reintento conserva clave y cuerpo.
+  /pedidos/{id}/cobro:
+    parameters:
+      - *a24
+    post:
+      operationId: cobrarPedido
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosPedido'
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9_.:-]{1,128}$
+          description: Una clave por operación lógica; un reintento conserva clave y cuerpo.
+  /pedidos/{id}/cancelacion:
+    parameters:
+      - *a24
+    post:
+      operationId: cancelarPedido
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+  /compras/{id}/factura:
+    parameters:
+      - *a24
+    get:
+      operationId: facturaCompra
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400': *a16
+        '401': *a17
+        '403': *a18
+        '404': *a19
+        '409': *a20
+        '422': *a21
+        '429': *a22
+        '500': *a23
+  /compradores:
+    get:
+      operationId: listarcompradores
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaObjetos'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+    post:
+      operationId: crearcompradores
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: &a37
+              type: object
+              properties:
+                nombre:
+                  type: string
+                apellido_paterno:
+                  type: string
+                apellido_materno:
+                  type: string
+                correo:
+                  type: string
+                direccion:
+                  type: string
+              additionalProperties: false
+      responses:
+        '201':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /compradores/{id}:
+    parameters:
+      - &a38
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      operationId: obtenercompradores
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+    patch:
+      operationId: actualizarcompradores
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a37
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+    delete:
+      operationId: borrarcompradores
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /compras:
+    get:
+      operationId: listarcompras
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaObjetos'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+    post:
+      operationId: crearcompras
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: &a39
+              type: object
+              properties:
+                id_cmp:
+                  type:
+                    - integer
+                    - string
+                codigo_cpr:
+                  type:
+                    - integer
+                    - string
+                precio_kilo_final:
+                  $ref: '#/components/schemas/Dinero'
+              additionalProperties: false
+      responses:
+        '201':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /compras/{id}:
+    parameters:
+      - *a38
+    get:
+      operationId: obtenercompras
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+    patch:
+      operationId: actualizarcompras
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: *a39
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+      parameters:
+        - in: header
+          name: If-Match
+          required: true
+          schema:
+            type: string
+    delete:
+      operationId: borrarcompras
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Sin contenido
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /compras/catalogos:
+    get:
+      operationId: catalogosCompra
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /compras/{id}/correo:
+    parameters:
+      - *a38
+    post:
+      operationId: enviarFactura
+      security:
+        - bearer: []
+      responses:
+        '202':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /dashboard:
+    get:
+      operationId: dashboard
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /buscar/sugerencias:
+    get:
+      operationId: sugerenciasPersonal
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sugerencias'
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /reportes/{anio}:
+    parameters:
+      - in: path
+        name: anio
+        required: true
+        schema:
+          type: integer
+          minimum: 1900
+          maximum: 9998
+    get:
+      operationId: reporteAnual
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatosObjeto'
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+  /reportes/dia/{fecha}:
+    parameters:
+      - in: path
+        name: fecha
+        required: true
+        schema:
+          type: string
+          format: date
+    get:
+      operationId: reporteDiario
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: CSV del día
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '400': *a25
+        '401': *a26
+        '403': *a27
+        '404': *a28
+        '406': *a29
+        '409': *a30
+        '412': *a31
+        '422': *a32
+        '428': *a33
+        '429': *a34
+        '500': *a35
+        '503': *a36
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Usuario:
+      type: object
+      required:
+        - id
+        - usuario
+        - nombre_completo
+        - rol
+        - correo
+        - email_verificado
+      properties:
+        id:
+          type: integer
+        usuario:
+          type: string
+        nombre_completo:
+          type: string
+        rol:
+          type: string
+          enum:
+            - admin
+            - capturista
+            - comprador
+        correo:
+          type:
+            - string
+            - 'null'
+        email_verificado:
+          type: boolean
+        foto:
+          type:
+            - string
+            - 'null'
+        preferencias:
+          type:
+            - string
+            - 'null'
+        recibir_avisos:
+          type: boolean
+        aviso_suscripcion_descartado:
+          type: boolean
+      additionalProperties: false
+    Salud:
+      type: object
+      required:
+        - bd
+      properties:
+        bd:
+          const: ok
+      additionalProperties: false
+    Problema:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - errores
+        - id
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        errores:
+          type: array
+          items:
+            type: object
+        id:
+          type: string
+      additionalProperties: false
+    Sesion:
+      type: object
+      required:
+        - access
+        - refresh
+        - tipo
+        - expira_en
+        - usuario
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        tipo:
+          const: Bearer
+        expira_en:
+          const: 900
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+      additionalProperties: false
+    Dinero:
+      type: string
+      pattern: ^[0-9]+\.[0-9]{2}$
+    Paginacion:
+      type: object
+      required:
+        - pagina
+        - tamano
+        - total
+      properties:
+        pagina:
+          type: integer
+          minimum: 1
+        tamano:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    Yo:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Usuario'
+      additionalProperties: false
+    Objeto:
+      type: object
+    DatosObjeto:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Objeto'
+      additionalProperties: false
+    Sugerencia:
+      type: object
+      required:
+        - id
+        - titulo
+        - subtitulo
+        - url
+      properties:
+        id:
+          type: integer
+        titulo:
+          type: string
+        subtitulo:
+          type: string
+        url:
+          type: string
+      additionalProperties: false
+    Sugerencias:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sugerencia'
+      additionalProperties: false
+    Lote:
+      type: object
+      required:
+        - id_lte
+        - kilos
+        - numero_cajas
+        - precio_kilo_salida
+        - especies
+      properties:
+        id_lte:
+          type: integer
+        kilos:
+          type:
+            - number
+            - string
+        numero_cajas:
+          type: integer
+        precio_kilo_salida:
+          $ref: '#/components/schemas/Dinero'
+        especies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Objeto'
+    Tipo:
+      type: object
+      required:
+        - id_tpo
+        - nombre
+      properties:
+        id_tpo:
+          type: integer
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 40
+        especies:
+          type: array
+          items:
+            type: object
+      additionalProperties: false
+    Catalogo:
+      type: object
+      required:
+        - id_cat
+        - nombre
+        - id_tpo
+        - activo
+      properties:
+        id_cat:
+          type: integer
+        nombre:
+          type: string
+          maxLength: 40
+        id_tpo:
+          type: integer
+        activo:
+          type: boolean
+    Especie:
+      type: object
+      required:
+        - id_epe
+        - id_lte
+        - nombre
+        - id_tpo
+      properties:
+        id_epe:
+          type: integer
+        id_lte:
+          type: integer
+        nombre:
+          type: string
+        id_tpo:
+          type: integer
+    DatosTipo:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Tipo'
+      additionalProperties: false
+    ListaTipo:
+      type: object
+      required:
+        - datos
+        - meta
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tipo'
+        meta:
+          $ref: '#/components/schemas/Paginacion'
+      additionalProperties: false
+    DatosCatalogo:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Catalogo'
+      additionalProperties: false
+    ListaCatalogo:
+      type: object
+      required:
+        - datos
+        - meta
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Catalogo'
+        meta:
+          $ref: '#/components/schemas/Paginacion'
+      additionalProperties: false
+    DatosEspecie:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Especie'
+      additionalProperties: false
+    ListaEspecie:
+      type: object
+      required:
+        - datos
+        - meta
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Especie'
+        meta:
+          $ref: '#/components/schemas/Paginacion'
+      additionalProperties: false
+    DatosLote:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Lote'
+      additionalProperties: false
+    ListaLote:
+      type: object
+      required:
+        - datos
+        - meta
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lote'
+        meta:
+          $ref: '#/components/schemas/Paginacion'
+      additionalProperties: false
+    Mensaje:
+      type: object
+      required:
+        - mensaje
+      properties:
+        mensaje:
+          type: string
+      additionalProperties: false
+    Cuenta:
+      type: object
+      required:
+        - us
+        - datos
+        - direcciones
+        - compras
+        - total
+      properties:
+        us:
+          type: object
+          required:
+            - id
+            - rol
+            - correo
+          properties:
+            id:
+              type: integer
+            rol:
+              type: string
+            correo:
+              type:
+                - string
+                - 'null'
+        datos:
+          $ref: '#/components/schemas/Objeto'
+        comprador:
+          type:
+            - object
+            - 'null'
+        direcciones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Objeto'
+        compras:
+          type: array
+          items:
+            $ref: '#/components/schemas/Objeto'
+        total:
+          $ref: '#/components/schemas/Dinero'
+    DatosCuenta:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Cuenta'
+      additionalProperties: false
+    Direccion:
+      type: object
+      required:
+        - id_dir
+        - id_usuario
+        - alias
+        - principal
+        - cp
+        - estado
+      properties:
+        id_dir:
+          type: integer
+        id_usuario:
+          type: integer
+        alias:
+          type: string
+        principal:
+          type: boolean
+        cp:
+          type: string
+          pattern: ^[0-9]{5}$
+        estado:
+          type: string
+    DatosDireccion:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Direccion'
+      additionalProperties: false
+    Direcciones:
+      type: object
+      required:
+        - datos
+        - meta
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Direccion'
+        meta:
+          $ref: '#/components/schemas/Paginacion'
+      additionalProperties: false
+    ListaUsuarios:
+      type: object
+      required:
+        - datos
+        - meta
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Objeto'
+        meta:
+          $ref: '#/components/schemas/Paginacion'
+      additionalProperties: false
+    ListaObjetos:
+      type: object
+      required:
+        - datos
+        - meta
+      properties:
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Objeto'
+        meta:
+          $ref: '#/components/schemas/Paginacion'
+      additionalProperties: false
+    Pedido:
+      type: object
+      required:
+        - id_ped
+        - estado
+        - subtotal
+        - costo_envio
+        - total
+        - moneda
+        - fecha
+      properties:
+        id_ped:
+          type: integer
+        estado:
+          type: string
+          enum:
+            - pendiente_pago
+            - pagado
+            - preparando
+            - enviado
+            - entregado
+            - cancelado
+            - expirado
+        subtotal:
+          $ref: '#/components/schemas/Dinero'
+        costo_envio:
+          $ref: '#/components/schemas/Dinero'
+        total:
+          $ref: '#/components/schemas/Dinero'
+        moneda:
+          const: MXN
+        fecha:
+          type: string
+          format: date-time
+    DatosPedido:
+      type: object
+      required:
+        - datos
+      properties:
+        datos:
+          $ref: '#/components/schemas/Pedido'
+      additionalProperties: false
+  responses:
+    Problema:
+      description: Error con identificador de correlación
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
