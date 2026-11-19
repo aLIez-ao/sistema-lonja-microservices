@@ -37,6 +37,6 @@ El comando del job, ejecutado desde `api/` y con las variables de la base de ens
 node --test --test-concurrency=1 test/api-*.test.js test/migraciones.test.js test/servicios-modulares.test.js
 ```
 
-`tools/cobertura.js` incluye código del servidor no ejecutado y exige al menos 80 % de líneas. Los informes se guardan en el directorio temporal del sistema. La última ejecución previa a esta reorganización documental registró 147 pruebas correctas y una omisión en la suite API completa; el job MariaDB registró 116 correctas. Son resultados de esa revisión, no una certificación de un servidor publicado.
+`tools/cobertura.js` incluye código del servidor no ejecutado y exige al menos 80 % de líneas. Los informes se guardan en el directorio temporal del sistema. La revisión del 18 de noviembre de 2026 registró 154 pruebas correctas y una omisión esperada de SQLite en la suite API completa; el job MariaDB registró 121 correctas. La cobertura de líneas fue 86,02 %. Se comprobó además una copia de los archivos versionados, sin `.env` ni vistas locales ignoradas, reutilizando las dependencias instaladas. Estos resultados no acreditan una instalación independiente de dependencias ni un servidor publicado.
 
 Los recorridos que incluyen páginas, cookie y descargas se explican en [pruebas del cliente](../../client/docs/06-pruebas.md). CI, cobertura conjunta y el ensayo HTTPS están en [la guía compartida](../../docs/06-pruebas.md).
