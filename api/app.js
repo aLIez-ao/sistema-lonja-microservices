@@ -18,6 +18,7 @@ import { tiendaCuenta } from './modules/store/api/cuenta.js';
 import { pedidosApi } from './modules/orders/api/index.js';
 import { ventasApi } from './modules/sales/api/index.js';
 import { jsonApi } from './shared/helpers/json.js';
+import { saludCorreo } from './shared/helpers/email.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -38,7 +39,7 @@ app.use(express.json({ limit: '450kb' }));
 const salud = async (req, res) => {
   try {
     await db.authenticate();
-    res.json({ bd: 'ok' });
+    res.json({ bd: 'ok', correo: saludCorreo() });
   } catch {
     problema(res, 503, 'La base de datos no está disponible.');
   }

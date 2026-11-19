@@ -35,9 +35,11 @@ Las variables del proceso prevalecen sobre `.env`. En `NODE_ENV=development`, `.
 
 ## Salud, correo y registros
 
-`GET /api/v1/salud` comprueba la base. La documentación interactiva `/api/docs` solo está habilitada fuera de producción. Los registros usan nivel configurable y los errores HTTP incluyen `X-Request-Id` para correlación. No publiques cuerpos de acceso ni tokens en los registros.
+`GET /api/v1/salud` comprueba la base e incluye el estado observado del correo (`ok`, `degradado`, `simulado` o `sin-comprobar`), sin contactar al SMTP por petición. Con base disponible y correo degradado devuelve 200 para mantener la tienda accesible; el monitor externo debe inspeccionar también `correo`. La documentación interactiva `/api/docs` solo está habilitada fuera de producción. Los registros usan nivel configurable y los errores HTTP incluyen `X-Request-Id` para correlación. No publiques cuerpos de acceso ni tokens en los registros.
 
-El diagnóstico de correo es exclusivo de administración. En desarrollo, sin transporte se usa el simulador; producción falla al arrancar si falta transporte o falla su verificación. Los trabajos se persisten en la base y se reintentan. Despliega una sola instancia de API: el coordinador de trabajos y los límites de peticiones mantienen estado en memoria.
+El diagnóstico detallado de correo es exclusivo de administración. En desarrollo, sin transporte se usa el simulador; producción rechaza la configuración ausente o inválida y los errores permanentes de autenticación o TLS. Una caída temporal de red o una respuesta SMTP 4xx permite iniciar con correo degradado. Se comprueba su recuperación cada minuto; un envío correcto también restablece su estado. Los trabajos se persisten y se reintentan a los 1, 5 y 15 minutos, sin bloquear el arranque mientras se procesan. Tras agotar los reintentos quedan fallidos y requieren atención: no se promete entrega indefinida. Despliega una sola instancia de API: el coordinador de trabajos y los límites de peticiones mantienen estado en memoria.
+
+Las nuevas imágenes del catálogo se recodifican a WebP sin EXIF/XMP, con orientación aplicada y un máximo de 1600×1600, conservando proporciones. Los avatares usan 256×256. Las imágenes almacenadas anteriormente requieren un tratamiento separado; no se sobrescriben durante el arranque.
 
 El SMTP genérico admite `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_REQUIRE_TLS`, `SMTP_USER`, `SMTP_PASS_FILE` y `SMTP_FROM`. Configura TLS y credenciales reales de tu proveedor; Mailpit se limita al desarrollo y al ensayo aislado. Gmail sigue siendo compatible. Elegir proveedor y completar DNS/entregabilidad permanece en el seguimiento local de `docs/.reports/TODO.md`.
 

@@ -3977,6 +3977,9 @@ components:
       properties:
         bd:
           const: ok
+        correo:
+          description: Estado observado del transporte, sin consultar SMTP por petición. Un fallo temporal no detiene la tienda ni cambia el HTTP 200 si la base está disponible.
+          enum: [ok, degradado, simulado, sin-comprobar]
       additionalProperties: false
     Problema:
       type: object

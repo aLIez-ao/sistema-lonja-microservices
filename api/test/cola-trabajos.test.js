@@ -92,3 +92,37 @@ test('al iniciar recupera trabajos que quedaron marcados en proceso', async () =
   });
   assert.ok(trabajo);
 });
+
+test('el arranque sin espera no se bloquea por un transporte lento con trabajos pendientes', async () => {
+  let liberar;
+  const lento = new Promise((resolve) => {
+    liberar = resolve;
+  });
+  registrarProcesadorTrabajo('prueba_lenta', async () => {
+    await lento;
+    return { ok: true };
+  });
+  const trabajo = await Trabajo.create({
+    tipo: 'prueba_lenta',
+    carga: {},
+    estado: 'pendiente',
+    intentos: 0,
+    proximo_intento: new Date(0),
+  });
+  let limite;
+  try {
+    const iniciado = await Promise.race([
+      iniciarColaTrabajos({ esperar: false }).then(() => true),
+      new Promise((resolve) => {
+        limite = setTimeout(() => resolve(false), 1000);
+      }),
+    ]);
+    assert.equal(iniciado, true, 'iniciar no espera a que el proveedor complete los trabajos');
+  } finally {
+    clearTimeout(limite);
+    liberar();
+    await esperarColaTrabajos();
+  }
+  await trabajo.reload();
+  assert.equal(trabajo.estado, 'completado');
+});

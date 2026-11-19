@@ -94,13 +94,14 @@ function programarProcesamiento() {
 }
 
 /** Reanuda trabajos interrumpidos y sondea vencimientos en el mismo proceso. */
-export async function iniciarColaTrabajos() {
+export async function iniciarColaTrabajos({ esperar = true } = {}) {
   await Trabajo.update({ estado: 'pendiente', actualizado_en: new Date() }, { where: { estado: 'procesando' } });
   if (!temporizador) {
     temporizador = setInterval(() => void procesarPendientes(), 5_000);
     temporizador.unref?.();
   }
-  await procesarPendientes();
+  if (esperar) await procesarPendientes();
+  else programarProcesamiento();
 }
 
 /** Guarda un trabajo serializable y lo ejecuta en segundo plano. */

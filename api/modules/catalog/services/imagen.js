@@ -14,6 +14,8 @@ export async function actualizarImagen(id, data) {
     urlBase: '/uploads/especies/',
     prefijo: 'cat',
     maxBytes: 280 * 1024,
+    recodificar: true,
+    tamano: { width: 1600, height: 1600, fit: 'inside' },
   };
   if (typeof data !== 'string') throw new ErrorDeUsuario('Envía un archivo imagen o imagen_data.', 422);
   const nueva = await guardarImagenDataURL(data, opciones);

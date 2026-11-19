@@ -9,9 +9,11 @@ let transportePruebas = null;
 /** Último error técnico de envío, para diagnóstico del administrador. */
 let ultimoError = null;
 let ultimoErrorFecha = null;
+let disponible = null;
 
 export function fijarTransporteParaPruebas(transporte) {
   transportePruebas = transporte || null;
+  disponible = null;
 }
 
 /** Credenciales normalizadas: sin espacios alrededor y sin espacios internos en la contraseña. */
@@ -68,10 +70,18 @@ export function estadoCorreo() {
   return {
     configurado,
     simulado: !configurado,
+    disponible,
     remitente: remitenteActual(),
     remitenteEnmascarado: enmascararCorreo(remitenteActual()),
     ultimoError: ultimoErrorFecha ? { mensaje: traducirErrorCorreo(ultimoError), fecha: ultimoErrorFecha } : null,
   };
+}
+
+/** Solo estado observado: el healthcheck no abre conexiones con el proveedor. */
+export function saludCorreo() {
+  const estado = estadoCorreo();
+  if (estado.simulado) return process.env.NODE_ENV === 'production' ? 'degradado' : 'simulado';
+  return estado.disponible === null ? 'sin-comprobar' : estado.disponible ? 'ok' : 'degradado';
 }
 
 /** Traduce el error técnico de nodemailer/Gmail a un mensaje entendible. */
@@ -93,23 +103,39 @@ export async function verificarTransporte() {
   if (!transporte) return { configurado: false, simulado: true, mensaje: 'Correo NO configurado (modo simulador)' };
   try {
     if (typeof transporte.verify === 'function') await transporte.verify();
+    disponible = true;
     return { configurado: true, simulado: false, mensaje: 'Correo listo' };
   } catch (error) {
+    disponible = false;
     ultimoError = error;
     ultimoErrorFecha = new Date();
+    // Nodemailer conserva el error del sistema al envolver sockets y DNS.
+    const codigo = ['ESOCKET', 'EDNS'].includes(error.code) ? error.originalCode : error.code;
     return {
       configurado: true,
       simulado: false,
       error: traducirErrorCorreo(error),
-      mensaje: 'Gmail rechazó las credenciales',
+      transitorio:
+        !['EAUTH', 'ETLS'].includes(error.code) &&
+        (['ECONNECTION', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED', 'ECONNRESET'].includes(codigo) ||
+          (error.responseCode >= 400 && error.responseCode < 500)),
+      mensaje: 'El transporte de correo no está disponible',
     };
   }
 }
 
 /** Producción nunca debe aceptar verificaciones de cuenta que solo se simulan. */
 export async function verificarCorreoInicio() {
+  if (process.env.NODE_ENV === 'production' && process.env.SMTP_HOST) {
+    const puerto = Number(process.env.SMTP_PORT || 587);
+    if (!Number.isInteger(puerto) || puerto < 1 || puerto > 65535 || (process.env.SMTP_USER && !process.env.SMTP_PASS))
+      throw new Error('Configuración SMTP inválida: revisa puerto y credenciales.');
+  }
   const resultado = await verificarTransporte();
-  if (process.env.NODE_ENV === 'production' && (!resultado.configurado || resultado.simulado || resultado.error))
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (!resultado.configurado || resultado.simulado || (resultado.error && !resultado.transitorio))
+  )
     throw new Error('El correo de producción no está disponible. Configura y verifica el transporte antes de iniciar.');
   return resultado;
 }
@@ -122,6 +148,10 @@ async function enviarCorreo({ para, asunto, html, texto, adjuntos = [] }) {
   const transporter = obtenerTransporte();
 
   if (!transporter) {
+    if (process.env.NODE_ENV === 'production') {
+      disponible = false;
+      return { ok: false, error: 'El transporte de correo no está configurado.' };
+    }
     registro.info('Correo simulado', { destinatario: enmascararCorreo(para), asunto });
     return { simulado: true, mensaje: 'Correo simulado en consola (configura Gmail en .env para envío real)' };
   }
@@ -135,9 +165,11 @@ async function enviarCorreo({ para, asunto, html, texto, adjuntos = [] }) {
       html,
       attachments: adjuntos,
     });
+    disponible = true;
     registro.info('Correo enviado', { destinatario: enmascararCorreo(para), messageId: info.messageId });
     return { ok: true, messageId: info.messageId };
   } catch (error) {
+    disponible = false;
     ultimoError = error;
     ultimoErrorFecha = new Date();
     const detalle = traducirErrorCorreo(error);

@@ -4,6 +4,7 @@ import { db, modelos } from './ayuda.js';
 const { default: app } = await import('../app.js');
 import { crearAdministradorInicial } from '../modules/accounts/index.js';
 import { validarRespuesta } from './contrato.js';
+import sharp from 'sharp';
 
 let servidor, base, access, tipo, catalogo, lote;
 before(async () => {
@@ -140,14 +141,15 @@ test('autorización aplica a las rutas del catálogo y el comprador recibe 403',
   assert.equal(prohibido.status, 403);
 });
 
-test('imágenes multipart y data URL se validan por firma y se entregan desde la API', async () => {
-  const png = Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-    'base64',
-  );
+test('imágenes de catálogo multipart y data URL se recodifican sin EXIF y conservan proporciones', async () => {
+  const original = await sharp({ create: { width: 2400, height: 1200, channels: 3, background: '#456789' } })
+    .jpeg()
+    .withExif({ IFD0: { Artist: 'dato privado', ImageDescription: 'metadatos privados' } })
+    .toBuffer();
+  assert.ok((await sharp(original).metadata()).exif);
   const ruta = `/catalogo/${catalogo.id_cat}/imagen`;
   const formulario = new FormData();
-  formulario.set('imagen', new Blob([png], { type: 'image/png' }), 'foto.png');
+  formulario.set('imagen', new Blob([original], { type: 'image/jpeg' }), 'foto.jpg');
   const r = await fetch(base + ruta, {
     method: 'PUT',
     headers: { Authorization: `Bearer ${access}` },
@@ -158,9 +160,19 @@ test('imágenes multipart y data URL se validan por firma y se entregan desde la
   assert.equal(r.status, 200);
   const imagen = await fetch(base + '/archivos' + cuerpo.datos.imagen.replace('/uploads', ''));
   assert.equal(imagen.status, 200);
-  assert.deepEqual(Buffer.from(await imagen.arrayBuffer()), png);
-  const data = await pedir('PUT', ruta, { imagen_data: 'data:image/png;base64,' + png.toString('base64') });
+  const comprobar = async (respuesta) => {
+    assert.equal(respuesta.headers.get('content-type'), 'image/webp');
+    const metadatos = await sharp(Buffer.from(await respuesta.arrayBuffer())).metadata();
+    assert.equal(metadatos.width, 1600);
+    assert.equal(metadatos.height, 800);
+    assert.equal(metadatos.exif, undefined);
+    assert.equal(metadatos.xmp, undefined);
+    assert.equal(metadatos.orientation, undefined);
+  };
+  await comprobar(imagen);
+  const data = await pedir('PUT', ruta, { imagen_data: 'data:image/jpeg;base64,' + original.toString('base64') });
   assert.equal(data.r.status, 200);
+  await comprobar(await fetch(base + '/archivos' + data.cuerpo.datos.imagen.replace('/uploads', '')));
   const falsa = await pedir('PUT', ruta, { imagen_data: 'data:image/png;base64,YXJjaGl2byBmYWxzbw==' });
   assert.equal(falsa.r.status, 400);
 });

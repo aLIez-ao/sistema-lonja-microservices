@@ -7,7 +7,7 @@ import { Op } from 'sequelize';
 import app from './app.js';
 import { crearAdministradorInicial, crearTiposIniciales } from './modules/accounts/index.js';
 import { asegurarEsquema, comprobarEsquema } from './migrations/ejecutor.js';
-import { verificarCorreoInicio } from './shared/helpers/email.js';
+import { verificarCorreoInicio, verificarTransporte, estadoCorreo } from './shared/helpers/email.js';
 import { liberarPedidosVencidos } from './modules/orders/index.js';
 import { validarSecretosInicio } from './shared/config/validacionSecretos.js';
 import { detenerColaTrabajos, iniciarColaTrabajos } from './shared/helpers/colaTrabajos.js';
@@ -59,16 +59,23 @@ process.once('SIGTERM', () => apagar('SIGTERM'));
       registro.info(`Modelos sincronizados (${modo}).`);
     }
     const correo = await verificarCorreoInicio();
-    await iniciarColaTrabajos();
+    await iniciarColaTrabajos({ esperar: false });
     await crearAdministradorInicial();
     await crearTiposIniciales();
 
-    // En producción, verificarCorreoInicio ya rechazó simulación o fallos de transporte.
+    // Producción rechaza simulación y errores permanentes; los transitorios se reintentan.
     if (correo.configurado && !correo.error) registro.info('Correo configurado');
-    else if (correo.error) registro.warn('Gmail rechazó las credenciales', { error: correo.error });
+    else if (correo.error) registro.warn('Correo temporalmente degradado; se reintentará', { error: correo.error });
     else registro.warn('Correo no configurado; se usará el simulador');
 
     barridoReservas = setInterval(() => {
+      if (estadoCorreo().disponible === false) {
+        verificarTransporte()
+          .then((resultado) => {
+            if (resultado.configurado && !resultado.error) registro.info('Transporte de correo recuperado');
+          })
+          .catch(() => registro.warn('No se pudo comprobar el transporte de correo'));
+      }
       liberarPedidosVencidos().catch((error) =>
         registro.warn('No se pudieron limpiar reservas vencidas:', error.message),
       );

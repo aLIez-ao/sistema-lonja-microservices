@@ -33,7 +33,14 @@ export async function borrarImagen(url, { dir, urlBase }) {
  */
 export async function guardarImagenDataURL(
   dataUrl,
-  { dir, urlBase, prefijo = 'img', maxBytes = 300 * 1024, recodificar = false } = {},
+  {
+    dir,
+    urlBase,
+    prefijo = 'img',
+    maxBytes = 300 * 1024,
+    recodificar = false,
+    tamano = { width: 256, height: 256, fit: 'cover' },
+  } = {},
 ) {
   const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
   if (!m) throw new ErrorImagen('La imagen debe ser un archivo JPG, PNG o WebP');
@@ -45,7 +52,7 @@ export async function guardarImagenDataURL(
     try {
       datos = await sharp(datos, { limitInputPixels: 16 * 1024 * 1024 })
         .rotate()
-        .resize(256, 256, { fit: 'cover', withoutEnlargement: true })
+        .resize({ ...tamano, withoutEnlargement: true })
         .webp({ quality: 85 })
         .toBuffer();
     } catch {

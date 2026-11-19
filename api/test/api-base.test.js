@@ -7,6 +7,7 @@ import { crearAdministradorInicial } from '../modules/accounts/index.js';
 import { validarRespuesta } from './contrato.js';
 import { crearLimitadorApi } from '../middleware/limitesApi.js';
 import express from 'express';
+import { fijarTransporteParaPruebas, verificarCorreoInicio, verificarTransporte } from '../shared/helpers/email.js';
 
 let servidor, base;
 before(async () => {
@@ -34,6 +35,27 @@ async function pedir(metodo, ruta, datos, access) {
   return { respuesta, cuerpo };
 }
 const entrar = () => pedir('POST', '/auth/sesion', { usuario: 'admin', password: 'AdminPrueba123' });
+
+test('salud informa SMTP degradado sin bloquear la tienda y observa su recuperación', async (t) => {
+  t.after(() => fijarTransporteParaPruebas(null));
+  let caido = true;
+  let verificaciones = 0;
+  fijarTransporteParaPruebas({
+    async verify() {
+      verificaciones++;
+      if (caido) throw Object.assign(new Error('caída controlada'), { code: 'ETIMEDOUT' });
+    },
+  });
+  await verificarCorreoInicio();
+  const degradado = await pedir('GET', '/salud');
+  assert.equal(degradado.respuesta.status, 200);
+  assert.deepEqual(degradado.cuerpo, { bd: 'ok', correo: 'degradado' });
+  assert.equal((await pedir('GET', '/tienda/lotes')).respuesta.status, 200);
+  assert.equal(verificaciones, 1, 'salud y tienda no consultan SMTP');
+  caido = false;
+  await verificarTransporte();
+  assert.equal((await pedir('GET', '/salud')).cuerpo.correo, 'ok');
+});
 
 test('salud y errores son JSON con correlación; no se publican vistas ni cookies', async () => {
   const { respuesta } = await pedir('GET', '/salud');
