@@ -2,6 +2,8 @@
 
 Para desarrollo sin contenedores, Lonja requiere Node.js 22 o 24, npm con workspaces y MariaDB 11. Con Docker no necesitas instalar esos componentes en el equipo. Producción usa Docker Engine 25+, Compose v2.24.4+ (el recorrido de prueba usa `!override`), un dominio apuntando al servidor y puertos 80/443 disponibles. CI prueba Node 22/24 y las imágenes usan Node 22.
 
+Las imágenes finales incluyen Node y las dependencias de ejecución; npm, Corepack y Yarn solo se necesitan durante la construcción. Las tareas dentro de esas imágenes se ejecutan con `node scripts/...`, desde `/app/api`. Los contenedores de desarrollo conservan npm.
+
 ## Desarrollo
 
 ```sh
@@ -81,7 +83,7 @@ Para rotar la llave: instala la nueva clave pública en el servidor, actualiza e
 El servicio `respaldo` usa la imagen API y ejecuta un respaldo al arrancar y cada 24 horas. Conserva siete conjuntos recientes y cuatro semanales adicionales en el volumen separado. Cada conjunto incluye `database.sql`, `uploads/` y un manifiesto; copia además los respaldos fuera del servidor.
 
 ```sh
-docker compose --project-name lonja --env-file /etc/lonja/compose.env -f /opt/lonja/actual/compose.yaml exec -T api npm run backup
+docker compose --project-name lonja --env-file /etc/lonja/compose.env -f /opt/lonja/actual/compose.yaml exec -T api node scripts/backup.js
 ```
 
 Instala `deploy/lonja-restauracion.service` y `.timer` en `/etc/systemd/system/`, adapta rutas si cambiaste `/opt/lonja`, y activa `systemctl enable --now lonja-restauracion.timer`. El domingo se detienen temporalmente las escrituras, se levanta `mariadb-ensayo` con almacenamiento efímero y se ejecuta `backup:probar`. Se comparan todas las filas y hashes de archivos; al terminar se retira únicamente la instancia de ensayo y se reinician los escritores, incluso ante error. Consulta `journalctl -u lonja-restauracion.service`.

@@ -34,7 +34,7 @@ rollback() {
 trap rollback ERR
 if [[ -n "$version_anterior" ]]; then
   # El respaldo usa la imagen y configuración que aún están activas.
-  VERSION="$version_anterior" docker compose --project-name lonja --env-file "$entorno" -f "$anterior/compose.yaml" exec -T api npm run backup
+  VERSION="$version_anterior" docker compose --project-name lonja --env-file "$entorno" -f "$anterior/compose.yaml" exec -T api node scripts/backup.js
 fi
 compose pull
 compose up -d --wait --wait-timeout 180

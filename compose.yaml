@@ -33,7 +33,7 @@ services:
       context: .
       dockerfile: api/Dockerfile
     init: true
-    command: [sh, -c, npm run migrar && exec node index.js]
+    command: [sh, -c, node scripts/migrar.js --aplicar && exec node index.js]
     environment: &api_entorno
       NODE_ENV: production
       API_PORT: 2900
@@ -133,7 +133,7 @@ services:
     logging: *registro
     image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
     init: true
-    command: [sh, -c, 'while true; do npm run backup || exit 1; sleep 86400; done']
+    command: [sh, -c, 'while true; do node scripts/backup.js || exit 1; sleep 86400; done']
     environment: *api_entorno
     secrets: *api_secretos
     volumes: [uploads:/datos/uploads:ro, respaldos:/datos/respaldos]
@@ -166,7 +166,7 @@ services:
     profiles: [ensayo]
     image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
     init: true
-    command: [npm, run, 'backup:probar']
+    command: [node, scripts/probar-restauracion.js]
     environment:
       <<: *api_entorno
       RESTORE_HOST: mariadb-ensayo
