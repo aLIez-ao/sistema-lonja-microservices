@@ -49,6 +49,7 @@ export function crearCliente({ api = crearApi(), sesiones = crearSesiones() } = 
   if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
   app.use(
     helmet({
+      referrerPolicy: { policy: 'same-origin' },
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],

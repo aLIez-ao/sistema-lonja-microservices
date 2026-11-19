@@ -105,6 +105,30 @@ test('rechaza formularios de otro origen y comunica errores de credenciales', as
   assert.match(await r.text(), /Revisa las credenciales/);
 });
 
+test('el formulario HTML conserva el origen y rechaza orígenes nulos o ausentes', async () => {
+  const formulario = await fetch(base + '/acceso');
+  assert.equal(formulario.headers.get('referrer-policy'), 'same-origin');
+  assert.match(await formulario.text(), /<form action="\/credenciales" method="POST">/);
+  const opciones = {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { Origin: base, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ usuario: 'admin', password: 'AdminPrueba123' }).toString(),
+  };
+  const acceso = await fetch(base + '/credenciales', opciones);
+  assert.equal(acceso.status, 302);
+  assert.equal(acceso.headers.get('location'), '/dashboard');
+  await fetch(base + '/cerrarsesion', {
+    method: 'POST',
+    headers: { Origin: base, Cookie: acceso.headers.get('set-cookie').split(';')[0] },
+    redirect: 'manual',
+  });
+  opciones.headers.Origin = 'null';
+  assert.equal((await fetch(base + '/credenciales', opciones)).status, 403);
+  delete opciones.headers.Origin;
+  assert.equal((await fetch(base + '/credenciales', opciones)).status, 403);
+});
+
 test('renueva transparentemente un access vencido contra la API real', async () => {
   const url = `http://127.0.0.1:${servidorApi.address().port}/api/v1`;
   const http = crearApi({ url });
