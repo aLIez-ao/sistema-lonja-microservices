@@ -1,7 +1,7 @@
-/* La navegación y las herramientas tienen filas propias; ninguna fuerza el ancho de la página. */
+/* En escritorio toda la cabecera comparte una fila; la navegación se desplaza si falta espacio. */
 .navbar-lonja > .lonja-header {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: auto auto minmax(0, 1fr) minmax(180px, 22vw) auto;
   align-items: center;
   gap: 0.65rem 1rem;
 }
@@ -25,6 +25,8 @@
 }
 .header-tools {
   justify-self: end;
+  grid-column: 5;
+  grid-row: 1;
 }
 .navbar-lonja .header-icon {
   display: inline-flex;
@@ -37,6 +39,8 @@
   flex: 0 0 auto;
 }
 .lonja-header .tienda-buscador-header {
+  grid-column: 4;
+  grid-row: 1;
   width: 100%;
   min-width: 0;
   max-width: 520px;
@@ -46,16 +50,20 @@
   min-width: 0;
 }
 .header-navigation {
-  grid-column: 1 / -1;
+  grid-column: 3;
+  grid-row: 1;
   min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 .header-navigation .navbar-nav {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.15rem;
 }
 .navbar-lonja .header-navigation .nav-link {
   padding: 0.45rem 0.65rem !important;
+  white-space: nowrap;
 }
 .header-tools .dropdown-menu {
   max-width: calc(100vw - 1.5rem);
@@ -93,11 +101,24 @@ canvas {
     margin: 0;
     max-width: none;
   }
+  .header-tools {
+    grid-column: 3;
+  }
+  .lonja-header .navbar-toggler {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .header-navigation {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    overflow: visible;
+  }
   .lonja-header .navbar-collapse {
     margin-top: 0;
   }
   .header-navigation .navbar-nav {
     align-items: stretch;
+    flex-wrap: wrap;
   }
 }
 @media (max-width: 575.98px) {
