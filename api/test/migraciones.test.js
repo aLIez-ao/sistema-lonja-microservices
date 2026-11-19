@@ -1,7 +1,12 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { arrancar, modelos, db } from './ayuda.js';
-import { asegurarEsquema, rellenarCatalogoEspecies, revertirUltimaMigracion } from '../migrations/ejecutor.js';
+import {
+  asegurarEsquema,
+  comprobarEsquema,
+  rellenarCatalogoEspecies,
+  revertirUltimaMigracion,
+} from '../migrations/ejecutor.js';
 const { Lote, Especie, EspecieCatalogo, Migracion } = modelos;
 let srv;
 before(async () => {
@@ -9,6 +14,18 @@ before(async () => {
 });
 after(() => srv.cerrar());
 const loteDePrueba = (kilos = 100) => Lote.create({ kilos, numero_cajas: 10, precio_kilo_salida: 50 });
+
+test('la comprobación de producción detecta versiones pendientes sin aplicarlas', async () => {
+  await comprobarEsquema();
+  const fila = await Migracion.findByPk('006_refresh_usado', { raw: true });
+  await Migracion.destroy({ where: { id: fila.id } });
+  try {
+    await assert.rejects(comprobarEsquema(), /006_refresh_usado/);
+    assert.equal(await Migracion.count({ where: { id: fila.id } }), 0);
+  } finally {
+    await Migracion.create(fila);
+  }
+});
 
 test('la migración crea el catálogo desde las especies existentes y es idempotente', async () => {
   const lote = await loteDePrueba(80);

@@ -6,8 +6,8 @@ import Sesion from './models/Sesion.js';
 import { Op } from 'sequelize';
 import app from './app.js';
 import { crearAdministradorInicial, crearTiposIniciales } from './modules/accounts/index.js';
-import { asegurarEsquema } from './migrations/ejecutor.js';
-import { verificarTransporte } from './shared/helpers/email.js';
+import { asegurarEsquema, comprobarEsquema } from './migrations/ejecutor.js';
+import { verificarCorreoInicio } from './shared/helpers/email.js';
 import { liberarPedidosVencidos } from './modules/orders/index.js';
 import { validarSecretosInicio } from './shared/config/validacionSecretos.js';
 import { detenerColaTrabajos, iniciarColaTrabajos } from './shared/helpers/colaTrabajos.js';
@@ -52,16 +52,18 @@ process.once('SIGTERM', () => apagar('SIGTERM'));
     if (process.env.NODE_ENV === 'production' && ['alter', 'force'].includes(modo)) {
       throw new Error('BD_SYNC=alter/force está prohibido en producción.');
     }
-    await db.sync(modo === 'force' ? { force: true } : modo === 'alter' ? { alter: true } : {});
-    registro.info(`Modelos sincronizados (${modo}).`);
-
-    await asegurarEsquema();
+    if (process.env.NODE_ENV === 'production') await comprobarEsquema();
+    else {
+      await db.sync(modo === 'force' ? { force: true } : modo === 'alter' ? { alter: true } : {});
+      await asegurarEsquema();
+      registro.info(`Modelos sincronizados (${modo}).`);
+    }
+    const correo = await verificarCorreoInicio();
     await iniciarColaTrabajos();
     await crearAdministradorInicial();
     await crearTiposIniciales();
 
-    // Diagnóstico del correo: informa sin detener el servidor
-    const correo = await verificarTransporte();
+    // En producción, verificarCorreoInicio ya rechazó simulación o fallos de transporte.
     if (correo.configurado && !correo.error) registro.info('Correo configurado');
     else if (correo.error) registro.warn('Gmail rechazó las credenciales', { error: correo.error });
     else registro.warn('Correo no configurado; se usará el simulador');

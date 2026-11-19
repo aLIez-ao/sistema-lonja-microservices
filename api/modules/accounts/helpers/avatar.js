@@ -12,7 +12,7 @@ export const DIR_AVATARES = path.join(
 const URL_BASE = '/uploads/avatares/';
 const MAX_BYTES = 300 * 1024;
 
-const opciones = { dir: DIR_AVATARES, urlBase: URL_BASE, maxBytes: MAX_BYTES };
+const opciones = { dir: DIR_AVATARES, urlBase: URL_BASE, maxBytes: MAX_BYTES, recodificar: true };
 
 /**
  * Aplica al usuario la foto recibida del formulario.

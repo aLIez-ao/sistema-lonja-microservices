@@ -5,6 +5,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import { ErrorImagen } from './utiles.js';
+import sharp from 'sharp';
 
 const FIRMAS = [
   { ext: 'jpg', mime: 'image/jpeg', ok: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
@@ -30,16 +31,30 @@ export async function borrarImagen(url, { dir, urlBase }) {
  * Valida y guarda una imagen recibida como data URL.
  * Devuelve la URL pública; lanza Error con un mensaje para el usuario si no es válida.
  */
-export async function guardarImagenDataURL(dataUrl, { dir, urlBase, prefijo = 'img', maxBytes = 300 * 1024 } = {}) {
+export async function guardarImagenDataURL(
+  dataUrl,
+  { dir, urlBase, prefijo = 'img', maxBytes = 300 * 1024, recodificar = false } = {},
+) {
   const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
   if (!m) throw new ErrorImagen('La imagen debe ser un archivo JPG, PNG o WebP');
-  const datos = Buffer.from(m[2], 'base64');
+  let datos = Buffer.from(m[2], 'base64');
   if (datos.length > maxBytes) throw new ErrorImagen('La imagen es demasiado grande');
   const formato = FIRMAS.find((f) => f.mime === m[1] && f.ok(datos));
   if (!formato) throw new ErrorImagen('El archivo no es una imagen válida');
+  if (recodificar) {
+    try {
+      datos = await sharp(datos, { limitInputPixels: 16 * 1024 * 1024 })
+        .rotate()
+        .resize(256, 256, { fit: 'cover', withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toBuffer();
+    } catch {
+      throw new ErrorImagen('No se pudo procesar la imagen. Usa un JPG, PNG o WebP válido.');
+    }
+  }
 
   await fs.mkdir(dir, { recursive: true });
-  const nombre = `${prefijo}-${crypto.randomBytes(6).toString('hex')}.${formato.ext}`;
+  const nombre = `${prefijo}-${crypto.randomBytes(6).toString('hex')}.${recodificar ? 'webp' : formato.ext}`;
   await fs.writeFile(path.join(dir, nombre), datos);
   return urlBase + nombre;
 }

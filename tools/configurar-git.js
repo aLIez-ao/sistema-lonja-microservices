@@ -13,6 +13,7 @@ const patrones = [
   'secrets/',
   '*.log',
   'coverage/',
+  '/reports/',
   '.gitignore',
   '.gitattributes',
   '.prettierrc.json',

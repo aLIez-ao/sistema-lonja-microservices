@@ -127,3 +127,24 @@ test('el limitador cuenta por IP y envía un problema 429', async () => {
     await new Promise((resolve) => s.close(resolve));
   }
 });
+
+test('los fallos de acceso de una IP no bloquean a otro visitante del mismo usuario', async (t) => {
+  const anterior = app.get('trust proxy');
+  app.set('trust proxy', 'loopback');
+  t.after(() => app.set('trust proxy', anterior));
+  await modelos.Usuario.create({
+    usuario: 'ip-independiente',
+    nombre_completo: 'Prueba IP',
+    password: 'AccesoPrueba123',
+    rol: 'admin',
+  });
+  const entrar = (ip, password) =>
+    fetch(base + '/api/v1/auth/sesion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': ip },
+      body: JSON.stringify({ usuario: 'ip-independiente', password }),
+    });
+  for (let i = 0; i < 5; i++) assert.equal((await entrar('198.51.100.21', 'incorrecta')).status, 401);
+  assert.equal((await entrar('198.51.100.21', 'AccesoPrueba123')).status, 429);
+  assert.equal((await entrar('198.51.100.22', 'AccesoPrueba123')).status, 200);
+});

@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import { db, modelos } from '../../api/test/ayuda.js';
 const { default: api } = await import('../../api/app.js');
 import { crearAdministradorInicial, crearTiposIniciales } from '../../api/modules/accounts/index.js';
-import { crearCliente } from '../app.js';
-import { crearApi } from '../api.js';
+import { crearCliente } from '../../client/app.js';
+import { crearApi } from '../../client/api.js';
 import { fijarTransporteParaPruebas } from '../../api/shared/helpers/email.js';
 import { detenerColaTrabajos } from '../../api/shared/helpers/colaTrabajos.js';
 

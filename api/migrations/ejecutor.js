@@ -6,6 +6,14 @@ import { rellenarCatalogoEspecies } from './catalogo.js';
 
 export { rellenarCatalogoEspecies };
 
+/** El servidor de producción comprueba versiones; el DDL solo se ejecuta desde migrar. */
+export async function comprobarEsquema() {
+  const aplicadas = new Set((await Migracion.findAll({ attributes: ['id'], raw: true })).map((m) => m.id));
+  const pendientes = migraciones.filter((m) => !aplicadas.has(m.id));
+  if (pendientes.length)
+    throw new Error(`Hay migraciones pendientes: ${pendientes.map((m) => m.id).join(', ')}. Ejecuta npm run migrar.`);
+}
+
 /** Compatibilidad con la llamada histórica. */
 export async function asegurarColumnasUsuario() {
   return asegurarEsquema();

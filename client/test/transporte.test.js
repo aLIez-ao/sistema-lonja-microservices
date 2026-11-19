@@ -71,11 +71,19 @@ test('el transporte renueva una sola vez, conserva correlación y nunca reenvía
   const api = crearApi({ url: base + '/api/v1' });
   const sesion = { access: 'vencido', refresh: 'a'.repeat(64) };
   const resultados = await Promise.all(
-    [1, 2].map(() => api.pedir('auth/yo', { sesion, requestId: 'correlacion-prueba' })),
+    [1, 2].map(() =>
+      api.pedir('auth/yo', {
+        sesion,
+        requestId: 'correlacion-prueba',
+        ip: '198.51.100.8',
+        headers: { 'x-forwarded-for': '198.51.100.99' },
+      }),
+    ),
   );
   assert.equal(renovaciones, 1);
   assert.ok(resultados.every((r) => r.datos.id === usuario.id));
   assert.ok(peticiones.every((h) => !h.cookie && h['x-request-id'] === 'correlacion-prueba'));
+  assert.ok(peticiones.every((h) => h['x-forwarded-for'] === '198.51.100.8'));
   await assert.rejects(api.pedir('https://otro.example/auth/yo'), /Ruta de API inválida/);
 });
 
@@ -146,4 +154,39 @@ test('salud comprueba la API y propaga una correlación única', async (t) => {
   const fallo = await fetch(url);
   assert.equal(fallo.status, 503);
   assert.equal((await fallo.json()).api, 'unavailable');
+});
+
+test('producción conserva estáticos en caché y el registro enlaza información de privacidad', async (t) => {
+  const anterior = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'production';
+  let app;
+  try {
+    app = crearCliente();
+  } finally {
+    if (anterior === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = anterior;
+  }
+  t.after(() => app.locals.sesiones.cerrar());
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise((resolve) => server.once('listening', resolve));
+  t.after(
+    () =>
+      new Promise((resolve) => {
+        server.closeAllConnections();
+        server.close(resolve);
+      }),
+  );
+  const url = `http://127.0.0.1:${server.address().port}`;
+  const css = await fetch(url + '/css/header.css');
+  assert.match(css.headers.get('cache-control'), /max-age=3600/);
+  assert.equal(
+    (await fetch(url + '/css/header.css', { cache: 'no-cache', headers: { 'If-None-Match': css.headers.get('etag') } }))
+      .status,
+    304,
+  );
+  const registro = await fetch(url + '/registro');
+  assert.match(await registro.text(), /href="\/privacidad"/);
+  const privacidad = await fetch(url + '/privacidad');
+  assert.equal(privacidad.status, 200);
+  assert.match(await privacidad.text(), /Entorno de demostración/);
 });

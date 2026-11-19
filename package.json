@@ -9,16 +9,17 @@
     "contracts"
   ],
   "engines": {
-    "node": ">=20.19"
+    "node": ">=22"
   },
   "scripts": {
     "start": "npm start -w @lonja/api",
     "dev": "concurrently -k \"npm run dev -w @lonja/api\" \"npm run dev -w @lonja/client\"",
-    "test": "npm test --workspaces --if-present",
+    "test": "npm test --workspaces --if-present && npm run test:system",
+    "test:system": "node --test test/system/*.test.js",
     "test:cov": "npm run test:cov --workspaces --if-present",
     "lint": "eslint .",
-    "format": "prettier --write \"{api,client,contracts,tools}/**/*.{js,json,yaml}\" package.json eslint.config.js \".github/workflows/*.yml\" \"compose*.yaml\"",
-    "format:check": "prettier --check \"{api,client,contracts,tools}/**/*.{js,json,yaml}\" package.json eslint.config.js \".github/workflows/*.yml\" \"compose*.yaml\"",
+    "format": "prettier --write \"{api,client,contracts,tools,test}/**/*.{js,json,yaml}\" package.json eslint.config.js \".github/workflows/*.yml\" \"compose*.yaml\"",
+    "format:check": "prettier --check \"{api,client,contracts,tools,test}/**/*.{js,json,yaml}\" package.json eslint.config.js \".github/workflows/*.yml\" \"compose*.yaml\"",
     "migrar": "npm run migrar -w @lonja/api",
     "migrar:revertir": "npm run migrar:revertir -w @lonja/api --",
     "backup": "npm run backup -w @lonja/api",
@@ -27,7 +28,8 @@
     "correo:configurar": "npm run correo:configurar -w @lonja/api",
     "setup:git": "node tools/configurar-git.js",
     "docs:api": "node tools/documentar-api.js",
-    "docs:check": "node tools/verificar-documentacion.js"
+    "docs:check": "node tools/verificar-documentacion.js",
+    "views:check": "node tools/verificar-vistas.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -37,6 +39,7 @@
     "concurrently": "^9.2.5",
     "eslint": "^9.39.5",
     "eslint-plugin-n": "^18.5.0",
+    "express": "^5.3.0",
     "globals": "^17.14.0",
     "jsonwebtoken": "^9.0.3",
     "nodemon": "^3.1.14",

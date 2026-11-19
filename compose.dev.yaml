@@ -1,7 +1,14 @@
 name: lonja-dev
 
+x-registro: &registro
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
 services:
   mariadb:
+    logging: *registro
     image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
     environment:
       MARIADB_DATABASE: lonja_dev
@@ -16,6 +23,7 @@ services:
       retries: 20
 
   api:
+    logging: *registro
     image: node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
     init: true
     working_dir: /app
@@ -24,6 +32,7 @@ services:
     ports: [127.0.0.1:2900:2900]
     environment:
       NODE_ENV: development
+      TRUST_PROXY: linklocal,uniquelocal
       BD_DIALEC: mariadb
       BD_HOST: mariadb
       BD_PORT: 3306
@@ -35,6 +44,7 @@ services:
       UPLOADS_DIR: /datos/uploads
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
+      SMTP_REQUIRE_TLS: 'false'
     depends_on:
       mariadb:
         condition: service_healthy
@@ -42,6 +52,7 @@ services:
         condition: service_started
 
   client:
+    logging: *registro
     image: node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
     init: true
     working_dir: /app
@@ -55,10 +66,12 @@ services:
     depends_on: [api]
 
   mailpit:
+    logging: *registro
     image: axllent/mailpit:latest@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
     ports: [127.0.0.1:8025:8025]
 
   adminer:
+    logging: *registro
     image: adminer:latest@sha256:7605e298e5a2ac74d806283362fa253a4e0a42cfd881e8fa2c155f0631899f6c
     ports: [127.0.0.1:8080:8080]
     environment:

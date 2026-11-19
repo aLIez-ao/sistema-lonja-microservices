@@ -1,4 +1,5 @@
 import { erroresFormulario } from './validacion.js';
+import { isIP } from 'node:net';
 
 export class ErrorApi extends Error {
   constructor(status, problema) {
@@ -14,7 +15,7 @@ export function crearApi({ url = process.env.API_URL || 'http://127.0.0.1:2900/a
   const renovaciones = new WeakMap();
   async function enviar(
     ruta,
-    { method = 'GET', body, sesion, requestId, headers = {}, renovar = true, binario = false } = {},
+    { method = 'GET', body, sesion, requestId, ip, headers = {}, renovar = true, binario = false } = {},
   ) {
     if (typeof ruta !== 'string' || ruta.startsWith('/') || ruta.includes('..') || /^[a-z]+:/i.test(ruta))
       throw new Error('Ruta de API inválida.');
@@ -24,18 +25,20 @@ export function crearApi({ url = process.env.API_URL || 'http://127.0.0.1:2900/a
     const errores = erroresFormulario(method, ruta, body);
     if (errores.length) throw new ErrorApi(422, { detail: 'Revisa los datos del formulario.', errores });
     let respuesta;
+    const cabeceras = new Headers(headers);
+    cabeceras.set('Accept', cabeceras.get('Accept') || 'application/json');
+    cabeceras.delete('X-Forwarded-For');
+    cabeceras.delete('Forwarded');
+    if (ip && isIP(ip)) cabeceras.set('X-Forwarded-For', ip);
+    if (body !== undefined) cabeceras.set('Content-Type', 'application/json');
+    if (sesion?.access) cabeceras.set('Authorization', `Bearer ${sesion.access}`);
+    if (requestId) cabeceras.set('X-Request-Id', requestId);
     try {
       respuesta = await fetch(destino, {
         method,
         redirect: 'error',
         signal: AbortSignal.timeout(timeout),
-        headers: {
-          Accept: 'application/json',
-          ...headers,
-          ...(body !== undefined && { 'Content-Type': 'application/json' }),
-          ...(sesion?.access && { Authorization: `Bearer ${sesion.access}` }),
-          ...(requestId && { 'X-Request-Id': requestId }),
-        },
+        headers: cabeceras,
         ...(body !== undefined && { body: JSON.stringify(body) }),
       });
     } catch {
@@ -50,6 +53,7 @@ export function crearApi({ url = process.env.API_URL || 'http://127.0.0.1:2900/a
             body: { refresh },
             renovar: false,
             requestId,
+            ip,
           });
         pendiente = (
           sesion.rotar
@@ -59,7 +63,7 @@ export function crearApi({ url = process.env.API_URL || 'http://127.0.0.1:2900/a
         renovaciones.set(sesion, pendiente);
       }
       await pendiente;
-      return enviar(ruta, { method, body, sesion, requestId, headers, renovar: false, binario });
+      return enviar(ruta, { method, body, sesion, requestId, ip, headers, renovar: false, binario });
     }
     if (!respuesta.ok) {
       let problema;

@@ -1,7 +1,14 @@
 name: lonja
 
+x-registro: &registro
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
 services:
   mariadb:
+    logging: *registro
     image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
     environment:
       MARIADB_DATABASE: lonja
@@ -20,6 +27,7 @@ services:
     restart: unless-stopped
 
   api:
+    logging: *registro
     image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
     build:
       context: .
@@ -41,11 +49,18 @@ services:
       ADMIN_PASSWORD_FILE: /run/secrets/admin_password
       GMAIL_USER: ${GMAIL_USER:-}
       GMAIL_PASS_FILE: /run/secrets/gmail_pass
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS_FILE: /run/secrets/smtp_pass
+      SMTP_FROM: ${SMTP_FROM:-}
       CLIENTE_URL: https://${DOMINIO:-localhost}
       UPLOADS_DIR: /datos/uploads
       BACKUP_DIR: /datos/respaldos
       TRUST_PROXY: linklocal,uniquelocal
-    secrets: &api_secretos [bd_clave, sc_jwt, admin_password, gmail_pass]
+    secrets: &api_secretos [bd_clave, sc_jwt, admin_password, gmail_pass, smtp_pass]
     volumes: [uploads:/datos/uploads, respaldos:/datos/respaldos]
     networks: [interna, publica]
     depends_on:
@@ -57,6 +72,7 @@ services:
     restart: unless-stopped
 
   client:
+    logging: *registro
     image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-client:${VERSION:-local}
     build:
       context: .
@@ -70,6 +86,9 @@ services:
       SESSION_REDIS_URL: redis://sessions:6379
       CLIENTE_URL: https://${DOMINIO:-localhost}
       TRUST_PROXY: linklocal,uniquelocal
+      PRIVACIDAD_RESPONSABLE: ${PRIVACIDAD_RESPONSABLE:-}
+      PRIVACIDAD_DOMICILIO: ${PRIVACIDAD_DOMICILIO:-}
+      PRIVACIDAD_CONTACTO: ${PRIVACIDAD_CONTACTO:-}
     networks: [publica, sesiones]
     depends_on:
       api:
@@ -80,6 +99,7 @@ services:
     restart: unless-stopped
 
   sessions:
+    logging: *registro
     image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
     command: [redis-server, --appendonly, 'yes', --appendfsync, always]
     volumes: [sessions:/data]
@@ -93,6 +113,7 @@ services:
     restart: unless-stopped
 
   caddy:
+    logging: *registro
     image: caddy:2-alpine@sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0
     environment:
       DOMINIO: ${DOMINIO:-localhost}
@@ -109,6 +130,7 @@ services:
     restart: unless-stopped
 
   respaldo:
+    logging: *registro
     image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
     init: true
     command: [sh, -c, 'while true; do npm run backup || exit 1; sleep 86400; done']
@@ -123,6 +145,7 @@ services:
     restart: unless-stopped
 
   mariadb-ensayo:
+    logging: *registro
     profiles: [ensayo]
     image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
     environment:
@@ -139,6 +162,7 @@ services:
     mem_limit: 512m
 
   restauracion:
+    logging: *registro
     profiles: [ensayo]
     image: ${REGISTRO:-ghcr.io/aliez-ao}/lonja-api:${VERSION:-local}
     init: true
@@ -168,6 +192,8 @@ secrets:
     file: ${SECRETO_ADMIN_PASSWORD:-./secrets/admin_password}
   gmail_pass:
     file: ${SECRETO_GMAIL_PASS:-./secrets/gmail_pass}
+  smtp_pass:
+    file: ${SECRETO_SMTP_PASS:-${SECRETO_GMAIL_PASS:-./secrets/gmail_pass}}
 
 networks:
   sesiones:

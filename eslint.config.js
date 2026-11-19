@@ -54,7 +54,7 @@ export default [
   {
     files: ['**/*.js', '**/*.mjs'],
     languageOptions: { globals: globals.node },
-    settings: { node: { version: '>=20' } },
+    settings: { node: { version: '>=22' } },
     rules: {
       'no-unused-vars': 'warn',
       'no-control-regex': 'off',

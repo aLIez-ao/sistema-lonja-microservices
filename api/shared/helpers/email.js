@@ -29,20 +29,37 @@ function obtenerTransporte() {
   if (transportePruebas) return transportePruebas;
   if (process.env.SMTP_HOST) {
     return nodemailer.createTransport({
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 1025),
-      secure: false,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === 'true',
+      requireTLS:
+        process.env.SMTP_REQUIRE_TLS === 'true' ||
+        (process.env.NODE_ENV === 'production' && process.env.SMTP_REQUIRE_TLS !== 'false'),
+      ...(process.env.SMTP_USER && { auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS || '' } }),
     });
   }
   const { usuario, clave } = credenciales();
   if (usuario && clave) {
-    return nodemailer.createTransport({ service: 'gmail', auth: { user: usuario, pass: clave } });
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: usuario, pass: clave },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+    });
   }
   return null;
 }
 
 const remitenteActual = () =>
-  credenciales().usuario || process.env.GMAIL_USER || process.env.EMAIL_USER || 'lonjaveracruz@sistema.local';
+  process.env.SMTP_FROM ||
+  credenciales().usuario ||
+  process.env.GMAIL_USER ||
+  process.env.EMAIL_USER ||
+  'lonjaveracruz@sistema.local';
 
 /** Estado público del correo (sin revelar la contraseña). */
 export function estadoCorreo() {
@@ -87,6 +104,14 @@ export async function verificarTransporte() {
       mensaje: 'Gmail rechazó las credenciales',
     };
   }
+}
+
+/** Producción nunca debe aceptar verificaciones de cuenta que solo se simulan. */
+export async function verificarCorreoInicio() {
+  const resultado = await verificarTransporte();
+  if (process.env.NODE_ENV === 'production' && (!resultado.configurado || resultado.simulado || resultado.error))
+    throw new Error('El correo de producción no está disponible. Configura y verifica el transporte antes de iniciar.');
+  return resultado;
 }
 
 /**

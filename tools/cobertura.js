@@ -15,6 +15,7 @@ const informe = mkdtempSync(path.join(tmpdir(), `lonja-cobertura-${workspace}-`)
 const pruebas = readdirSync(path.join(cwd, 'test'))
   .filter((f) => f.endsWith('.test.js'))
   .map((f) => path.join('test', f));
+if (workspace === 'client') pruebas.push('../test/system/client-api.test.js');
 const resultado = spawnSync(
   process.execPath,
   [
