@@ -29,3 +29,5 @@ La cola persistente no convierte el coordinador en un sistema distribuido. Usa u
 La limpieza del historial no revoca credenciales. El estado de la exposición histórica se documenta en [seguridad compartida](../../docs/05-seguridad.md). Las garantías de sesión del navegador pertenecen al [cliente](../../client/docs/05-seguridad.md).
 
 Los avatares nuevos se decodifican y recodifican en WebP, con límite de píxeles, tamaño máximo de 256 y eliminación de metadatos. Las fotos ya existentes requieren una migración separada. Los límites utilizan la IP reenviada solo cuando la conexión proviene de un proxy de confianza; el límite adicional por cuenta se conserva deliberadamente.
+
+La reserva de pedidos puede repetir toda su transacción hasta tres veces si MariaDB la revierte por deadlock (1213). Cada intento vuelve a comprobar disponibilidad y conserva la misma clave de idempotencia. Si la colisión persiste responde 409. Este reintento no se aplica a pagos ni cobros, para no repetir efectos externos.
