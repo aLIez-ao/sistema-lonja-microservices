@@ -10,7 +10,7 @@ Desde la raíz del repositorio:
 
 ```sh
 npm ci
-cp .env.example .env
+node -e "const fs=require('node:fs');if(!fs.existsSync('.env'))fs.copyFileSync('.env.example','.env')"
 npm run dev -w @lonja/api
 ```
 
@@ -53,3 +53,5 @@ La cobertura exige 80 % de líneas. Las pruebas HTTP validan las respuestas cont
 El [Dockerfile](Dockerfile) produce una imagen propia. Compose mantiene datos, uploads y respaldos en volúmenes y permite ejecutar una sola API. El procedimiento conjunto está en [despliegue del sistema](../docs/04-instalacion-y-despliegue.md).
 
 Los pagos son simulados. Las claves, archivos de usuarios y respaldos quedan fuera de Git y de la imagen.
+
+Si usas solo Docker, los pasos para arrancar y cargar datos están en el [catálogo de comandos](../docs/07-comandos.md). Ejecuta la carga desde el contenedor API de desarrollo, no desde una imagen final de producción.

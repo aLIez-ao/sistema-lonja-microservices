@@ -13,6 +13,7 @@ Environment=API_PORT=2900
 EnvironmentFile=/etc/sistema-lonja/api.env
 Environment=UPLOADS_DIR=/var/lib/sistema-lonja/uploads
 Environment=BACKUP_DIR=/var/lib/sistema-lonja/respaldos
+ExecStartPre=/usr/bin/node /opt/sistema-lonja/api/scripts/migrar.js --aplicar
 ExecStart=/usr/bin/node /opt/sistema-lonja/api/index.js
 Restart=on-failure
 KillSignal=SIGTERM

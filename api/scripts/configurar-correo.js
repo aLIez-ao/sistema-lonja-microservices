@@ -1,10 +1,11 @@
 import { createInterface } from 'node:readline';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 import { enmascararCorreo } from '../shared/helpers/correoUtils.js';
 
-const CLAVES = ['GMAIL_USER', 'GMAIL_PASS', 'APP_URL'];
+const CLAVES = ['GMAIL_USER', 'GMAIL_PASS', 'CLIENTE_URL'];
+const raiz = fileURLToPath(new URL('../../', import.meta.url));
 
 /** Google muestra la contraseña de aplicación en bloques con espacios: se guardan sin ellos. */
 export const normalizarClave = (clave) => String(clave ?? '').replace(/\s+/g, '');
@@ -19,7 +20,7 @@ export function validarConfiguracionCorreo({ usuario, clave, appUrl }) {
     const url = new URL(String(appUrl || ''));
     if (!['http:', 'https:'].includes(url.protocol) || /\s/.test(String(appUrl))) throw new Error();
   } catch {
-    errores.push('APP_URL debe ser una URL http o https válida, sin espacios.');
+    errores.push('CLIENTE_URL debe ser una URL http o https válida, sin espacios.');
   }
   return errores;
 }
@@ -36,15 +37,15 @@ export function actualizarEnv(texto, valores) {
 }
 
 export async function escribirEnv({
-  rutaEnv = path.resolve('../.env'),
-  rutaEjemplo = path.resolve('../.env.example'),
+  rutaEnv = path.join(raiz, '.env'),
+  rutaEjemplo = path.join(raiz, '.env.example'),
   valores: valoresEntrada,
 }) {
   const valores = { ...valoresEntrada, GMAIL_PASS: normalizarClave(valoresEntrada.GMAIL_PASS) };
   const errores = validarConfiguracionCorreo({
     usuario: valores.GMAIL_USER,
     clave: valores.GMAIL_PASS,
-    appUrl: valores.APP_URL,
+    appUrl: valores.CLIENTE_URL,
   });
   if (errores.length) throw new Error(errores.join(' '));
   let original;
@@ -60,11 +61,17 @@ export async function escribirEnv({
 export async function ejecutarAsistente({
   input = process.stdin,
   output = process.stdout,
-  rutaEnv = path.resolve('../.env'),
-  rutaEjemplo = path.resolve('../.env.example'),
+  rutaEnv = path.join(raiz, '.env'),
+  rutaEjemplo = path.join(raiz, '.env.example'),
   args = [],
   verificar,
 } = {}) {
+  if (args.includes('--help')) {
+    output.write(
+      'Configura Gmail y CLIENTE_URL en el .env raíz.\nUso: npm run correo:configurar -- [--sin-prueba]\n--sin-prueba guarda sin contactar al proveedor.\n--help muestra esta ayuda sin leer ni escribir configuración.\n',
+    );
+    return { ok: true, probada: false };
+  }
   const rl = createInterface({ input, output, terminal: Boolean(input.isTTY && output.isTTY) });
   const preguntar = (texto, oculto = false) =>
     new Promise((resolve) => {
@@ -84,12 +91,12 @@ export async function ejecutarAsistente({
       GMAIL_PASS: normalizarClave(
         await preguntar('GMAIL_PASS (contraseña de aplicación, entrada oculta; puedes pegarla con espacios): ', true),
       ),
-      APP_URL: (await preguntar('APP_URL (http/https): ')).trim().replace(/\/$/, ''),
+      CLIENTE_URL: (await preguntar('CLIENTE_URL (http/https): ')).trim().replace(/\/$/, ''),
     };
     const errores = validarConfiguracionCorreo({
       usuario: valores.GMAIL_USER,
       clave: valores.GMAIL_PASS,
-      appUrl: valores.APP_URL,
+      appUrl: valores.CLIENTE_URL,
     });
     if (errores.length) {
       output.write(`${errores.join('\n')}\nNo se modificó el archivo.\n`);

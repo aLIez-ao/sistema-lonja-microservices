@@ -11,11 +11,11 @@ import {
   ejecutarAsistente,
 } from '../scripts/configurar-correo.js';
 
-const datos = { GMAIL_USER: 'lonja@example.com', GMAIL_PASS: 'AbCd1234EfGh5678', APP_URL: 'https://lonja.example' };
+const datos = { GMAIL_USER: 'lonja@example.com', GMAIL_PASS: 'AbCd1234EfGh5678', CLIENTE_URL: 'https://lonja.example' };
 
 test('asistente valida correo, clave y URL', () => {
   assert.deepEqual(
-    validarConfiguracionCorreo({ usuario: datos.GMAIL_USER, clave: datos.GMAIL_PASS, appUrl: datos.APP_URL }),
+    validarConfiguracionCorreo({ usuario: datos.GMAIL_USER, clave: datos.GMAIL_PASS, appUrl: datos.CLIENTE_URL }),
     [],
   );
   assert.equal(
@@ -27,7 +27,7 @@ test('asistente valida correo, clave y URL', () => {
 
 test('actualizarEnv solo reemplaza las tres claves y preserva comentarios y valores restantes', () => {
   const original =
-    '# comentario existente\nPORT=2800\nGMAIL_USER=viejo@example.com\nGMAIL_PASS=viejaClave123456\n# URL local\nAPP_URL=http://localhost:2800\nOTRA=conservar\n';
+    '# comentario existente\nPORT=2800\nGMAIL_USER=viejo@example.com\nGMAIL_PASS=viejaClave123456\n# URL local\nCLIENTE_URL=http://localhost:2800\nOTRA=conservar\n';
   const actualizado = actualizarEnv(original, datos);
   assert.match(actualizado, /# comentario existente/);
   assert.match(actualizado, /# URL local/);
@@ -45,7 +45,7 @@ test('escribirEnv inicializa desde la plantilla y no escribe si los valores son 
       ejemplo = path.join(dir, '.env.example');
     await writeFile(
       ejemplo,
-      'PORT=99\n# correo\nGMAIL_USER=plantilla@example.com\nGMAIL_PASS=plantillaClave12345\nAPP_URL=http://localhost:2800\n',
+      'PORT=99\n# correo\nGMAIL_USER=plantilla@example.com\nGMAIL_PASS=plantillaClave12345\nCLIENTE_URL=http://localhost:2800\n',
       'utf8',
     );
     await escribirEnv({ rutaEnv: env, rutaEjemplo: ejemplo, valores: datos });
@@ -71,7 +71,7 @@ test('asistente oculta GMAIL_PASS y enmascara el correo en su resumen', async ()
     const entrada = new PassThrough();
     setTimeout(() => entrada.write(`${datos.GMAIL_USER}\n`), 5);
     setTimeout(() => entrada.write(`${datos.GMAIL_PASS}\n`), 15);
-    setTimeout(() => entrada.write(`${datos.APP_URL}\n`), 25);
+    setTimeout(() => entrada.write(`${datos.CLIENTE_URL}\n`), 25);
     const chunks = [];
     const salida = new Writable({
       write(c, _e, cb) {
@@ -98,7 +98,7 @@ test('asistente oculta GMAIL_PASS y enmascara el correo en su resumen', async ()
     const entradaMala = new PassThrough();
     setTimeout(() => entradaMala.write('mal\n'), 5);
     setTimeout(() => entradaMala.write(`${datos.GMAIL_PASS}\n`), 15);
-    setTimeout(() => entradaMala.write(`${datos.APP_URL}\n`), 25);
+    setTimeout(() => entradaMala.write(`${datos.CLIENTE_URL}\n`), 25);
     const chunksMala = [];
     const salidaMala = new Writable({
       write(c, _e, cb) {
@@ -124,17 +124,18 @@ test('asistente oculta GMAIL_PASS y enmascara el correo en su resumen', async ()
 test('la contraseña de aplicación se acepta con espacios, como la muestra Google, y se guarda sin ellos', async () => {
   const conEspacios = 'abcd efgh ijkl mnop';
   assert.deepEqual(
-    validarConfiguracionCorreo({ usuario: datos.GMAIL_USER, clave: conEspacios, appUrl: datos.APP_URL }),
+    validarConfiguracionCorreo({ usuario: datos.GMAIL_USER, clave: conEspacios, appUrl: datos.CLIENTE_URL }),
     [],
   );
   assert.equal(
-    validarConfiguracionCorreo({ usuario: datos.GMAIL_USER, clave: 'abcd efgh ijkl', appUrl: datos.APP_URL }).length,
+    validarConfiguracionCorreo({ usuario: datos.GMAIL_USER, clave: 'abcd efgh ijkl', appUrl: datos.CLIENTE_URL })
+      .length,
     1,
   );
   const carpeta = await mkdtemp(path.join(os.tmpdir(), 'lonja-env-'));
   try {
     const env = path.join(carpeta, '.env');
-    await writeFile(env, 'PORT=2800\nGMAIL_USER=a@b.co\nGMAIL_PASS=vieja\nAPP_URL=http://x\n');
+    await writeFile(env, 'PORT=2800\nGMAIL_USER=a@b.co\nGMAIL_PASS=vieja\nCLIENTE_URL=http://x\n');
     await escribirEnv({ rutaEnv: env, valores: { ...datos, GMAIL_PASS: conEspacios } });
     const texto = await readFile(env, 'utf8');
     assert.match(texto, /GMAIL_PASS=abcdefghijklmnop\n/);

@@ -10,6 +10,18 @@ before(async () => {
 });
 after(async () => srv.cerrar());
 
+test('producción rechaza la carga demo antes de modificar la base', async (t) => {
+  const anterior = process.env.NODE_ENV;
+  t.after(() => {
+    if (anterior === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = anterior;
+  });
+  const lotes = await modelos.Lote.count();
+  process.env.NODE_ENV = 'production';
+  await assert.rejects(cargarDemo(db), /prohibida en producción/);
+  assert.equal(await modelos.Lote.count(), lotes);
+});
+
 test('carga demo idempotente, con pedidos coherentes y opiniones verificadas', async () => {
   await cargarDemo(db);
   const contar = async () =>

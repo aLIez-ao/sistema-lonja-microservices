@@ -348,6 +348,7 @@ async function sembrarComunidad(lotesDisponiblesDemo, compradoresWeb, catalogos)
 }
 
 export async function cargarDemo(database = db, { limpio = false } = {}) {
+  if (process.env.NODE_ENV === 'production') throw new Error('La carga demo está prohibida en producción.');
   if (database !== db) throw new Error('cargarDemo requiere la conexión configurada del proyecto.');
   await db.sync();
   await asegurarEsquema();

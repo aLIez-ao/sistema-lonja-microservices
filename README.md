@@ -8,20 +8,39 @@ Dos aplicaciones Node.js que se comunican por HTTP:
 
 Cada aplicación tiene su propio `package.json`, servidor y Dockerfile. El `package.json` raíz coordina los npm workspaces.
 
-```sh
-npm ci
-npm run dev
-```
+## Iniciar con Docker
 
-Configura la API con `.env.example` y el cliente con `client/.env.example`. API: puerto 2900; cliente: puerto 3000. Para ejecutar solo una aplicación: `npm start -w @lonja/api` o `npm start -w @lonja/client`.
-
-El entorno completo de desarrollo incluye MariaDB, Mailpit y Adminer:
+Necesitas Docker Engine/Desktop con Compose v2.24.4 o superior, Git para obtener el repositorio y conexión para descargar imágenes y dependencias la primera vez. No necesitas Node, npm ni MariaDB instalados en el equipo. Ejecuta desde la raíz:
 
 ```sh
-docker compose --env-file deploy/compose.env.example -f compose.dev.yaml up
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml up -d --wait --wait-timeout 300
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml exec -T api npm run demo
 ```
 
 Abre http://localhost:3000. Mailpit: http://localhost:8025; Adminer: http://localhost:8080. La cuenta inicial usa `ADMIN_USER` y `ADMIN_PASSWORD` del `.env` raíz; sin ese archivo usa `.env.example`. Las credenciales de los servicios de desarrollo figuran en Compose y no se usan en producción. Consulta [la configuración de desarrollo](docs/04-instalacion-y-despliegue.md) para aplicar cambios a contenedores existentes.
+
+La carga demo crea `demo_capturista` y `demo_comprador1` a `demo_comprador6`, con contraseña pública de demostración `LonjaDemo2026`. El sexto comprador no está verificado. Son cuentas de desarrollo y no sustituyen al administrador configurado.
+
+Para ver registros y detener conservando los datos:
+
+```sh
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml logs --tail 100 api client
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml down
+```
+
+El [catálogo de comandos](docs/07-comandos.md) incluye carga y regeneración de datos, migraciones, formato, pruebas, respaldos y diagnóstico. El modo local con Node y la producción con HTTPS están en [instalación y despliegue](docs/04-instalacion-y-despliegue.md).
+
+## Calidad
+
+Con solo Docker, construye una vez el servicio de herramientas y ejecuta los mismos scripts:
+
+```sh
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml build tools
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml run --rm tools run format:check
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml run --rm tools test
+```
+
+Con Node 22/24 instalado, ejecuta `npm ci` y después:
 
 ```sh
 npm run lint

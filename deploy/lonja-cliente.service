@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=lonja-cliente
 Group=lonja-cliente
-WorkingDirectory=/opt/sistema-lonja/cliente
+WorkingDirectory=/opt/sistema-lonja/client
 Environment=NODE_ENV=production
 Environment=CLIENTE_PORT=3000
 Environment=API_URL=http://127.0.0.1:2900/api/v1

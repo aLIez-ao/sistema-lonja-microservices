@@ -10,6 +10,10 @@ npm run docs:check
 
 Cada workspace ejecuta su suite con `node:test`. El ayudante `api/test/ayuda.js` usa SQLite en memoria por defecto y directorios temporales para archivos. Las credenciales de correo se sustituyen en pruebas; los envíos se capturan o se simulan.
 
+Con solo Docker, construye `tools` y usa los comandos del [catálogo operativo](07-comandos.md). Ese contenedor incluye el módulo SQLite nativo que no se instala en los servicios de desarrollo. La API no carga el `.env` local bajo `node:test` ni con `NODE_ENV=test`; las pruebas reciben sus valores de ensayo explícitos. Redis se omite sin `SESSION_REDIS_TEST_URL` y el bloqueo de filas MariaDB se omite en SQLite; CI ejecuta esas integraciones con sus servicios reales.
+
+`npm run format` aplica Prettier a JavaScript, JSON, YAML/YML, CSS, HTML y Markdown; `npm run format:check` valida sin escribir. La configuración compartida está en `package.json` y las exclusiones en `.prettierignore`. Las plantillas EJS, SVG, DBML y shell no forman parte de ese formateador. `views:check` revisa las vistas y `docs:check` el contrato y los enlaces; no sustituyen una revisión visual.
+
 ## Alcance
 
 `api/test/api-*.test.js` verifica respuestas reales por HTTP, Bearer, rotación y revocación, permisos y propiedad, catálogo, imágenes, perfiles, direcciones, carrito, listas, moderación, pedidos, idempotencia, cobros, facturas y reportes. `api/test/contrato.js` valida códigos, tipo de contenido y esquemas de respuesta contra OpenAPI usando Ajv.

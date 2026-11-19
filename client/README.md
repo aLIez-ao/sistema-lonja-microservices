@@ -8,7 +8,7 @@ Desde la raíz del repositorio, instala dependencias y crea `client/.env` desde 
 
 ```sh
 npm ci
-cp client/.env.example client/.env
+node -e "const fs=require('node:fs');if(!fs.existsSync('client/.env'))fs.copyFileSync('client/.env.example','client/.env')"
 npm run dev -w @lonja/client
 ```
 

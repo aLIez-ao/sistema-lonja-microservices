@@ -8,8 +8,7 @@ Las imágenes finales incluyen Node y las dependencias de ejecución; npm, Corep
 
 ```sh
 npm ci
-cp .env.example .env
-cp client/.env.example client/.env
+node -e "const fs=require('node:fs');for(const p of ['.env','client/.env'])if(!fs.existsSync(p))fs.copyFileSync(p+'.example',p)"
 npm run dev
 ```
 
@@ -27,7 +26,16 @@ La cuenta inicial se toma de `ADMIN_USER` y `ADMIN_PASSWORD` del `.env` raíz. L
 
 Las credenciales iniciales solo crean la cuenta si no existe. Cambiar `.env` no restablece la contraseña de una cuenta existente ni elimina usuarios. Después de modificar ese archivo ejecuta `docker compose --env-file deploy/compose.env.example -f compose.dev.yaml up -d --force-recreate api client` para que los procesos reciban los valores nuevos. No borres el volumen de MariaDB para cambiar credenciales.
 
-El código está montado con nodemon; los correos se capturan en Mailpit. Los datos usan volúmenes distintos de producción. Las variables de red del contenedor (`BD_HOST`, puerto y URL interna de API) siguen definidas en Compose para conectar con los servicios correctos. `npm run demo` genera datos locales; la limpieza explícita de demo se bloquea en producción.
+El código está montado con nodemon; los correos se capturan en Mailpit. Los datos usan volúmenes distintos de producción. Las variables de red del contenedor (`BD_HOST`, puerto y URL interna de API) siguen definidas en Compose para conectar con los servicios correctos. La carga completa de demo y su limpieza se bloquean en producción.
+
+Para arrancar en segundo plano y llenar la base sin instalar Node en el equipo:
+
+```sh
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml up -d --wait --wait-timeout 300
+docker compose --env-file deploy/compose.env.example -f compose.dev.yaml exec -T api npm run demo
+```
+
+El [catálogo de comandos](07-comandos.md) incluye cuentas demo, reinicio, registros, puertos alternativos, formato y pruebas usando el servicio opcional `tools`. Este servicio prepara SQLite nativo para pruebas; las aplicaciones usan MariaDB y no incluyen ese paso en su arranque de desarrollo.
 
 ## Configuración de producción
 
@@ -68,7 +76,7 @@ Despliega una sola API: cola y límites se coordinan en memoria. El cliente comp
 
 `CI` ejecuta lint, formato y pruebas en Node 22/24, exige al menos 80 % de líneas por workspace, audita dependencias de producción y ejecuta la integración REST sobre MariaDB.
 
-`Entrega` acepta CI correcto de un push a main del mismo repositorio o un tag semántico que pertenezca a main y tenga CI correcto. Al autorizar una entrega desde CI comprueba que el commit siga siendo la punta de main. La ejecución de main construye las imágenes, prueba el recorrido HTTPS, escanea HIGH/CRITICAL con Trivy, adjunta SBOM CycloneDX y publica `sha-<commit>` y `main`. Un tag no reconstruye: añade `vX.Y.Z` al digest ya publicado como `sha-<commit>` y falla si ese commit no se entregó antes desde main. Así la reversión por SHA descarga siempre la imagen probada, y la etiqueta de imagen `main` no se mueve.
+`Entrega` acepta CI correcto de un push a main del mismo repositorio o un tag semántico que pertenezca a main y tenga CI correcto. Al autorizar una entrega desde CI comprueba que el commit siga siendo la punta de main. La ejecución de main construye las imágenes, prueba el recorrido HTTPS, escanea HIGH/CRITICAL con Trivy, adjunta SBOM CycloneDX y publica `sha-<commit>` y `main`. Un tag no reconstruye: añade `vX.Y.Z` al digest ya publicado como `sha-<commit>` y falla si ese commit no se entregó antes desde main. Así la reversión por SHA descarga la imagen probada. La etiqueta `main` se actualiza al publicar una nueva entrega desde CI, pero no al añadir un tag.
 
 El trabajo SSH se ejecuta únicamente desde `workflow_run`, nunca desde un evento de tag. Etiquetar un commit después de desplegarlo no vuelve a desplegarlo. Las ejecuciones de tags tienen grupos de concurrencia distintos para que no cancelen una entrega de main pendiente. El script del servidor conserva además su comprobación del SHA activo para que un reintento del mismo despliegue sea idempotente.
 
@@ -100,7 +108,7 @@ Para volver solo a una imagen compatible, ejecuta `deploy/desplegar.sh` con su S
 
 ## Alternativa sin Docker
 
-`deploy/lonja-api.service` y `deploy/lonja-cliente.service` usan usuarios y archivos de entorno separados. Solo la API escribe `UPLOADS_DIR` y conoce MariaDB. `deploy/nginx.conf` ilustra el enrutamiento tras un terminador TLS; Caddy es el proxy principal de Compose. Todas las pantallas ya usan el cliente. La unidad histórica se retiró; el monolito solo se conserva en el [repositorio original](https://github.com/aLIez-ao/sistema-lonja).
+`deploy/lonja-api.service` y `deploy/lonja-cliente.service` usan usuarios y archivos de entorno separados. Copia el código a `/opt/sistema-lonja`, instala dependencias con `npm ci --omit=dev`, crea los usuarios `lonja-api` y `lonja-cliente`, los directorios persistentes y `/etc/sistema-lonja/api.env` y `cliente.env` con permisos privados. Instala las unidades en `/etc/systemd/system/`, ejecuta `systemctl daemon-reload` y después `systemctl enable --now lonja-api lonja-cliente`. La unidad API aplica migraciones en `ExecStartPre`; el cliente usa `/opt/sistema-lonja/client`. Configura MariaDB, Redis, SMTP y HTTPS antes de habilitarlas. Solo la API escribe `UPLOADS_DIR` y conoce MariaDB. `deploy/nginx.conf` ilustra el enrutamiento tras un terminador TLS; Caddy es el proxy principal de Compose. La unidad histórica se retiró; el monolito solo se conserva en el [repositorio original](https://github.com/aLIez-ao/sistema-lonja).
 
 ## Operación pendiente y controles locales
 

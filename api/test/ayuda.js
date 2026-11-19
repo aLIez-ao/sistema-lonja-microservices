@@ -12,7 +12,8 @@ process.env.GMAIL_USER = '';
 process.env.GMAIL_PASS = '';
 process.env.EMAIL_USER = '';
 process.env.EMAIL_PASS = '';
-process.env.APP_URL = '';
+process.env.CLIENTE_URL = '';
+process.env.SMTP_HOST = '';
 const uploadsTemp = await fs.mkdtemp(path.join(os.tmpdir(), 'sistema-lonja-test-'));
 process.env.UPLOADS_DIR = uploadsTemp;
 

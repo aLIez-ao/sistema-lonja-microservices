@@ -12,6 +12,7 @@
 - [Instalación y entrega](04-instalacion-y-despliegue.md): entorno completo, Docker, TLS, CI y recuperación.
 - [Seguridad](05-seguridad.md): fronteras, secretos y límites conjuntos.
 - [Pruebas](06-pruebas.md): comandos, CI y recorrido HTTPS.
+- [Catálogo de comandos](07-comandos.md): inicio con Docker, datos demo, formato, pruebas y operación.
 
 El [esquema de datos](../api/docs/02-base-de-datos.md), el [DBML](../api/docs/sistema-lonja.dbml) y el [SVG](../api/docs/sistema-lonja.svg) pertenecen a la API. La raíz enlaza esos documentos en lugar de mantener copias. `npm run docs:check` verifica enlaces locales públicos y detecta una referencia REST desactualizada.
 

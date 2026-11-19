@@ -40,3 +40,5 @@ Si aparecen 503, comprueba la conectividad con API y Redis antes de repetir oper
 La imagen usa `client/Dockerfile`, se construye desde el contexto raíz y ejecuta con usuario sin privilegios. Solo el proxy publica el servicio. Los recursos subidos y documentos se obtienen de la API por HTTP; el cliente no requiere un volumen de uploads.
 
 SIGTERM detiene el servidor y cierra el almacén de sesiones. Docker, TLS, systemd, healthchecks y recuperación están en [la operación conjunta](../../docs/04-instalacion-y-despliegue.md). La restricción de una sola API se mantiene aunque se replique el cliente.
+
+Para iniciar con solo Docker, cambiar puertos, cargar datos desde API o ejecutar las comprobaciones del cliente, sigue el [catálogo de comandos](../../docs/07-comandos.md). `DEV_CLIENT_PORT` cambia el puerto publicado y el origen de ambas aplicaciones; `API_URL` dentro de Docker continúa usando `http://api:2900/api/v1`. Los recursos estáticos y plantillas se editan en el equipo mediante el montaje del código.

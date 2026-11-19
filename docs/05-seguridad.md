@@ -6,6 +6,8 @@ El cliente entrega únicamente `lonja_sid` httpOnly, SameSite=Strict y Secure en
 
 Helmet aplica cabeceras y el cliente usa CSP con scripts y estilos propios. EJS escapa los datos. Los errores internos se registran con correlación y se presentan sin detalles privados como RFC 9457. Los cuerpos y las imágenes tienen límites; las imágenes se verifican por firma y los archivos no válidos se rechazan.
 
+Las nuevas imágenes se recodifican a WebP sin EXIF/XMP: avatares hasta 256×256 y catálogo hasta 1600×1600 conservando proporciones. Las imágenes anteriores requieren tratamiento separado. Una caída temporal de SMTP se informa como correo degradado sin bloquear la tienda; los errores de configuración, autenticación o TLS impiden el arranque. Supervisa el campo `correo` de `/api/v1/salud` además del estado HTTP.
+
 Las contraseñas usan bcrypt. Registro y recuperación responden sin revelar si existe una cuenta. Los enlaces de verificación y recuperación se guardan como hash y son de un solo uso. Cambiar el correo invalida enlaces de recuperación previos. Los recursos de cuentas ajenas responden 404. Solo administración gestiona usuarios; una cuenta no puede desactivarse o degradarse a sí misma.
 
 Las transacciones y la unicidad de venta por lote evitan cobros duplicados. `Idempotency-Key` conserva el resultado de pedidos, pagos y cobros, incluso ante reintentos concurrentes; el hash del cuerpo detecta cambios y no almacena PAN ni CVV. ETag/If-Match protege las ediciones. Los importes se calculan en el servidor. PDF, CSV y archivos se transmiten en flujo.

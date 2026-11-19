@@ -7,6 +7,19 @@ x-registro: &registro
     max-file: '3'
 
 services:
+  tools:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile
+    init: true
+    working_dir: /app
+    volumes: [.:/app, tools_deps:/app/node_modules]
+    environment:
+      NODE_ENV: test
+      BD_DIALEC: sqlite
+      BD_STORAGE: ':memory:'
+
   mariadb:
     logging: *registro
     image: mariadb:11@sha256:d36f18d65a0459510b8b0f643b226a6d299e3206486e2b64ff20754a6d291707
@@ -15,7 +28,7 @@ services:
       MARIADB_USER: lonja
       MARIADB_PASSWORD: desarrollo_local
       MARIADB_ROOT_PASSWORD: desarrollo_root_local
-    ports: [127.0.0.1:3307:3306]
+    ports: ['127.0.0.1:${DEV_BD_PORT:-3307}:3306']
     volumes: [bd_dev:/var/lib/mysql]
     healthcheck:
       test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
@@ -29,7 +42,7 @@ services:
     working_dir: /app
     command: [sh, -c, npm ci --ignore-scripts && npm run dev --workspace api]
     volumes: [.:/app, api_deps:/app/node_modules, uploads_dev:/datos/uploads]
-    ports: [127.0.0.1:2900:2900]
+    ports: ['127.0.0.1:${DEV_API_PORT:-2900}:2900']
     environment:
       NODE_ENV: development
       TRUST_PROXY: linklocal,uniquelocal
@@ -40,7 +53,7 @@ services:
       BD_USUARIO: lonja
       BD_CLAVE: desarrollo_local
       API_PORT: 2900
-      CLIENTE_URL: http://localhost:3000
+      CLIENTE_URL: http://localhost:${DEV_CLIENT_PORT:-3000}
       UPLOADS_DIR: /datos/uploads
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
@@ -50,6 +63,18 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:2900/salud').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 120s
+      retries: 12
 
   client:
     logging: *registro
@@ -58,27 +83,42 @@ services:
     working_dir: /app
     command: [sh, -c, npm ci --ignore-scripts && npm run dev --workspace client]
     volumes: [.:/app, client_deps:/app/node_modules]
-    ports: [127.0.0.1:3000:3000]
+    ports: ['127.0.0.1:${DEV_CLIENT_PORT:-3000}:3000']
     environment:
       NODE_ENV: development
       API_URL: http://api:2900/api/v1
-      CLIENTE_URL: http://localhost:3000
-    depends_on: [api]
+      CLIENTE_URL: http://localhost:${DEV_CLIENT_PORT:-3000}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/salud').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 120s
+      retries: 12
 
   mailpit:
     logging: *registro
     image: axllent/mailpit:latest@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
-    ports: [127.0.0.1:8025:8025]
+    ports: ['127.0.0.1:${DEV_MAIL_PORT:-8025}:8025']
 
   adminer:
     logging: *registro
     image: adminer:latest@sha256:7605e298e5a2ac74d806283362fa253a4e0a42cfd881e8fa2c155f0631899f6c
-    ports: [127.0.0.1:8080:8080]
+    ports: ['127.0.0.1:${DEV_ADMINER_PORT:-8080}:8080']
     environment:
       ADMINER_DEFAULT_SERVER: mariadb
     depends_on: [mariadb]
 
 volumes:
+  tools_deps:
   bd_dev:
   api_deps:
   client_deps:

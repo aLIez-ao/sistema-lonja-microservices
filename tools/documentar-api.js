@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import YAML from 'yaml';
+import { format } from 'prettier';
 
 const contrato = YAML.parse(readFileSync(new URL('../contracts/openapi.yaml', import.meta.url), 'utf8'));
 const lineas = [
@@ -66,7 +67,8 @@ for (const [ruta, item] of Object.entries(contrato.paths)) {
   lineas.push('');
 }
 const destino = new URL('../api/docs/03-rutas-y-permisos.md', import.meta.url);
-const contenido = lineas.join('\n');
+const { prettier } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+const contenido = await format(lineas.join('\n'), { ...prettier, parser: 'markdown' });
 if (process.argv.includes('--check')) {
   if (readFileSync(destino, 'utf8').replaceAll('\r\n', '\n') !== contenido) {
     console.error('Referencia REST desactualizada. Ejecuta npm run docs:api.');

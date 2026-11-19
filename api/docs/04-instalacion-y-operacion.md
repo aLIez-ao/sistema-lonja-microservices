@@ -52,3 +52,9 @@ El arranque de producción comprueba que las migraciones estén aplicadas y no e
 `npm run backup` genera un conjunto de base, archivos y manifiesto. `npm run backup:probar` crea una copia de ensayo y compara filas y archivos; configura `RESTORE_HOST`, `RESTORE_PORT`, `RESTORE_USUARIO` y `RESTORE_CLAVE_FILE` para usar una instancia efímera separada. El procedimiento operativo, Docker, systemd, retención y recuperación están en [la guía compartida](../../docs/04-instalacion-y-despliegue.md). Conserva una copia fuera del servidor y detén escrituras durante la comprobación de restauración.
 
 Continúa con [seguridad](05-seguridad.md), [pruebas](06-pruebas.md) y [el esquema](02-base-de-datos.md).
+
+## Comandos con solo Docker
+
+El [catálogo de comandos](../../docs/07-comandos.md) reúne inicio y espera de salud, datos demo, regeneración confirmada y pruebas mediante `tools`. En desarrollo usa `exec -T api npm run demo` con el prefijo Compose completo de esa guía. La carga se bloquea en producción; las imágenes finales no incluyen npm y las tareas operativas se invocan directamente con Node.
+
+El asistente `npm run correo:configurar -- --help` describe la configuración de Gmail. Guarda `GMAIL_USER`, `GMAIL_PASS` y `CLIENTE_URL` en el `.env` raíz independientemente del directorio desde el que se invoque el script. No modifica `client/.env`: conserva allí el mismo origen público. Mailpit ya está preparado en Compose de desarrollo.
