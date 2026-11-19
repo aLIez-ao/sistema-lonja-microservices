@@ -8,6 +8,10 @@ import { fileURLToPath } from 'node:url';
 
 test('el generador protege el directorio y permite leer los secretos montados al usuario del contenedor', async () => {
   const carpeta = await mkdtemp(path.join(os.tmpdir(), 'lonja-secrets-test-'));
+  assert.ok(
+    path.resolve(carpeta).startsWith(path.resolve(os.tmpdir()) + path.sep),
+    'Temporal fuera del directorio previsto.',
+  );
   const herramienta = fileURLToPath(new URL('../../tools/preparar-prueba-contenedores.js', import.meta.url));
   try {
     const preparar = () =>
@@ -26,8 +30,6 @@ test('el generador protege el directorio y permite leer los secretos montados al
       assert.equal((await stat(path.join(carpeta, 'compose.env'))).mode & 0o777, 0o600);
     }
   } finally {
-    if (!path.resolve(carpeta).startsWith(path.resolve(os.tmpdir()) + path.sep))
-      throw new Error('Temporal fuera del directorio previsto.');
     await rm(carpeta, { recursive: true, force: true });
   }
 });
