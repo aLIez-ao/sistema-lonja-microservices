@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, chmod } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 import os from 'node:os';
@@ -11,7 +11,13 @@ if (!temporales.some((temporal) => destino.startsWith(temporal + path.sep))) {
 await mkdir(destino, { recursive: true, mode: 0o700 });
 const archivos = ['bd_clave', 'bd_root', 'sc_jwt', 'admin_password', 'gmail_pass'];
 for (const archivo of archivos) {
+  await chmod(path.join(destino, archivo), 0o600).catch((error) => {
+    if (error.code !== 'ENOENT') throw error;
+  });
   await writeFile(path.join(destino, archivo), randomBytes(32).toString('hex'), { mode: 0o600 });
+  // Compose monta estos archivos en /run/secrets; node (UID 1000) debe poder leerlos.
+  // El directorio padre 0700 mantiene los secretos inaccesibles a otros usuarios del host.
+  await chmod(path.join(destino, archivo), 0o444);
 }
 await writeFile(
   path.join(destino, 'compose.env'),

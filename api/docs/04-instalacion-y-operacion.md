@@ -39,7 +39,7 @@ Las variables del proceso prevalecen sobre `.env`. En `NODE_ENV=development`, `.
 
 El diagnóstico de correo es exclusivo de administración. En desarrollo, sin transporte se usa el simulador; producción falla al arrancar si falta transporte o falla su verificación. Los trabajos se persisten en la base y se reintentan. Despliega una sola instancia de API: el coordinador de trabajos y los límites de peticiones mantienen estado en memoria.
 
-El SMTP genérico admite `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_REQUIRE_TLS`, `SMTP_USER`, `SMTP_PASS_FILE` y `SMTP_FROM`. Configura TLS y credenciales reales de tu proveedor; Mailpit se limita al desarrollo y al ensayo aislado. Gmail sigue siendo compatible. Elegir proveedor y completar DNS/entregabilidad permanece en [TODO](../../TODO.md).
+El SMTP genérico admite `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_REQUIRE_TLS`, `SMTP_USER`, `SMTP_PASS_FILE` y `SMTP_FROM`. Configura TLS y credenciales reales de tu proveedor; Mailpit se limita al desarrollo y al ensayo aislado. Gmail sigue siendo compatible. Elegir proveedor y completar DNS/entregabilidad permanece en el seguimiento local de `docs/.reports/TODO.md`.
 
 El arranque de producción comprueba que las migraciones estén aplicadas y no ejecuta `db.sync()`. `npm run migrar` sigue siendo el paso explícito de creación/actualización antes del servidor; su bootstrap inicial todavía depende de modelos y requiere DDL versionado antes de retirar totalmente esa dependencia.
 

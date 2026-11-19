@@ -36,16 +36,25 @@ const datosApi = async (method, ruta, datos, token) => {
   return r.json();
 };
 let salud;
-for (let intento = 0; intento < 20; intento++) {
+let ultimoError;
+const esperaSalud = Number(process.env.LONJA_PRUEBA_ESPERA_MS || 120000);
+assert.ok(Number.isFinite(esperaSalud) && esperaSalud > 0, 'LONJA_PRUEBA_ESPERA_MS debe ser positivo.');
+const limiteSalud = Date.now() + esperaSalud;
+while (Date.now() < limiteSalud) {
   try {
     salud = await pedir('GET', '/salud');
     if (salud.ok) break;
-  } catch {
+  } catch (error) {
+    ultimoError = error.cause?.code || error.code || error.name;
     // Caddy puede estar terminando de emitir el certificado de localhost.
   }
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 }
-assert.equal(salud?.status, 200);
+assert.equal(
+  salud?.status,
+  200,
+  `El sitio no quedó sano en ${esperaSalud} ms (HTTP ${salud?.status || 'sin respuesta'}, ${ultimoError || 'sin error de conexión'}).`,
+);
 const sesion = await datosApi('POST', 'auth/sesion', {
   usuario: process.env.LONJA_PRUEBA_ADMIN_USUARIO || 'admin',
   password: adminPassword,

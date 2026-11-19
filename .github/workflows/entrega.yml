@@ -104,6 +104,13 @@ jobs:
           export NODE_EXTRA_CA_CERTS="$PRUEBA/ca.crt"
           export LONJA_PRUEBA_ADMIN_PASSWORD="$(cat "$PRUEBA/admin_password")"
           node tools/prueba-despliegue.js
+      - name: Diagnóstico del ensayo fallido
+        if: failure()
+        run: |
+          if [ -f "$PRUEBA/compose.env" ]; then
+            docker compose --project-name entrega-prueba --env-file "$PRUEBA/compose.env" -f compose.yaml -f compose.test.yaml ps -a
+            docker compose --project-name entrega-prueba --env-file "$PRUEBA/compose.env" -f compose.yaml -f compose.test.yaml logs --no-color --tail 200 api client caddy mailpit
+          fi
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: ${{ env.REGISTRO }}/lonja-api:${{ env.VERSION }}

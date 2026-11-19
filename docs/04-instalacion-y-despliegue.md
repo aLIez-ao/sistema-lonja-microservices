@@ -106,4 +106,4 @@ Todos los servicios de Compose limitan sus logs a tres archivos de 10 MB. Los he
 
 Producción exige un transporte de correo verificable. El SMTP genérico se configura con las variables de `deploy/compose.env.example` y `SECRETO_SMTP_PASS`; por compatibilidad, si no se define ese archivo se monta el mismo archivo de credencial de correo existente. El ensayo con Mailpit desactiva explícitamente la exigencia TLS en su red aislada. No uses esa excepción con un proveedor real.
 
-El cliente admite `PRIVACIDAD_RESPONSABLE`, `PRIVACIDAD_DOMICILIO` y `PRIVACIDAD_CONTACTO`; completar esos campos no sustituye la revisión del aviso ni el procedimiento ARCO. Consulta [TODO](../TODO.md) para los requisitos que siguen abiertos.
+El cliente admite `PRIVACIDAD_RESPONSABLE`, `PRIVACIDAD_DOMICILIO` y `PRIVACIDAD_CONTACTO`; completar esos campos no sustituye la revisión del aviso ni el procedimiento ARCO. Consulta el seguimiento local de `docs/.reports/TODO.md` para los requisitos que siguen abiertos.
