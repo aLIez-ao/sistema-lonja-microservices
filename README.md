@@ -21,7 +21,7 @@ El entorno completo de desarrollo incluye MariaDB, Mailpit y Adminer:
 docker compose --env-file deploy/compose.env.example -f compose.dev.yaml up
 ```
 
-Abre http://localhost:3000. Mailpit: http://localhost:8025; Adminer: http://localhost:8080. Las credenciales de desarrollo figuran en Compose y no se usan en producción.
+Abre http://localhost:3000. Mailpit: http://localhost:8025; Adminer: http://localhost:8080. La cuenta inicial usa `ADMIN_USER` y `ADMIN_PASSWORD` del `.env` raíz; sin ese archivo usa `.env.example`. Las credenciales de los servicios de desarrollo figuran en Compose y no se usan en producción. Consulta [la configuración de desarrollo](docs/04-instalacion-y-despliegue.md) para aplicar cambios a contenedores existentes.
 
 ```sh
 npm run lint

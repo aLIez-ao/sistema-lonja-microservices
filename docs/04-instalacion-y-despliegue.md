@@ -21,7 +21,11 @@ La alternativa completa usa MariaDB local en 3307, API en 2900, cliente en 3000,
 docker compose --env-file deploy/compose.env.example -f compose.dev.yaml up
 ```
 
-La cuenta inicial local es `admin` / `AdminLocal123`. El código está montado con nodemon; los correos se capturan en Mailpit. Los datos usan volúmenes distintos de producción. `npm run demo` genera datos locales; la limpieza explícita de demo se bloquea en producción.
+La cuenta inicial se toma de `ADMIN_USER` y `ADMIN_PASSWORD` del `.env` raíz. La API lee ese archivo montado usando dotenv; Compose ya no fija otra cuenta dentro del YAML. Exclusivamente en desarrollo, `.env.example` completa variables ausentes cuando no hay configuración propia. Esto conserva caracteres como `$` en las contraseñas sin interpolarlos mediante Compose. `--env-file deploy/compose.env.example` configura la interpolación de Compose y no sustituye el `.env` que lee la API.
+
+Las credenciales iniciales solo crean la cuenta si no existe. Cambiar `.env` no restablece la contraseña de una cuenta existente ni elimina usuarios. Después de modificar ese archivo ejecuta `docker compose --env-file deploy/compose.env.example -f compose.dev.yaml up -d --force-recreate api client` para que los procesos reciban los valores nuevos. No borres el volumen de MariaDB para cambiar credenciales.
+
+El código está montado con nodemon; los correos se capturan en Mailpit. Los datos usan volúmenes distintos de producción. Las variables de red del contenedor (`BD_HOST`, puerto y URL interna de API) siguen definidas en Compose para conectar con los servicios correctos. `npm run demo` genera datos locales; la limpieza explícita de demo se bloquea en producción.
 
 ## Configuración de producción
 

@@ -31,7 +31,7 @@ npm run dev -w @lonja/api
 | `ENVIO_COSTO`, `ENVIO_GRATIS_DESDE`           | Reglas del envío calculado por la API.                                          |
 | `RESERVA_MINUTOS`, `RESERVA_EFECTIVO_MINUTOS` | Vencimientos de las reservas de pedidos.                                        |
 
-Las variables del proceso prevalecen sobre `.env`. `BD_CLAVE_FILE`, `SC_JWT_FILE`, `ADMIN_PASSWORD_FILE`, `GMAIL_PASS_FILE` y `RESTORE_CLAVE_FILE` leen archivos privados y prevalecen sobre el valor directo. Las claves de ejemplo no son credenciales de producción.
+Las variables del proceso prevalecen sobre `.env`. En `NODE_ENV=development`, `.env.example` completa valores ausentes después de leer `.env`; producción no aplica ese respaldo. Compose de desarrollo fija la red y los puertos internos, pero deja las credenciales administrativas al cargador de la API. `BD_CLAVE_FILE`, `SC_JWT_FILE`, `ADMIN_PASSWORD_FILE`, `GMAIL_PASS_FILE` y `RESTORE_CLAVE_FILE` leen archivos privados y prevalecen sobre el valor directo. Las claves de ejemplo no son credenciales de producción.
 
 ## Salud, correo y registros
 

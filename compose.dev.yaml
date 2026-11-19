@@ -30,9 +30,7 @@ services:
       BD_NOMBRE: lonja_dev
       BD_USUARIO: lonja
       BD_CLAVE: desarrollo_local
-      SC_JWT: solo_desarrollo_local_no_usar_en_produccion
-      ADMIN_USER: admin
-      ADMIN_PASSWORD: AdminLocal123
+      API_PORT: 2900
       CLIENTE_URL: http://localhost:3000
       UPLOADS_DIR: /datos/uploads
       SMTP_HOST: mailpit
