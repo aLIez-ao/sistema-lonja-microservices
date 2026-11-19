@@ -31,7 +31,9 @@ En desarrollo sin Redis las sesiones viven en memoria y se pierden al reiniciar.
 
 `GET /salud` comprueba el almacén y consulta `/api/v1/salud`. Un fallo devuelve 503; un proceso que escucha no garantiza que sus dependencias funcionen. Los registros usan `helpers/registro.js` con nivel configurable. Las peticiones reciben un identificador propagado a la API.
 
-Si una escritura devuelve 403 por origen, revisa `CLIENTE_URL` y la configuración del proxy. Si aparecen 503, comprueba la conectividad con API y Redis antes de repetir operaciones de pago. No registres cookies, tokens ni cuerpos con contraseñas.
+Si una escritura devuelve 403 por origen, revisa `CLIENTE_URL` y la configuración del proxy. En desarrollo, las páginas abiertas mediante `127.0.0.1`, `localhost` o `::1` se redirigen al host local configurado cuando coinciden protocolo y puerto. Así el formulario y su origen coinciden; las escrituras siguen exigiendo el origen exacto. Abre de nuevo `/acceso` si conservas una pestaña anterior al cambio. `/salud` no redirige y producción no aplica esta adaptación local.
+
+Si aparecen 503, comprueba la conectividad con API y Redis antes de repetir operaciones de pago. No registres cookies, tokens ni cuerpos con contraseñas.
 
 ## Producción
 

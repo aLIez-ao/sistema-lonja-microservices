@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { crearApi, ErrorApi } from './api.js';
 import { crearSesiones } from './sesiones.js';
 import { middlewarePreferencias } from './middleware/preferencias.js';
+import { redirigirOrigenLocal } from './middleware/origen-local.js';
 import { formatoFechaHora } from './helpers/fechas.js';
 import { icono } from './helpers/iconos.js';
 import { transmitir } from './descargas.js';
@@ -63,6 +64,7 @@ export function crearCliente({ api = crearApi(), sesiones = crearSesiones() } = 
       },
     }),
   );
+  app.use(redirigirOrigenLocal());
   app.set('view engine', 'ejs');
   app.set('views', archivo('./views'));
   app.use(express.urlencoded({ extended: true, limit: '450kb' }));
