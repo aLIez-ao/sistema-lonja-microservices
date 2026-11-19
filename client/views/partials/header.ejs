@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/lonja.css">
   <link rel="stylesheet" href="/css/tienda.css">
+  <link rel="stylesheet" href="/css/header.css">
 </head>
 
 <%
@@ -23,55 +24,21 @@
     const activo = (ruta) => (rutaActual || '').startsWith(ruta) ? 'active' : '';
   %>
 
-  <nav class="navbar navbar-expand-xl navbar-lonja d-print-none">
-    <div class="container-fluid px-lg-4">
-      <!-- El logo redirige al inicio -->
+  <nav class="navbar navbar-expand-xl navbar-lonja d-print-none" aria-label="Navegación principal">
+    <div class="container-fluid lonja-header px-lg-4">
       <a class="navbar-brand" href="/" title="Lonja de Veracruz">
         <img class="logo-claro" src="/img/logo.svg" alt="Lonja de Veracruz" width="204" height="42">
         <img class="logo-oscuro" src="/img/logo-oscuro.svg" alt="" aria-hidden="true" width="204" height="42">
       </a>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal"
-        aria-expanded="false" aria-label="Abrir menú">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="menuPrincipal">
-        <% if (usuario) { %>
-          <ul class="navbar-nav me-auto mb-2 mb-xl-0 ms-xl-3">
-            <% if (usuario.rol === 'comprador') { %>
-              <li class="nav-item"><a class="nav-link <%= rutaActual === '/' ? 'active' : '' %>" href="/"><%- icono('basket', 15, 'me-1') %><%= t('tienda') %></a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/carrito') %>" href="/carrito"><%- icono('cart-plus', 15, 'me-1') %>Carrito <span class="badge text-bg-primary" data-carrito-count><%= typeof carritoCount === 'number' ? carritoCount : 0 %></span></a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/cuenta') %>" href="/cuenta"><%- icono('person', 15, 'me-1') %>Mi cuenta</a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/cuenta/listas') %>" href="/cuenta/listas"><%- icono('heart', 15, 'me-1') %>Favoritos <span class="badge text-bg-secondary" data-favoritos-count><%= favoritosCount || 0 %></span></a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/cuenta/opiniones') %>" href="/cuenta/opiniones"><%- icono('star', 15, 'me-1') %>Mis opiniones</a></li>
-            <% } else { %>
-              <li class="nav-item"><a class="nav-link <%= activo('/dashboard') %>" href="/dashboard"><%- icono('speedometer2', 15, 'me-1') %>Dashboard</a></li>
-              <li class="nav-item"><a class="nav-link" href="/"><%- icono('basket', 15, 'me-1') %>Tienda <span class="small text-muted">ver como cliente</span></a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/compras') %>" href="/compras"><%= t('compras') %></a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/pedidos') %>" href="/pedidos">Pedidos</a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/lotes') %>" href="/lotes"><%= t('lotes') %></a></li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle <%= activo('/especies') || activo('/catalogo') %>" href="/especies" role="button" data-bs-toggle="dropdown" aria-expanded="false"><%= t('especies') %></a>
-                <ul class="dropdown-menu shadow-sm">
-                  <li><a class="dropdown-item" href="/especies">Especies por lote</a></li>
-                  <li><a class="dropdown-item" href="/catalogo">Catálogo de especies</a></li>
-                </ul>
-              </li>
-              <li class="nav-item"><a class="nav-link <%= activo('/compradores') %>" href="/compradores"><%= t('compradores') %></a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/tipos') %>" href="/tipos"><%= t('tipos') %></a></li>
-              <li class="nav-item"><a class="nav-link <%= activo('/reportes') %>" href="/reportes/diario"><%= t('reportes') %></a></li>
-              <% if (usuario.rol === 'admin') { %>
-                <li class="nav-item"><a class="nav-link <%= activo('/usuarios') %>" href="/usuarios"><%= t('usuarios') %></a></li>
-              <% } %>
-            <% } %>
-          </ul>
+      <div class="header-shortcuts">
+        <% if (usuario && usuario.rol !== 'comprador') { %>
+          <a class="nav-link header-icon <%= activo('/dashboard') %>" href="/dashboard" title="Dashboard" aria-label="Dashboard"><%- icono('speedometer2', 20) %></a>
         <% } %>
-
-        <div class="tienda-buscador-header"><%- include('buscador-tienda') %></div>
-
+        <a class="nav-link header-icon <%= rutaActual === '/' ? 'active' : '' %>" href="/" title="<%= t('tienda') %>" aria-label="<%= t('tienda') %>"><%- icono('basket', 20) %></a>
+      </div>
+      <div class="tienda-buscador-header"><%- include('buscador-tienda') %></div>
+      <div class="header-tools">
         <% if (usuario) { %>
-          <div class="d-flex align-items-center gap-2 flex-nowrap">
             <!-- Moneda -->
             <div class="dropdown">
               <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill py-1 px-2" type="button" data-bs-toggle="dropdown" title="<%= t('moneda') %>">
@@ -131,15 +98,21 @@
                 </li>
               </ul>
             </div>
-          </div>
         <% } else { %>
-        <div class="d-flex align-items-center gap-2 ms-auto">
-          <a class="btn btn-sm btn-outline-secondary rounded-pill px-3 text-decoration-none" href="/acceso">Iniciar sesión</a>
-          <a class="btn btn-sm btn-primary rounded-pill px-3 text-decoration-none" href="/registro">Crear cuenta</a>
-        </div>
+          <a class="btn btn-outline-secondary header-icon" href="/acceso" title="Iniciar sesión" aria-label="Iniciar sesión"><%- icono('person', 20) %></a>
         <% } %>
+      </div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú"><span class="navbar-toggler-icon"></span></button>
+      <div class="collapse navbar-collapse header-navigation" id="menuPrincipal">
+        <ul class="navbar-nav">
+          <% const enlaces = !usuario ? [['/acceso','Iniciar sesión'],['/registro','Crear cuenta']] : usuario.rol === 'comprador'
+            ? [['/carrito','Carrito'],['/cuenta','Mi cuenta'],['/cuenta/listas','Favoritos'],['/cuenta/opiniones','Mis opiniones']]
+            : [['/compras',t('compras')],['/pedidos','Pedidos'],['/lotes',t('lotes')],['/especies','Especies por lote'],['/catalogo','Catálogo'],['/compradores',t('compradores')],['/tipos',t('tipos')],['/reportes/diario',t('reportes')],...(usuario.rol === 'admin' ? [['/usuarios',t('usuarios')]] : [])]; %>
+          <% enlaces.forEach(([href,label]) => { %>
+            <li class="nav-item"><a class="nav-link <%= activo(href) %>" href="<%= href %>"><%= label %></a></li>
+          <% }) %>
+        </ul>
       </div>
     </div>
   </nav>
-
   <main class="container py-4">

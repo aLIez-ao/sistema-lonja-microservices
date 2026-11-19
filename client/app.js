@@ -72,14 +72,15 @@ export function crearCliente({ api = crearApi(), sesiones = crearSesiones() } = 
   app.use(express.json({ limit: '450kb' }));
   app.use(cookieParser());
   app.use(methodOverride('_method'));
-  app.use('/bootstrap', express.static(archivo('../node_modules/bootstrap/dist')));
-  app.use('/vendor/chartjs', express.static(archivo('../node_modules/chart.js/dist')));
+  const estaticos = { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0 };
+  app.use('/bootstrap', express.static(archivo('../node_modules/bootstrap/dist'), estaticos));
+  app.use('/vendor/chartjs', express.static(archivo('../node_modules/chart.js/dist'), estaticos));
   app.use('/uploads', async (req, res) => {
-    const respuesta = await api.pedir('archivos' + req.path, { binario: true });
+    const respuesta = await api.pedir('archivos' + req.path, { binario: true, ip: req.ip, requestId: req.requestId });
     await transmitir(respuesta, res);
   });
   // Las imágenes subidas las entrega exclusivamente la API a través del proxy.
-  app.use(express.static(archivo('./public')));
+  app.use(express.static(archivo('./public'), estaticos));
   app.use(sesiones.middleware);
   app.use(async (req, res, next) => {
     req.usuario = req.sesion?.usuario;
@@ -95,7 +96,7 @@ export function crearCliente({ api = crearApi(), sesiones = crearSesiones() } = 
     });
     if (req.usuario?.rol === 'comprador') {
       try {
-        const { datos } = await api.pedir('cuenta/barra', { sesion: req.sesion, requestId: req.requestId });
+        const { datos } = await api.pedir('cuenta/barra', { sesion: req.sesion, requestId: req.requestId, ip: req.ip });
         Object.assign(res.locals, datos, {
           favoritos: { lote: new Set(datos.favoritos.lote), especie: new Set(datos.favoritos.especie) },
         });
@@ -117,7 +118,7 @@ export function crearCliente({ api = crearApi(), sesiones = crearSesiones() } = 
     res.status(403).render('error', { codigo: 403, mensaje: 'Origen de la solicitud no permitido.' });
   });
   const pedir = (req, ruta, opciones = {}) =>
-    api.pedir(ruta, { sesion: req.sesion, requestId: req.requestId, ...opciones });
+    api.pedir(ruta, { sesion: req.sesion, requestId: req.requestId, ip: req.ip, ...opciones });
   app.get('/salud', async (req, res) => {
     try {
       await sesiones.salud();
@@ -130,6 +131,13 @@ export function crearCliente({ api = crearApi(), sesiones = crearSesiones() } = 
   });
   app.get('/tienda', (req, res) => res.redirect(301, '/'));
   app.get('/favicon.ico', (req, res) => res.redirect(301, '/img/favicon.svg'));
+  app.get('/privacidad', (req, res) =>
+    res.render('privacy', {
+      responsable: process.env.PRIVACIDAD_RESPONSABLE || '',
+      domicilio: process.env.PRIVACIDAD_DOMICILIO || '',
+      contacto: process.env.PRIVACIDAD_CONTACTO || '',
+    }),
+  );
   app.get('/cerrarsesion', (req, res) => res.redirect('/'));
   app.get('/', async (req, res) => {
     const query = new URLSearchParams(Object.entries(req.query).filter(([, v]) => typeof v === 'string'));
