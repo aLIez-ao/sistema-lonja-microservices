@@ -2,7 +2,7 @@
 
 ## Arranque local
 
-Instala Node.js 20.19 o superior y MariaDB 11. Desde la raíz ejecuta `npm ci`. Copia `.env.example` a `.env` únicamente si todavía no existe y configura una base y un usuario propios. La API carga el `.env` de la raíz; no busca `api/.env`.
+Instala Node.js 22 o superior y MariaDB 11. Desde la raíz ejecuta `npm ci`. Copia `.env.example` a `.env` únicamente si todavía no existe y configura una base y un usuario propios. La API carga el `.env` de la raíz; no busca `api/.env`.
 
 ```sh
 npm run migrar
@@ -37,7 +37,11 @@ Las variables del proceso prevalecen sobre `.env`. En `NODE_ENV=development`, `.
 
 `GET /api/v1/salud` comprueba la base. La documentación interactiva `/api/docs` solo está habilitada fuera de producción. Los registros usan nivel configurable y los errores HTTP incluyen `X-Request-Id` para correlación. No publiques cuerpos de acceso ni tokens en los registros.
 
-El diagnóstico de correo es exclusivo de administración. Sin transporte configurado se usa el simulador; eso no acredita que un mensaje haya llegado a una cuenta real. Los trabajos se persisten en la base y se reintentan. Despliega una sola instancia de API: el coordinador de trabajos y los límites de peticiones mantienen estado en memoria.
+El diagnóstico de correo es exclusivo de administración. En desarrollo, sin transporte se usa el simulador; producción falla al arrancar si falta transporte o falla su verificación. Los trabajos se persisten en la base y se reintentan. Despliega una sola instancia de API: el coordinador de trabajos y los límites de peticiones mantienen estado en memoria.
+
+El SMTP genérico admite `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_REQUIRE_TLS`, `SMTP_USER`, `SMTP_PASS_FILE` y `SMTP_FROM`. Configura TLS y credenciales reales de tu proveedor; Mailpit se limita al desarrollo y al ensayo aislado. Gmail sigue siendo compatible. Elegir proveedor y completar DNS/entregabilidad permanece en [TODO](../../TODO.md).
+
+El arranque de producción comprueba que las migraciones estén aplicadas y no ejecuta `db.sync()`. `npm run migrar` sigue siendo el paso explícito de creación/actualización antes del servidor; su bootstrap inicial todavía depende de modelos y requiere DDL versionado antes de retirar totalmente esa dependencia.
 
 ## Esquema y recuperación
 

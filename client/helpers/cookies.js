@@ -14,8 +14,8 @@ export const CATEGORIAS = [
     descripcion: 'Necesarias para iniciar sesión y recordar esta decisión. No se pueden desactivar.',
     cookies: [
       {
-        nombre: '_token',
-        proposito: 'Mantiene tu sesión iniciada (JWT firmado, HttpOnly, SameSite=Strict).',
+        nombre: 'lonja_sid',
+        proposito: 'Identificador de sesión del servidor (HttpOnly, SameSite=Strict; Secure en producción).',
         duracion: 'Lo que dura la sesión (8 h)',
       },
       {

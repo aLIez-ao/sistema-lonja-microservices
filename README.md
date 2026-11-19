@@ -32,6 +32,8 @@ npm run test:cov
 
 La cobertura exige al menos 80 % de líneas en cada aplicación. Las pruebas HTTP verifican el contrato y los recorridos de compra; CI también comprueba MariaDB. Los pagos son simulados.
 
+`npm run views:check` comprueba que las vistas utilizadas estén en Git, y `npm run test:system` ejercita el cliente y la API juntos. Los requisitos pendientes para admitir datos reales están en [TODO.md](TODO.md).
+
 Consulta [la documentación compartida](docs/README.md), [la guía de API](api/docs/README.md), [la guía del cliente](client/docs/README.md), [OpenAPI](contracts/openapi.yaml) y [el despliegue](docs/04-instalacion-y-despliegue.md). Cada aplicación tiene capítulos de arquitectura, datos, rutas, operación, seguridad y pruebas. `npm run docs:api` regenera la referencia REST; `npm run docs:check` comprueba enlaces y su vigencia.
 
 Este proyecto parte del monolito del [repositorio original](https://github.com/aLIez-ao/sistema-lonja), cuyo historial no se trae aquí: allí siguen el monolito (`main`) y la entrega v1 (`entrega/v1`). Ejecuta `npm run setup:git` para instalar las exclusiones locales sin versionar `.gitignore`. Producción utiliza Redis persistente para conservar las sesiones del cliente y coordinar su renovación.

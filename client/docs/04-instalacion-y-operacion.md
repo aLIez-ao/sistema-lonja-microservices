@@ -2,7 +2,7 @@
 
 ## Desarrollo
 
-Requiere Node.js 20.19 o superior y la API disponible. Desde la raíz ejecuta `npm ci`, crea `client/.env` a partir de `client/.env.example` si no existe y arranca:
+Requiere Node.js 22 o superior y la API disponible. Desde la raíz ejecuta `npm ci`, crea `client/.env` a partir de `client/.env.example` si no existe y arranca:
 
 ```sh
 npm run dev -w @lonja/client

@@ -25,3 +25,5 @@ La validación del formulario reutiliza OpenAPI, pero la API conserva la validac
 Las respuestas de sesiones autenticadas usan `Cache-Control: no-store`. Protege Redis y sus respaldos porque contienen tokens del servidor. Separa sus datos de los entornos de ensayo. El cliente no debe recibir secretos de MariaDB, firma JWT o correo.
 
 Consulta [seguridad de API](../../api/docs/05-seguridad.md), [configuración de producción](04-instalacion-y-operacion.md) y [seguridad compartida](../../docs/05-seguridad.md).
+
+El cliente pasa a la API la IP calculada en `req.ip`; elimina cabeceras reenviadas arbitrarias antes de enviar su valor. Configura `TRUST_PROXY` únicamente para los proxies y redes controlados. No uses confianza global en cabeceras de Internet. En producción los estáticos tienen caché de una hora; las respuestas autenticadas siguen con `no-store`.

@@ -16,11 +16,11 @@ Cada workspace ejecuta su suite con `node:test`. El ayudante `api/test/ayuda.js`
 
 Las pruebas HTML del monolito se conservan en el [repositorio original](https://github.com/aLIez-ao/sistema-lonja) y se retiraron de la suite activa. Se mantienen las pruebas unitarias útiles y las suites REST, cliente, contrato y migraciones. La cobertura activa ya no ejecuta legacy/app.js. La reversión de las migraciones 006 a 003 se comprueba antes de la histórica 002.
 
-`client/test/integracion.test.js` arranca API y cliente reales: renderizado y CSP, sesión sin tokens en el navegador, CSRF, renovación concurrente, registro y verificación, cuenta y direcciones, carrito, pedido, pago, factura, mostrador y pantallas del personal.
+`test/system/client-api.test.js` arranca API y cliente reales: renderizado y CSP, sesión sin tokens en el navegador, CSRF, renovación concurrente, registro y verificación, cuenta y direcciones, carrito, pedido, pago, factura, mostrador y pantallas del personal.
 
 `client/test/transporte.test.js` usa un servidor HTTP controlado con respuestas validadas contra los esquemas del contrato. Verifica la renovación única, correlación, ausencia de cookies hacia la API, mensajes del formulario, timeout y errores HTML del proxy.
 
-La cobertura mide código del servidor de cada aplicación, incluyendo archivos no ejecutados y excluyendo pruebas, recursos estáticos y almacenamiento. `tools/cobertura.js` usa c8 compatible con Node 20/22, exige 80 % de líneas por aplicación y guarda informes en el directorio temporal del sistema.
+La cobertura mide código del servidor de cada aplicación, incluyendo archivos no ejecutados y excluyendo pruebas, recursos estáticos y almacenamiento. `tools/cobertura.js` usa c8 compatible con Node 22/24, exige 80 % de líneas por aplicación y guarda informes en el directorio temporal del sistema.
 
 ## MariaDB y contenedores
 

@@ -27,3 +27,5 @@ Los errores usan `application/problem+json`, identificador de correlación y men
 La cola persistente no convierte el coordinador en un sistema distribuido. Usa una sola API mientras los límites y la coordinación sean locales al proceso. No existe una bitácora administrativa completa. Los respaldos deben salir del servidor y un rollback de imagen puede requerir restaurar un esquema compatible.
 
 La limpieza del historial no revoca credenciales. El estado de la exposición histórica se documenta en [seguridad compartida](../../docs/05-seguridad.md). Las garantías de sesión del navegador pertenecen al [cliente](../../client/docs/05-seguridad.md).
+
+Los avatares nuevos se decodifican y recodifican en WebP, con límite de píxeles, tamaño máximo de 256 y eliminación de metadatos. Las fotos ya existentes requieren una migración separada. Los límites utilizan la IP reenviada solo cuando la conexión proviene de un proxy de confianza; el límite adicional por cuenta se conserva deliberadamente.

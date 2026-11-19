@@ -11,7 +11,7 @@ npm run format:check
 
 ## Suites
 
-`test/integracion.test.js` arranca API y cliente reales con una base de ensayo. Comprueba renderizado, CSP, sesión sin tokens en el navegador, rechazo de escrituras por origen, renovación concurrente, registro y verificación, cuenta y direcciones, carrito, pedido, pago simulado, factura y pantallas del personal.
+`test/system/client-api.test.js`, ubicado en la raíz y ejecutado con `npm run test:system`, arranca API y cliente reales con una base de ensayo. Comprueba renderizado, CSP, sesión sin tokens en el navegador, rechazo de escrituras por origen, renovación concurrente, registro y verificación, cuenta y direcciones, carrito, pedido, pago simulado, factura y pantallas del personal. Las pruebas propias de `client/test/` no importan código interno de API; las de sistema conservan la integración completa. La cobertura del cliente incluye ese recorrido sin rebajar el umbral.
 
 Las regresiones de navegación comprueban que los listados conservan filtros, usan los metadatos de paginación y ofrecen las páginas esperadas. Las de preferencias comprueban el consentimiento de cookies y el estado de la misma respuesta, además de la navegación posterior.
 

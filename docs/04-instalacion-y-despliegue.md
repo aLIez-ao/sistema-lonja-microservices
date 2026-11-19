@@ -1,6 +1,6 @@
 # Instalación y despliegue
 
-Lonja requiere Node.js 20.19+ o 22, npm con workspaces y MariaDB 11. Docker es la opción principal de producción: Docker Engine 25+, Compose v2.24.4+ (el recorrido de prueba usa `!override`), un dominio apuntando al servidor y puertos 80/443 disponibles. CI y las imágenes usan Node 22.
+Para desarrollo sin contenedores, Lonja requiere Node.js 22 o 24, npm con workspaces y MariaDB 11. Con Docker no necesitas instalar esos componentes en el equipo. Producción usa Docker Engine 25+, Compose v2.24.4+ (el recorrido de prueba usa `!override`), un dominio apuntando al servidor y puertos 80/443 disponibles. CI prueba Node 22/24 y las imágenes usan Node 22.
 
 ## Desarrollo
 
@@ -64,7 +64,7 @@ Despliega una sola API: cola y límites se coordinan en memoria. El cliente comp
 
 ## Entrega desde GitHub Actions
 
-`CI` ejecuta lint, formato y pruebas en Node 20/22, exige al menos 80 % de líneas por workspace, audita dependencias de producción y ejecuta la integración REST sobre MariaDB.
+`CI` ejecuta lint, formato y pruebas en Node 22/24, exige al menos 80 % de líneas por workspace, audita dependencias de producción y ejecuta la integración REST sobre MariaDB.
 
 `Entrega` acepta CI correcto de un push a main del mismo repositorio o un tag semántico que pertenezca a main y tenga CI correcto. Al autorizar una entrega desde CI comprueba que el commit siga siendo la punta de main. La ejecución de main construye las imágenes, prueba el recorrido HTTPS, escanea HIGH/CRITICAL con Trivy, adjunta SBOM CycloneDX y publica `sha-<commit>` y `main`. Un tag no reconstruye: añade `vX.Y.Z` al digest ya publicado como `sha-<commit>` y falla si ese commit no se entregó antes desde main. Así la reversión por SHA descarga siempre la imagen probada, y la etiqueta de imagen `main` no se mueve.
 
@@ -99,3 +99,11 @@ Para volver solo a una imagen compatible, ejecuta `deploy/desplegar.sh` con su S
 ## Alternativa sin Docker
 
 `deploy/lonja-api.service` y `deploy/lonja-cliente.service` usan usuarios y archivos de entorno separados. Solo la API escribe `UPLOADS_DIR` y conoce MariaDB. `deploy/nginx.conf` ilustra el enrutamiento tras un terminador TLS; Caddy es el proxy principal de Compose. Todas las pantallas ya usan el cliente. La unidad histórica se retiró; el monolito solo se conserva en el [repositorio original](https://github.com/aLIez-ao/sistema-lonja).
+
+## Operación pendiente y controles locales
+
+Todos los servicios de Compose limitan sus logs a tres archivos de 10 MB. Los healthchecks no envían alertas: configura supervisión externa y un canal atendido antes de publicar. El volumen de respaldos está separado de la base pero reside en el mismo equipo; hay que copiar y verificar conjuntos cifrados fuera del servidor.
+
+Producción exige un transporte de correo verificable. El SMTP genérico se configura con las variables de `deploy/compose.env.example` y `SECRETO_SMTP_PASS`; por compatibilidad, si no se define ese archivo se monta el mismo archivo de credencial de correo existente. El ensayo con Mailpit desactiva explícitamente la exigencia TLS en su red aislada. No uses esa excepción con un proveedor real.
+
+El cliente admite `PRIVACIDAD_RESPONSABLE`, `PRIVACIDAD_DOMICILIO` y `PRIVACIDAD_CONTACTO`; completar esos campos no sustituye la revisión del aviso ni el procedimiento ARCO. Consulta [TODO](../TODO.md) para los requisitos que siguen abiertos.
