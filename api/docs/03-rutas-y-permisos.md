@@ -101,6 +101,13 @@ El registro público crea compradores. Catálogo, compradores, ventas y reportes
   Cuerpo obligatorio: application/json.
   Campos JSON: `kilos` (obligatorio), `numero_cajas` (obligatorio), `precio_kilo_salida` (obligatorio), `especies` (obligatorio).
 
+### `/lotes/eliminacion`
+
+- **POST** · Bearer · respuestas: 204, 400, 401, 403, 404, 409, 429, 500.
+  Solo admin. Elimina de 1 a 100 lotes en una transacción: si alguno no existe (404), está reservado o vendido (409) o aparece en pedidos anteriores (409), no se elimina ninguno.
+  Cuerpo obligatorio: application/json.
+  Campos JSON: `ids` (obligatorio).
+
 ### `/lotes/{id}`
 
 - **GET** · Bearer · respuestas: 200, 400, 401, 403, 404, 409, 412, 413, 422, 428, 429, 500.
@@ -115,6 +122,7 @@ El registro público crea compradores. Catálogo, compradores, ventas y reportes
 ### `/tienda/portada`
 
 - **GET** · pública · respuestas: 200, 400, 401, 403, 404, 409, 412, 413, 422, 428, 429, 500.
+  Lotes disponibles paginados, categorías, destacados y `limites` del universo disponible (precio mínimo, máximo y medio por kilo, kilos totales).
 
 ### `/tienda/lotes`
 
@@ -123,11 +131,13 @@ El registro público crea compradores. Catálogo, compradores, ventas y reportes
 ### `/tienda/lotes/{id}`
 
 - **GET** · pública · respuestas: 200, 400, 401, 403, 404, 409, 412, 413, 422, 428, 429, 500.
+  Ficha pública de un lote con sus especies, preguntas respondidas y `parecidos`: hasta cuatro lotes disponibles que comparten especie, aunque el lote esté a la venta.
   Parámetros: `id` (path, obligatorio).
 
 ### `/tienda/especies/{id}`
 
 - **GET** · pública · respuestas: 200, 400, 401, 403, 404, 409, 412, 413, 422, 428, 429, 500.
+  Ficha pública de una especie: lotes disponibles, `resumenLotes` (lotes, kilos, precio desde y medio) y `tendencia` de 7 días con el precio final medio por kilo ponderado por kilos (null si no hubo ventas).
   Parámetros: `id` (path, obligatorio).
 
 ### `/tienda/sugerencias`
@@ -420,6 +430,7 @@ El registro público crea compradores. Catálogo, compradores, ventas y reportes
 ### `/compras/{id}/factura`
 
 - **GET** · Bearer · respuestas: 200, 400, 401, 403, 404, 409, 422, 429, 500.
+  Datos de la factura comercial (`compra` y `f`, con folio, pedido, canal e importe con letra) o el PDF carta con `Accept: application/pdf`; ambos comparten la misma distribución.
   Parámetros: `id` (path, obligatorio).
 
 ### `/compradores`
@@ -470,6 +481,8 @@ El registro público crea compradores. Catálogo, compradores, ventas y reportes
 ### `/dashboard`
 
 - **GET** · Bearer · respuestas: 200, 400, 401, 403, 404, 406, 409, 412, 422, 428, 429, 500, 503.
+  Resumen del día, últimos 30 días y bloque `analitico` del mes elegido: ingresos por día frente al mes anterior, indicadores con variación, mezcla por tipo, canal (tienda/mostrador), compradores principales y `periodo` con los 12 meses elegibles. El mes en curso se compara con los mismos días del anterior; un mes cerrado, con el anterior completo.
+  Parámetros: `mes` (query).
 
 ### `/buscar/sugerencias`
 

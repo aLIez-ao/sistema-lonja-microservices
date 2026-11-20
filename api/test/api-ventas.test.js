@@ -129,6 +129,23 @@ test('dashboard y búsqueda por entidad conservan sus cifras y no interpretan co
   const tablero = await pedir('GET', '/dashboard');
   assert.equal(tablero.r.status, 200);
   assert.equal(tablero.datos.datos.lotes.vendidos, await modelos.Compra.count());
+  const { analitico } = tablero.datos.datos;
+  const suma = (serie) => Math.round(serie.reduce((s, v) => s + Number(v ?? 0), 0) * 100) / 100;
+  assert.ok(analitico.dias.length >= 28 && analitico.dias.length <= 31);
+  assert.equal(suma(analitico.ingresosMes), Number(analitico.kpis.total));
+  assert.equal(Number(analitico.canales.total), Number(analitico.kpis.total));
+  assert.equal(analitico.canales.tienda.compras + analitico.canales.mostrador.compras, analitico.kpis.compras);
+  assert.ok(analitico.compradores.length <= 5);
+  assert.equal(analitico.periodo.actual, true);
+  assert.equal(analitico.periodo.opciones.length, 12);
+  const pasado = await pedir('GET', '/dashboard?mes=' + analitico.periodo.opciones[1].valor);
+  assert.equal(pasado.r.status, 200);
+  assert.equal(pasado.datos.datos.analitico.periodo.actual, false);
+  assert.ok(pasado.datos.datos.analitico.ingresosMes.every((v) => v !== null));
+  for (const mes of ['2020-01', '13-2026', '9999-01'])
+    assert.equal((await pedir('GET', '/dashboard?mes=' + mes)).r.status, 400);
+  if (analitico.tipos.length)
+    assert.ok(Math.abs(analitico.tipos.reduce((s, t) => s + t.porcentaje, 0) - 100) <= analitico.tipos.length);
   for (const entidad of ['compras', 'lotes', 'especies', 'catalogo', 'compradores', 'tipos', 'usuarios']) {
     for (const q of ['REST', '1', '%_']) {
       const resultado = await pedir('GET', '/buscar/sugerencias?' + new URLSearchParams({ entidad, q }));

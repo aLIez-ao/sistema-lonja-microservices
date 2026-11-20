@@ -78,6 +78,8 @@ export function fila_findOne() {
       [fn('MAX', col('precio_kilo_salida')), 'precioMax'],
       [fn('MIN', col('kilos')), 'kilosMin'],
       [fn('MAX', col('kilos')), 'kilosMax'],
+      [fn('AVG', col('precio_kilo_salida')), 'precioMedio'],
+      [fn('SUM', col('kilos')), 'kilosTotal'],
     ],
     where: disponible(),
     raw: true,
@@ -163,5 +165,18 @@ export function filas_findAll3(where) {
     include: INCLUDE_ESPECIES,
     order: [['fecha', 'DESC']],
     limit: 8,
+  });
+}
+
+/** Compras de los últimos días de lotes que contienen la especie del catálogo indicada. */
+export function comprasRecientesDeCatalogo(idCat, desde) {
+  return Compra.findAll({
+    attributes: ['precio_kilo_final', 'fecha'],
+    where: {
+      fecha: { [Op.gte]: desde },
+      id_cmp: { [Op.in]: literal(`(SELECT id_lte FROM especie WHERE id_cat = ${db.escape(Number(idCat))})`) },
+    },
+    include: [{ model: Lote, as: 'lote', attributes: ['kilos'] }],
+    order: [['fecha', 'ASC']],
   });
 }

@@ -24,6 +24,10 @@ Las suites `api-*.test.js` arrancan HTTP real y comprueban Bearer, renovación y
 | `api-avisos-regresion.test.js`   | Destinatarios, suscripciones, avisos masivos y reintentos.                                                                 |
 | `api-filtros-regresion.test.js`  | Búsquedas, filtros y combinaciones sin convertir entradas en patrones inesperados.                                         |
 | `api-listados-regresion.test.js` | Tamaños, páginas, límites y metadatos de colecciones.                                                                      |
+| `api-ventas.test.js`             | Análisis mensual: suma de ingresos por día, canales, mezcla por tipo, meses elegibles y rechazo de meses inválidos.        |
+| `api-store.test.js`              | Tendencia de 7 días ponderada por kilos, resumen de disponibilidad, precio medio de la portada y lotes parecidos.          |
+| `api-catalogo.test.js`           | Eliminación en bloque atómica: validación, lote vendido o con pedidos anteriores y eliminación correcta.                   |
+| `factura-letra.test.js`          | Importe con letra: apócopes, cientos, miles y millones.                                                                    |
 
 Las pruebas de negocio y migraciones comprueban integridad, reservas, unicidad y reversión. Las suites HTML históricas quedan en el monolito del [repositorio original](https://github.com/aLIez-ao/sistema-lonja); las regresiones activas ejercitan REST y el cliente actual.
 
@@ -37,6 +41,6 @@ El comando del job, ejecutado desde `api/` y con las variables de la base de ens
 node --test --test-concurrency=1 test/api-*.test.js test/migraciones.test.js test/servicios-modulares.test.js
 ```
 
-`tools/cobertura.js` incluye código del servidor no ejecutado y exige al menos 80 % de líneas. Los informes se guardan en el directorio temporal del sistema. La revisión del 18 de noviembre de 2026 registró 154 pruebas correctas y una omisión esperada de SQLite en la suite API completa; el job MariaDB registró 121 correctas. La cobertura de líneas fue 86,02 %. Se comprobó además una copia de los archivos versionados, sin `.env` ni vistas locales ignoradas, reutilizando las dependencias instaladas. Estos resultados no acreditan una instalación independiente de dependencias ni un servidor publicado.
+`tools/cobertura.js` incluye código del servidor no ejecutado y exige al menos 80 % de líneas. Los informes se guardan en el directorio temporal del sistema. La revisión del 18 de noviembre de 2026 registró 154 pruebas correctas y una omisión esperada de SQLite en la suite API completa; el job MariaDB registró 121 correctas. La cobertura de líneas fue 86,02 %. La revisión del 19 de noviembre, en SQLite, registró 160 correctas, la misma omisión y 86,64 % de líneas; el job MariaDB no se ejecutó en esa revisión. Se comprobó además una copia de los archivos versionados, sin `.env` ni vistas locales ignoradas, reutilizando las dependencias instaladas. Estos resultados no acreditan una instalación independiente de dependencias ni un servidor publicado.
 
 Los recorridos que incluyen páginas, cookie y descargas se explican en [pruebas del cliente](../../client/docs/06-pruebas.md). CI, cobertura conjunta y el ensayo HTTPS están en [la guía compartida](../../docs/06-pruebas.md).

@@ -12,7 +12,9 @@ ventasApi.use(
   autenticar,
   exigirRol('admin', 'capturista'),
 );
-ventasApi.get('/dashboard', async (req, res) => res.json({ datos: await estadisticasInicio() }));
+ventasApi.get('/dashboard', async (req, res) =>
+  res.json({ datos: await estadisticasInicio({ mes: typeof req.query.mes === 'string' ? req.query.mes : undefined }) }),
+);
 ventasApi.get('/buscar/sugerencias', async (req, res) => {
   const entidad = typeof req.query.entidad === 'string' ? req.query.entidad : '';
   if (!ENTIDADES.includes(entidad)) return res.json({ datos: [] });

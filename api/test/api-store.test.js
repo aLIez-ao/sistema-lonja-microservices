@@ -120,6 +120,35 @@ test('preguntas requieren moderación y las opiniones requieren una compra real'
   const detalle = await pedir('GET', `/cuenta/listas/${lista.id_lista}`);
   assert.equal(detalle.datos.datos.items[0].vendido, true);
   assert.doesNotMatch(JSON.stringify(detalle.datos), /codigo_cpr|precio_kilo_final|precio_total/);
-  const publico = await fetch(base + `/tienda/especies/${catalogo.id_cat}`);
-  assert.doesNotMatch(JSON.stringify(await publico.json()), /social@example.test|Ana Pérez/);
+  const publico = await (await fetch(base + `/tienda/especies/${catalogo.id_cat}`)).json();
+  assert.doesNotMatch(JSON.stringify(publico), /social@example.test|Ana Pérez/);
+  // Tendencia de 7 días: la venta de hoy aparece ponderada en el último día; el lote vendido ya no está disponible.
+  assert.equal(publico.datos.tendencia.length, 7);
+  assert.deepEqual(
+    { precioMedio: Number(publico.datos.tendencia[6].precioMedio), kilos: publico.datos.tendencia[6].kilos },
+    { precioMedio: 25, kilos: 12 },
+  );
+  assert.ok(publico.datos.tendencia.slice(0, 6).every((d) => d.precioMedio === null));
+  assert.deepEqual(publico.datos.resumenLotes, { lotes: 0, kilos: 0, precioDesde: null, precioMedio: null });
+});
+
+test('la portada informa precio medio y kilos disponibles, y la ficha de lote sugiere parecidos', async () => {
+  const tipo = await modelos.Tipo.findOne();
+  const otroLote = await modelos.Lote.create({ kilos: 8, numero_cajas: 1, precio_kilo_salida: '40.00' });
+  const tercero = await modelos.Lote.create({ kilos: 2, numero_cajas: 1, precio_kilo_salida: '20.00' });
+  for (const l of [otroLote, tercero])
+    await modelos.Especie.create({
+      id_lte: l.id_lte,
+      id_cat: catalogo.id_cat,
+      id_tpo: tipo.id_tpo,
+      nombre: catalogo.nombre,
+    });
+  const portada = (await (await fetch(base + '/tienda/portada')).json()).datos;
+  assert.equal(portada.limites.kilosTotal, 10);
+  assert.equal(Number(portada.limites.precioMedio), 30);
+  const ficha = (await (await fetch(base + `/tienda/lotes/${otroLote.id_lte}`)).json()).datos;
+  assert.deepEqual(
+    ficha.parecidos.map((l) => l.id_lte),
+    [tercero.id_lte],
+  );
 });

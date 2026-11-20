@@ -30,6 +30,8 @@ Un lote se vende completo una sola vez. La reserva y el pago vuelven a comprobar
 
 Las ediciones de lotes y compras comparan ETag/If-Match. Una versión antigua no se sustituye silenciosamente por la versión actual.
 
+Un lote solo se elimina si está disponible y no aparece en pedidos anteriores, aunque estén cancelados o expirados: `pedido_item` conserva el historial con `ON DELETE RESTRICT`. La eliminación individual y la de varios lotes (`POST /lotes/eliminacion`) informan ese motivo con 409; la de varios es atómica.
+
 ## Sesión
 
 `accounts/services/sesiones.js` emite access de 15 minutos y refresh opaco de ocho horas. La base guarda el hash del refresh y su sesión. Una rotación conserva el hash consumido para detectar su reutilización y revocar la sesión.

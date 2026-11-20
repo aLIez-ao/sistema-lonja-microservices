@@ -39,43 +39,44 @@ export async function generarFacturaPDF(compra) {
       const W = 532;
 
       // --- Encabezado ---
-      doc.rect(X, 40, W, 6).fill(COLOR.marino);
-      dibujarLogo(doc, X, 56, 46);
+      dibujarLogo(doc, X, 40, 46);
 
-      doc.fillColor(COLOR.teal).font('Helvetica-Bold').fontSize(9).text(f.emisor.lema, X, 110, { lineBreak: false });
+      doc.fillColor(COLOR.teal).font('Helvetica-Bold').fontSize(9).text(f.emisor.lema, X, 94, { lineBreak: false });
       doc
         .fillColor(COLOR.texto)
         .font('Helvetica')
         .fontSize(7.5)
-        .text(`RFC: ${f.emisor.rfc}  ·  ${f.emisor.regimen}`, X, 123, { lineBreak: false })
-        .text(f.emisor.direccion, X, 133, { lineBreak: false })
-        .text(f.emisor.contacto, X, 143, { lineBreak: false });
+        .text(`RFC: ${f.emisor.rfc}  ·  ${f.emisor.regimen}`, X, 107, { lineBreak: false })
+        .text(f.emisor.direccion, X, 117, { lineBreak: false })
+        .text(f.emisor.contacto, X, 127, { lineBreak: false });
 
-      // Recuadro de folio
+      // Recuadro de folio: título sobre fondo marino y filas folio, fecha y, si existe, pedido
+      const filasFolio = [
+        ['FOLIO', f.folio, COLOR.marino, 'Helvetica-Bold'],
+        ['FECHA', f.fecha, COLOR.texto, 'Helvetica'],
+        ...(f.pedido ? [['PEDIDO', f.pedido, COLOR.texto, 'Helvetica']] : []),
+      ];
+      const altoFolio = 22 + filasFolio.length * 18 + 6;
       doc.save();
-      doc.roundedRect(380, 56, 192, 64, 6).clip();
-      doc.rect(380, 56, 192, 22).fill(COLOR.marino);
+      doc.roundedRect(380, 40, 192, altoFolio, 6).clip();
+      doc.rect(380, 40, 192, 22).fill(COLOR.marino);
       doc.restore();
-      doc.roundedRect(380, 56, 192, 64, 6).lineWidth(0.75).strokeColor(COLOR.borde).stroke();
+      doc.roundedRect(380, 40, 192, altoFolio, 6).lineWidth(0.75).strokeColor(COLOR.borde).stroke();
       doc
         .fillColor(COLOR.blanco)
         .font('Helvetica-Bold')
         .fontSize(10)
-        .text('FACTURA COMERCIAL', 380, 63, { width: 192, align: 'center', characterSpacing: 0.6 });
-      doc.fillColor(COLOR.tenue).font('Helvetica-Bold').fontSize(8.5).text('FOLIO:', 392, 86, { lineBreak: false });
-      doc.fillColor(COLOR.marino).text(f.folio, 392, 86, { width: 168, align: 'right' });
-      doc.rect(392, 98.5, 168, 0.5).fill(COLOR.borde);
-      doc.fillColor(COLOR.tenue).font('Helvetica-Bold').fontSize(8.5).text('FECHA:', 392, 104, { lineBreak: false });
-      doc.fillColor(COLOR.texto).font('Helvetica').text(f.fecha, 392, 104, { width: 168, align: 'right' });
+        .text('FACTURA COMERCIAL', 380, 47, { width: 192, align: 'center', characterSpacing: 0.6 });
+      filasFolio.forEach(([rotulo, valor, color, fuente], i) => {
+        const fy = 70 + i * 18;
+        doc.fillColor(COLOR.tenue).font('Helvetica-Bold').fontSize(8.5).text(rotulo, 392, fy, { lineBreak: false });
+        doc.fillColor(color).font(fuente).text(valor, 392, fy, { width: 168, align: 'right' });
+        if (i < filasFolio.length - 1) doc.rect(392, fy + 12.5, 168, 0.5).fill(COLOR.borde);
+      });
 
-      // --- Receptor ---
-      let y = 162;
-      doc.roundedRect(X, y, W, 62, 6).lineWidth(0.75).fillAndStroke(COLOR.fondo, COLOR.borde);
-      doc
-        .fillColor(COLOR.marino)
-        .font('Helvetica-Bold')
-        .fontSize(8.5)
-        .text('DATOS DEL RECEPTOR / COMPRADOR', X + 12, y + 9, { characterSpacing: 0.4 });
+      // --- Tarjetas: facturado a / entrega y pago ---
+      let y = 150;
+      const anchoTarjeta = (W - 12) / 2;
       const par = (etiqueta, valor, px, py, ancho) => {
         doc.font('Helvetica').fontSize(8.5);
         const rotulo = `${etiqueta}: `;
@@ -86,17 +87,35 @@ export async function generarFacturaPDF(compra) {
           .fillColor(COLOR.texto)
           .text(String(valor), px + anchoRotulo, py, { width: ancho - anchoRotulo, height: 10, ellipsis: true });
       };
-      par('Cliente', f.cliente.nombre, X + 12, y + 24, 240);
-      par('Código de comprador', `#${f.cliente.codigo}`, X + 12, y + 36, 240);
-      par('Correo', f.cliente.correo, X + 12, y + 48, 240);
-      par('Dirección', f.cliente.direccion, X + 270, y + 24, 250);
-      par('Uso CFDI', f.cliente.usoCfdi, X + 270, y + 36, 250);
-      par('Método de pago', f.cliente.metodoPago, X + 270, y + 48, 250);
+      const tarjeta = (px, titulo, nombre, lineas) => {
+        doc.roundedRect(px, y, anchoTarjeta, 70, 6).lineWidth(0.75).strokeColor(COLOR.borde).stroke();
+        doc
+          .fillColor(COLOR.tenue)
+          .font('Helvetica-Bold')
+          .fontSize(7.5)
+          .text(titulo, px + 12, y + 9, { characterSpacing: 0.4 });
+        doc
+          .fillColor(COLOR.marino)
+          .font('Helvetica-Bold')
+          .fontSize(10)
+          .text(nombre, px + 12, y + 20, { width: anchoTarjeta - 24, height: 12, ellipsis: true });
+        lineas.forEach(([etiqueta, valor], i) => par(etiqueta, valor, px + 12, y + 35 + i * 12, anchoTarjeta - 24));
+      };
+      tarjeta(X, 'FACTURADO A', f.cliente.nombre, [
+        ['Código de comprador', `#${f.cliente.codigo}`],
+        ['Correo', f.cliente.correo],
+        ['Uso CFDI', f.cliente.usoCfdi],
+      ]);
+      tarjeta(X + anchoTarjeta + 12, 'ENTREGA Y PAGO', f.canal, [
+        ['Dirección', f.cliente.direccion],
+        ['Método de pago', f.cliente.metodoPago],
+        ['Moneda', 'MXN'],
+      ]);
 
       // --- Tabla de conceptos ---
-      y = 240;
-      doc.rect(X, y, W, 22).fill(COLOR.marino);
-      doc.fillColor(COLOR.blanco).font('Helvetica-Bold').fontSize(8);
+      y = 236;
+      doc.rect(X, y + 21, W, 1.5).fill(COLOR.marino);
+      doc.fillColor(COLOR.marino).font('Helvetica-Bold').fontSize(8);
       let cx = X;
       for (const col of COLS) {
         doc.text(col.titulo, cx + 8, y + 7.5, {
@@ -111,10 +130,9 @@ export async function generarFacturaPDF(compra) {
       doc.font('Helvetica-Bold').fontSize(8.5);
       const altoEspecies = doc.heightOfString(f.concepto.especies, { width: COLS[1].ancho - 16 });
       const altoFila = Math.max(40, altoEspecies + 26);
-      doc.rect(X, y, W, altoFila).lineWidth(0.75).fillAndStroke(COLOR.blanco, COLOR.borde);
+      doc.rect(X, y + altoFila - 0.75, W, 0.75).fill(COLOR.borde);
       cx = X;
       for (const col of COLS) {
-        if (cx > X) doc.rect(cx, y, 0.5, altoFila).fill(COLOR.borde);
         const opciones = { width: col.ancho - 16, align: col.der ? 'right' : 'left' };
         if (col.clave === 'especies') {
           doc
@@ -144,41 +162,40 @@ export async function generarFacturaPDF(compra) {
         cx += col.ancho;
       }
 
-      // --- Notas fiscales y totales ---
+      // --- Importe con letra, notas fiscales y totales ---
       y += altoFila + 14;
-      doc.roundedRect(X, y, 320, 66, 6).lineWidth(0.75).fillAndStroke(COLOR.fondo, COLOR.borde);
+      const titulo = (texto, ty) =>
+        doc.fillColor(COLOR.tenue).font('Helvetica-Bold').fontSize(7.5).text(texto, X, ty, { characterSpacing: 0.4 });
+      titulo('IMPORTE CON LETRA', y);
       doc
-        .fillColor(COLOR.marino)
+        .fillColor(COLOR.texto)
         .font('Helvetica-Bold')
-        .fontSize(8)
-        .text('INFORMACIÓN FISCAL Y GARANTÍA:', X + 10, y + 9);
+        .fontSize(8.5)
+        .text(f.importeLetra, X, y + 11, { width: 320 });
+      titulo('INFORMACIÓN FISCAL Y GARANTÍA', doc.y + 8);
       doc.fillColor(COLOR.texto).font('Helvetica').fontSize(7.5);
-      let ny = y + 22;
+      let ny = doc.y + 2;
       for (const nota of f.notasFiscales) {
-        doc.text(`•  ${nota}`, X + 10, ny, { width: 300 });
+        doc.text(`•  ${nota}`, X, ny, { width: 320 });
         ny = doc.y + 2;
       }
+      const finNotas = doc.y;
 
       const tx = 375;
-      doc.roundedRect(tx, y, 197, 66, 6).lineWidth(0.75).fillAndStroke(COLOR.fondo, COLOR.borde);
-      doc
-        .font('Helvetica')
-        .fontSize(8.5)
-        .fillColor(COLOR.tenue)
-        .text('Subtotal:', tx + 12, y + 10, { lineBreak: false });
-      doc.fillColor(COLOR.texto).text(f.subtotal, tx + 12, y + 10, { width: 173, align: 'right' });
-      doc.fillColor(COLOR.tenue).text('IVA (0%):', tx + 12, y + 24, { lineBreak: false });
-      doc.fillColor(COLOR.texto).text(f.iva, tx + 12, y + 24, { width: 173, align: 'right' });
-      doc.rect(tx + 12, y + 38, 173, 0.5).fill(COLOR.borde);
+      doc.font('Helvetica').fontSize(8.5).fillColor(COLOR.tenue).text('Subtotal', tx, y, { lineBreak: false });
+      doc.fillColor(COLOR.texto).text(f.subtotal, tx, y, { width: 197, align: 'right' });
+      doc.fillColor(COLOR.tenue).text('IVA (0 %)', tx, y + 14, { lineBreak: false });
+      doc.fillColor(COLOR.texto).text(f.iva, tx, y + 14, { width: 197, align: 'right' });
+      doc.rect(tx, y + 30, 197, 1.5).fill(COLOR.marino);
       doc
         .fillColor(COLOR.marino)
         .font('Helvetica-Bold')
         .fontSize(10)
-        .text('TOTAL:', tx + 12, y + 46, { lineBreak: false });
-      doc.fontSize(11).text(f.total, tx + 12, y + 45.5, { width: 173, align: 'right' });
+        .text('TOTAL', tx, y + 38, { lineBreak: false });
+      doc.fontSize(11).text(f.total, tx, y + 37.5, { width: 197, align: 'right' });
 
       // --- Cadena y sello ---
-      y += 66 + 18;
+      y = Math.max(finNotas, y + 52) + 18;
       doc.rect(X, y, W, 0.75).fill(COLOR.borde);
       doc
         .fillColor(COLOR.texto)
@@ -203,6 +220,11 @@ export async function generarFacturaPDF(compra) {
         .fontSize(7.5)
         .fillColor(COLOR.tenue)
         .text(f.leyenda, X, doc.y + 14, { width: W, align: 'center' });
+      doc
+        .font('Helvetica')
+        .fontSize(7)
+        .fillColor(COLOR.tenue)
+        .text('Página 1 de 1', X, doc.y + 6, { width: W, align: 'right' });
 
       doc.end();
     } catch (error) {

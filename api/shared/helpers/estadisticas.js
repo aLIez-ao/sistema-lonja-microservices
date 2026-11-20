@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { Compra, Lote, Comprador, Especie, Tipo, Pedido, Pregunta, Opinion } from '../../models/index.js';
 import { hoy, rangoDelDia, redondea, formatoFecha, formatoHora, NOMBRES_MESES } from './fechas.js';
 import { ESTADO_PEDIDO } from '../../models/Pedido.js';
+import { ErrorDeUsuario } from './utiles.js';
 
 const DIA = 24 * 60 * 60 * 1000;
 const claveDia = (d) =>
@@ -28,7 +29,7 @@ const top = (mapa, campo, n = 5) =>
     .sort((a, b) => b[campo] - a[campo])
     .slice(0, n);
 
-export async function estadisticasInicio() {
+export async function estadisticasInicio({ mes: mesPedido } = {}) {
   const fechaHoy = hoy();
   const { inicio: inicioHoy, fin: finHoy } = rangoDelDia(fechaHoy);
   const [anio, mes] = fechaHoy.split('-').map(Number);
@@ -114,6 +115,18 @@ export async function estadisticasInicio() {
     porComprador.set(nombre, acc);
   }
 
+  const periodo = periodoPedido(mesPedido, fechaHoy);
+  const analitico = periodo.actual
+    ? analisisMensual({
+        comprasMes,
+        comprasMesAnterior: entre(inicioMesAnterior, inicioMes),
+        inicioMes,
+        inicioMesAnterior,
+        diaHoy: Number(fechaHoy.slice(8)),
+      })
+    : await analisisDeOtroMes(periodo);
+  analitico.periodo = periodo;
+
   const topEspecies = top(porEspecie, 'kilos');
   const topCompradores = top(porComprador, 'total');
   const disponibles = Math.max(0, totalLotes - lotesVendidos);
@@ -152,5 +165,161 @@ export async function estadisticasInicio() {
       totalesCompradores: topCompradores.map((c) => c.total),
     },
     hayActividad30: ultimos30.length > 0,
+    analitico,
+  };
+}
+
+const primerDia = (anio, mes) => `${anio}-${String(mes).padStart(2, '0')}-01`;
+const mesPrevio = (anio, mes) => (mes === 1 ? [anio - 1, 12] : [anio, mes - 1]);
+const MESES_ELEGIBLES = 12;
+
+/** Valida ?mes=AAAA-MM: uno de los últimos 12 meses, incluido el actual. */
+function periodoPedido(mesPedido, fechaHoy) {
+  const [anioHoy, mesHoy] = fechaHoy.split('-').map(Number);
+  const opciones = [];
+  let [a, m] = [anioHoy, mesHoy];
+  for (let i = 0; i < MESES_ELEGIBLES; i++) {
+    opciones.push({ valor: `${a}-${String(m).padStart(2, '0')}`, nombre: `${NOMBRES_MESES[m - 1]} ${a}` });
+    [a, m] = mesPrevio(a, m);
+  }
+  const valor = mesPedido === undefined || mesPedido === '' ? opciones[0].valor : String(mesPedido);
+  const elegido = opciones.find((o) => o.valor === valor);
+  if (!elegido) throw new ErrorDeUsuario('El mes debe ser uno de los últimos 12, con formato AAAA-MM.', 400);
+  const [anio, mes] = valor.split('-').map(Number);
+  return {
+    mes: valor,
+    nombre: elegido.nombre,
+    nombreMes: NOMBRES_MESES[mes - 1],
+    nombreAnterior: NOMBRES_MESES[mesPrevio(anio, mes)[1] - 1],
+    actual: valor === opciones[0].valor,
+    opciones,
+  };
+}
+
+/** Análisis de un mes ya cerrado frente a su mes anterior completo. */
+async function analisisDeOtroMes(periodo) {
+  const [anio, mes] = periodo.mes.split('-').map(Number);
+  const inicioMes = rangoDelDia(primerDia(anio, mes)).inicio;
+  const inicioMesAnterior = rangoDelDia(primerDia(...mesPrevio(anio, mes))).inicio;
+  const [as, ms] = mes === 12 ? [anio + 1, 1] : [anio, mes + 1];
+  const finMes = rangoDelDia(primerDia(as, ms)).inicio;
+  const compras = await Compra.findAll({
+    where: { fecha: { [Op.gte]: inicioMesAnterior, [Op.lt]: finMes } },
+    include: [
+      { model: Comprador, as: 'comprador' },
+      {
+        model: Lote,
+        as: 'lote',
+        include: [{ model: Especie, as: 'especies', include: [{ model: Tipo, as: 'tipo' }] }],
+      },
+    ],
+  });
+  return analisisMensual({
+    comprasMes: compras.filter((c) => c.fecha >= inicioMes),
+    comprasMesAnterior: compras.filter((c) => c.fecha < inicioMes),
+    inicioMes,
+    inicioMesAnterior,
+    diaHoy: diasDelMes(inicioMes),
+  });
+}
+
+const diasDelMes = (inicio) => {
+  const [a, m] = claveDia(inicio.getTime() + DIA / 2)
+    .split('-')
+    .map(Number);
+  return new Date(Date.UTC(a, m, 0)).getUTCDate();
+};
+
+/**
+ * Análisis del mes en curso frente al anterior: ingresos por día del mes,
+ * mezcla por tipo, canal de venta y compradores principales.
+ */
+function analisisMensual({ comprasMes, comprasMesAnterior, inicioMes, inicioMesAnterior, diaHoy }) {
+  const diasMes = diasDelMes(inicioMes);
+  const diasAnterior = diasDelMes(inicioMesAnterior);
+  const porDiaDelMes = (compras, dias) => {
+    const serie = Array(dias).fill(0);
+    for (const c of compras) serie[Number(claveDia(c.fecha).slice(8)) - 1] += Number(c.precio_total);
+    return serie.map(redondea);
+  };
+  const actual = porDiaDelMes(comprasMes, diasMes).map((v, i) => (i < diaHoy ? v : null));
+  const anterior = porDiaDelMes(comprasMesAnterior, diasAnterior);
+
+  // Un lote con especies de varios tipos reparte sus kilos e importe en partes iguales.
+  const porTipo = new Map();
+  for (const c of comprasMes) {
+    const tipos = [...new Set(c.lote.especies.map((e) => e.tipo?.nombre).filter(Boolean))];
+    const partes = tipos.length ? tipos : ['Sin tipo'];
+    for (const nombre of partes) {
+      const acc = porTipo.get(nombre) ?? { kilos: 0, total: 0 };
+      acc.kilos += Number(c.lote.kilos) / partes.length;
+      acc.total += Number(c.precio_total) / partes.length;
+      porTipo.set(nombre, acc);
+    }
+  }
+  const kilosMes = [...porTipo.values()].reduce((s, v) => s + v.kilos, 0);
+  const tipos = [...porTipo.entries()]
+    .map(([nombre, v]) => ({
+      nombre,
+      kilos: redondea(v.kilos),
+      total: redondea(v.total),
+      porcentaje: kilosMes ? Math.round((v.kilos / kilosMes) * 100) : 0,
+    }))
+    .sort((a, b) => b.kilos - a.kilos);
+
+  const canal = (lista) => ({
+    compras: lista.length,
+    total: redondea(lista.reduce((s, c) => s + Number(c.precio_total), 0)),
+  });
+  const tienda = canal(comprasMes.filter((c) => c.id_ped != null));
+  const mostrador = canal(comprasMes.filter((c) => c.id_ped == null));
+
+  const compradores = new Map();
+  for (const c of comprasMes) {
+    const clave = c.comprador.codigo_cpr;
+    const acc = compradores.get(clave) ?? {
+      codigo_cpr: clave,
+      nombre: `${c.comprador.nombre} ${c.comprador.apellido_paterno}`,
+      compras: 0,
+      kilos: 0,
+      total: 0,
+    };
+    acc.compras += 1;
+    acc.kilos += Number(c.lote.kilos);
+    acc.total += Number(c.precio_total);
+    compradores.set(clave, acc);
+  }
+  const principales = [...compradores.values()]
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5)
+    .map((v) => ({ ...v, kilos: redondea(v.kilos), total: redondea(v.total), ticket: redondea(v.total / v.compras) }));
+
+  const resumen = (lista) => {
+    const r = sumar(lista);
+    return { ...r, ticketMedio: r.compras ? redondea(r.total / r.compras) : 0 };
+  };
+  // Comparación justa: el mes anterior se corta en el mismo día del mes.
+  const mismoTramo = comprasMesAnterior.filter((c) => Number(claveDia(c.fecha).slice(8)) <= diaHoy);
+  const ahora = resumen(comprasMes);
+  const antes = resumen(mismoTramo);
+  const cambio = (campo) => variacion(ahora[campo], antes[campo]);
+
+  return {
+    dias: Array.from({ length: Math.max(diasMes, diasAnterior) }, (_, i) => String(i + 1)),
+    ingresosMes: actual,
+    ingresosMesAnterior: anterior,
+    kpis: {
+      ...ahora,
+      variacion: {
+        total: cambio('total'),
+        kilos: cambio('kilos'),
+        compras: cambio('compras'),
+        ticketMedio: cambio('ticketMedio'),
+        precioMedio: cambio('precioMedio'),
+      },
+    },
+    tipos,
+    canales: { tienda, mostrador, total: redondea(tienda.total + mostrador.total) },
+    compradores: principales,
   };
 }

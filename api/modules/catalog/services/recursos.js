@@ -8,7 +8,16 @@ export { etag } from '../../../shared/helpers/etag.js';
 import { etag } from '../../../shared/helpers/etag.js';
 import { where, fn, col } from 'sequelize';
 import db from '../../../shared/config/db.js';
-import { Tipo, EspecieCatalogo, Especie, Lote, ListaItem, Compra, Comprador } from '../../../models/index.js';
+import {
+  Tipo,
+  EspecieCatalogo,
+  Especie,
+  Lote,
+  ListaItem,
+  Compra,
+  Comprador,
+  PedidoItem,
+} from '../../../models/index.js';
 import { sincronizarEspecies } from '../helpers/lotes.js';
 import { loteDisponible } from './disponibilidad.js';
 import { ErrorDeUsuario } from '../../../shared/helpers/utiles.js';
@@ -204,6 +213,12 @@ async function datosValidos(recurso, entrada, existente, transaction) {
   return salida;
 }
 
+/** Un lote que estuvo en algún pedido se conserva para no romper el historial de ese pedido. */
+async function exigirSinPedidos(id, transaction) {
+  if (await PedidoItem.count({ where: { id_lte: id }, transaction }))
+    fallo(`El lote #${id} aparece en pedidos anteriores y se conserva por historial.`, 409);
+}
+
 async function exigirDisponible(id, transaction) {
   const { motivo } = await loteDisponible(id, { transaction });
   if (motivo)
@@ -244,10 +259,42 @@ export async function guardar(recurso, entrada, id, ifMatch) {
 export async function eliminar(recurso, id) {
   await db.transaction(async (transaction) => {
     const fila = await obtener(recurso, id, transaction);
-    if (recurso === 'lotes') await exigirDisponible(id, transaction);
+    if (recurso === 'lotes') {
+      await exigirDisponible(id, transaction);
+      await exigirSinPedidos(id, transaction);
+    }
     if (recurso === 'especies') await exigirDisponible(fila.id_lte, transaction);
     await fila.destroy({ transaction });
     if (['lotes', 'catalogo'].includes(recurso))
       await ListaItem.destroy({ where: { tipo: recurso === 'lotes' ? 'lote' : 'especie', id_ref: id }, transaction });
+  });
+}
+
+/** Elimina varios lotes disponibles de forma atómica: todos o ninguno. */
+export async function eliminarLotes(cuerpo) {
+  const ids = cuerpo?.ids;
+  if (
+    !Array.isArray(ids) ||
+    ids.length < 1 ||
+    ids.length > 100 ||
+    !ids.every((id) => Number.isSafeInteger(id) && id > 0) ||
+    new Set(ids).size !== ids.length
+  )
+    fallo('Indica entre 1 y 100 lotes distintos.', 400);
+  await db.transaction(async (transaction) => {
+    // Bloquear todos los lotes antes de leer reservas evita una instantánea anterior a un pedido concurrente.
+    await Lote.findAll({
+      where: { id_lte: ids },
+      order: [['id_lte', 'ASC']],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    for (const id of [...ids].sort((a, b) => a - b)) {
+      const lote = await obtener('lotes', id, transaction);
+      await exigirDisponible(id, transaction);
+      await exigirSinPedidos(id, transaction);
+      await lote.destroy({ transaction });
+    }
+    await ListaItem.destroy({ where: { tipo: 'lote', id_ref: ids }, transaction });
   });
 }

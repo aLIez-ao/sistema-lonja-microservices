@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { autenticar, exigirRol } from '../../../middleware/autenticar.js';
-import { listar, obtener, guardar, eliminar, serializar, etag } from '../services/recursos.js';
+import { listar, obtener, guardar, eliminar, eliminarLotes, serializar, etag } from '../services/recursos.js';
 import { actualizarImagen, quitarImagen } from '../services/imagen.js';
 
 export const catalog = Router();
@@ -18,6 +18,10 @@ catalog.put('/catalogo/:id/imagen', upload.single('imagen'), async (req, res) =>
 });
 catalog.delete('/catalogo/:id/imagen', async (req, res) => {
   await quitarImagen(req.params.id);
+  res.status(204).end();
+});
+catalog.post('/lotes/eliminacion', exigirRol('admin'), async (req, res) => {
+  await eliminarLotes(req.body);
   res.status(204).end();
 });
 for (const recurso of ['tipos', 'catalogo', 'especies', 'lotes']) {

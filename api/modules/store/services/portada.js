@@ -1,13 +1,22 @@
 import * as consultas from './tiendaConsultas.js';
 import { leerListado } from '../../../shared/helpers/listado.js';
 import { filtroEntero, filtroNumero } from '../../../shared/helpers/filtros.js';
-import { rangoDelDia, hoy } from '../../../shared/helpers/fechas.js';
+import { rangoDelDia, hoy, redondea } from '../../../shared/helpers/fechas.js';
 import { prepararLote, precioMinimo } from '../../../shared/helpers/tiendaVista.js';
 /** Límites de precio y peso sobre el universo completo de lotes disponibles. */
 export async function limitesDisponibles() {
   const fila = await consultas.fila_findOne();
   if (fila?.precioMin == null) {
-    return { hayLotes: false, precioMin: 0, precioMax: 0, kilosMin: 0, kilosMax: 0, pasoPrecio: 1 };
+    return {
+      hayLotes: false,
+      precioMin: 0,
+      precioMax: 0,
+      precioMedio: 0,
+      kilosMin: 0,
+      kilosMax: 0,
+      kilosTotal: 0,
+      pasoPrecio: 1,
+    };
   }
 
   const precioRawMin = Number(fila.precioMin);
@@ -19,6 +28,9 @@ export async function limitesDisponibles() {
     precioMax: Math.ceil(precioRawMax / pasoPrecio) * pasoPrecio,
     kilosMin: Math.floor(Number(fila.kilosMin)),
     kilosMax: Math.ceil(Number(fila.kilosMax)),
+    // Precio medio por kilo y kilos totales de lo disponible: referencia del catálogo y de la portada.
+    precioMedio: redondea(fila.precioMedio),
+    kilosTotal: redondea(fila.kilosTotal),
     pasoPrecio,
   };
 }

@@ -176,3 +176,53 @@ test('imágenes de catálogo multipart y data URL se recodifican sin EXIF y cons
   const falsa = await pedir('PUT', ruta, { imagen_data: 'data:image/png;base64,YXJjaGl2byBmYWxzbw==' });
   assert.equal(falsa.r.status, 400);
 });
+
+test('eliminación en bloque de lotes es atómica y exige lotes disponibles', async () => {
+  const crear = () => modelos.Lote.create({ kilos: 5, numero_cajas: 1, precio_kilo_salida: '10.00' });
+  const [a, b, vendido] = [await crear(), await crear(), await crear()];
+  const comprador = await modelos.Comprador.create({
+    nombre: 'Bloque',
+    apellido_paterno: 'Prueba',
+    correo: 'bloque@example.test',
+  });
+  await modelos.Compra.create({
+    id_cmp: vendido.id_lte,
+    codigo_cpr: comprador.codigo_cpr,
+    precio_kilo_final: '10.00',
+    precio_total: '50.00',
+  });
+  for (const cuerpo of [
+    {},
+    { ids: [] },
+    { ids: [a.id_lte, a.id_lte] },
+    { ids: ['1'] },
+    { ids: [Number.MAX_SAFE_INTEGER + 1] },
+  ])
+    assert.equal((await pedir('POST', '/lotes/eliminacion', cuerpo)).r.status, 400);
+  assert.equal((await pedir('POST', '/lotes/eliminacion', { ids: [a.id_lte, vendido.id_lte] })).r.status, 409);
+  assert.ok(await modelos.Lote.findByPk(a.id_lte), 'un fallo no elimina ningún lote');
+  // Un lote que estuvo en un pedido (aunque cancelado) se conserva por historial, con mensaje claro.
+  const conHistorial = await crear();
+  const usuario = await modelos.Usuario.findOne();
+  const pedido = await modelos.Pedido.create({
+    id_usuario: usuario.id,
+    codigo_cpr: comprador.codigo_cpr,
+    estado: 'cancelado',
+    entrega: 'recoger',
+    subtotal: '50.00',
+    total: '50.00',
+  });
+  await modelos.PedidoItem.create({
+    id_ped: pedido.id_ped,
+    id_lte: conHistorial.id_lte,
+    kilos: 5,
+    precio_kilo: '10.00',
+    subtotal: '50.00',
+  });
+  const historial = await pedir('POST', '/lotes/eliminacion', { ids: [a.id_lte, conHistorial.id_lte] });
+  assert.equal(historial.r.status, 409);
+  assert.match(historial.cuerpo.detail, /pedidos anteriores/);
+  assert.equal((await pedir('DELETE', `/lotes/${conHistorial.id_lte}`)).r.status, 409);
+  assert.equal((await pedir('POST', '/lotes/eliminacion', { ids: [a.id_lte, b.id_lte] })).r.status, 204);
+  assert.equal(await modelos.Lote.count({ where: { id_lte: [a.id_lte, b.id_lte] } }), 0);
+});
