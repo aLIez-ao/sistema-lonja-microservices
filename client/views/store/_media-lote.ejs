@@ -2,4 +2,8 @@
   // Imagen del lote. Con foto real la muestra recortada; con la ilustración genérica
   // dibuja el pez de línea de la propuesta sobre el fondo tenue del tipo.
   const _generica = !imagen || imagen.startsWith('/img/placeholder-');
-%><% if (_generica) { %><svg class="media-pez" viewBox="0 0 48 28" width="48" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M3 14c6-8 18-10 27-2l9-6-2 8 2 8-9-6C21 24 9 22 3 14Z"/><circle cx="12" cy="12.5" r="1.6" fill="currentColor" stroke="none"/></svg><% } else { %><img src="<%= imagen %>" alt="" width="320" height="200" loading="lazy"><% } %>
+%><% if (_generica) { %><svg class="media-pez" viewBox="0 0 48 28" width="48" height="28" fill="none"
+  stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+  <path d="M3 14c6-8 18-10 27-2l9-6-2 8 2 8-9-6C21 24 9 22 3 14Z" />
+  <circle cx="12" cy="12.5" r="1.6" fill="currentColor" stroke="none" />
+</svg><% } else { %><img src="<%= imagen %>" alt="" width="320" height="200" loading="lazy"><% } %>

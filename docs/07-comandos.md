@@ -79,7 +79,32 @@ Tras cambiar `package-lock.json`, actualiza el volumen de herramientas con `dock
 
 Con Node instalado, `npm ci` y los mismos comandos `npm run ...` funcionan en el equipo. `npm test -w @lonja/api` y `npm test -w @lonja/client` limitan la suite a una aplicación. La [guía de pruebas](06-pruebas.md) explica Redis, MariaDB y los casos omitidos sin esos servicios.
 
-Prettier revisa JavaScript, JSON, YAML/YML, CSS, HTML y Markdown. La configuración pública está en `package.json`, sección `prettier`; `.prettierignore` excluye dependencias, datos, informes privados y copias de terceros. No procesa plantillas EJS, DBML, SVG ni shell: `views:check` verifica el inventario de vistas y sus referencias. La referencia REST generada también se formatea antes de escribirse. `format:check` detecta diferencias y no modifica archivos; `format` las corrige. CI ejecuta la comprobación.
+`format` y `format:check` usan `tools/formato.js`: Prettier para JavaScript, JSON, YAML/YML, CSS y Markdown; el motor oficial de **HTML Language Features** para HTML, HTM y EJS. En EJS se activa el modo de plantillas y se comprueba que ninguna etiqueta `<% … %>` cambie. El contenido de `pre`, `code`, `textarea` y `script` se conserva. No se aplica el parser HTML de Prettier directamente a EJS.
+
+La configuración de Prettier está en `package.json`; las opciones HTML y las exclusiones públicas están en `tools/formato.js`. `.prettierignore` es opcional y local: se respeta si existe, pero CI y los clones limpios no dependen de él. Los comandos revisan los archivos versionados; para uno nuevo que aún no está preparado en Git puedes pasar su ruta, por ejemplo `npm run format -- client/views/store/nueva.ejs`. También puedes prepararlo con `git add` antes de ejecutar el formato general.
+
+La referencia REST generada también se formatea antes de escribirse. `format:check` detecta diferencias y no modifica archivos; `format` prepara los resultados y después los escribe. `views:check` verifica el inventario de vistas; DBML, SVG y shell no se formatean con estos comandos.
+
+Para usar el mismo formateador de HTML en VS Code, configura el espacio de trabajo con estas opciones. En este equipo están en `.vscode/settings.json`, conservado solo localmente:
+
+```json
+{
+  "files.associations": { "*.ejs": "html" },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "html.format.templating": true,
+  "html.format.wrapLineLength": 120,
+  "html.format.contentUnformatted": "pre,code,textarea,script",
+  "html.format.maxPreserveNewLines": 2,
+  "html.format.endWithNewline": true
+}
+```
+
+Abre un `.ejs` y utiliza **Formatear documento** (`Shift+Alt+F` en Windows), o guarda para aplicar el formato. La asociación cambia el modo de lenguaje a HTML: una extensión específica de EJS podría ofrecer otro resaltado. El formateador preserva las etiquetas de servidor, pero no sustituye la comprobación de EJS ni las pruebas de renderizado. [Documentación oficial de HTML en VS Code](https://code.visualstudio.com/docs/languages/html).
 
 ## Migraciones, correo y operación
 

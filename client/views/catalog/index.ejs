@@ -26,62 +26,69 @@
         </tr>
       </thead>
       <tbody>
-      <% if (!catalogo.length) { %>
+        <% if (!catalogo.length) { %>
         <tr class="fila-vacia">
           <td colspan="7" class="text-center py-4 text-muted">
             <%= (l.q || Object.keys(l.filtros).length) ? 'No hay especies que coincidan con la búsqueda.' : 'El catálogo está vacío. Agrega la primera especie.' %>
           </td>
         </tr>
-      <% } %>
-      <% catalogo.forEach(e => { const usos = uso.get(String(e.id_cat)) || 0; %>
+        <% } %>
+        <% catalogo.forEach(e => { const usos = uso.get(String(e.id_cat)) || 0; %>
         <tr>
           <td><%= e.id_cat %></td>
           <td>
             <% if (e.imagen) { %>
-              <img src="<%= e.imagen %>" alt="<%= e.nombre %>" height="42" width="42" class="rounded border object-fit-cover" data-ocultar-si-falla>
+            <img src="<%= e.imagen %>" alt="<%= e.nombre %>" height="42" width="42"
+              class="rounded border object-fit-cover" data-ocultar-si-falla>
             <% } else { %>
-              <span class="text-muted">—</span>
+            <span class="text-muted">—</span>
             <% } %>
           </td>
           <td>
             <strong><%= e.nombre %></strong>
-            <% if (e.descripcion) { %><div class="small text-muted text-truncate catalogo-descripcion"><%= e.descripcion %></div><% } %>
+            <% if (e.descripcion) { %><div class="small text-muted text-truncate catalogo-descripcion">
+              <%= e.descripcion %></div><% } %>
           </td>
           <td><a class="enlace-registro" href="/catalogo?tipo=<%= e.id_tpo %>"><%= e.tipo.nombre %></a></td>
           <td>
             <% if (usos) { %>
-              <a class="enlace-registro" href="/especies?q=<%= encodeURIComponent(e.nombre) %>"><%= usos %> lote<%= usos === 1 ? '' : 's' %></a>
+            <a class="enlace-registro" href="/especies?q=<%= encodeURIComponent(e.nombre) %>"><%= usos %>
+              lote<%= usos === 1 ? '' : 's' %></a>
             <% } else { %>
-              <span class="text-muted">Sin usar</span>
+            <span class="text-muted">Sin usar</span>
             <% } %>
           </td>
           <td>
             <% if (e.activo) { %>
-              <span class="badge bg-success">Activa</span>
+            <span class="badge bg-success">Activa</span>
             <% } else { %>
-              <span class="badge bg-secondary">Inactiva</span>
+            <span class="badge bg-secondary">Inactiva</span>
             <% } %>
           </td>
           <td class="text-end text-nowrap">
-            <a class="btn btn-sm btn-outline-secondary" href="/catalogo/<%= e.id_cat %>/editar" title="Editar especie del catálogo" aria-label="Editar <%= e.nombre %>">
+            <a class="btn btn-sm btn-outline-secondary" href="/catalogo/<%= e.id_cat %>/editar"
+              title="Editar especie del catálogo" aria-label="Editar <%= e.nombre %>">
               <%- icono('pencil', 14) %>
             </a>
             <% if (usuario.rol === 'admin' && e.activo) { %>
-              <form action="/catalogo/<%= e.id_cat %>?_method=DELETE" method="POST" class="d-inline" data-confirmar="¿Desactivar esta especie del catálogo? Los lotes ya capturados no cambian.">
-                <button class="btn btn-sm btn-outline-danger" type="submit" title="Desactivar" aria-label="Desactivar <%= e.nombre %>">
-                  <%- icono('lock', 14) %>
-                </button>
-              </form>
+            <form action="/catalogo/<%= e.id_cat %>?_method=DELETE" method="POST" class="d-inline"
+              data-confirmar="¿Desactivar esta especie del catálogo? Los lotes ya capturados no cambian.">
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Desactivar"
+                aria-label="Desactivar <%= e.nombre %>">
+                <%- icono('lock', 14) %>
+              </button>
+            </form>
             <% } else if (usuario.rol === 'admin' && !e.activo) { %>
-              <form action="/catalogo/<%= e.id_cat %>/activar" method="POST" class="d-inline">
-                <button class="btn btn-sm btn-outline-success" type="submit" title="Reactivar" aria-label="Reactivar <%= e.nombre %>">
-                  <%- icono('unlock', 14) %>
-                </button>
-              </form>
+            <form action="/catalogo/<%= e.id_cat %>/activar" method="POST" class="d-inline">
+              <button class="btn btn-sm btn-outline-success" type="submit" title="Reactivar"
+                aria-label="Reactivar <%= e.nombre %>">
+                <%- icono('unlock', 14) %>
+              </button>
+            </form>
             <% } %>
           </td>
         </tr>
-      <% }) %>
+        <% }) %>
       </tbody>
     </table>
   </div>

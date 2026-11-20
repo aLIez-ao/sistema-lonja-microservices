@@ -29,34 +29,38 @@
         </tr>
       </thead>
       <tbody>
-      <% if (!compradores.length) { %>
+        <% if (!compradores.length) { %>
         <tr class="fila-vacia">
           <td colspan="6" class="text-center py-4 text-muted">
             <%= (l.q || Object.keys(l.filtros).length) ? 'No hay registros que coincidan con la búsqueda.' : 'No hay compradores registrados en el sistema.' %>
           </td>
         </tr>
-      <% } %>
-      <% compradores.forEach(c => { %>
+        <% } %>
+        <% compradores.forEach(c => { %>
         <tr>
           <td><span class="badge bg-secondary">#<%= c.codigo_cpr %></span></td>
           <td><strong><%= c.nombre %> <%= c.apellido_paterno %> <%= c.apellido_materno || '' %></strong></td>
           <td><%= c.correo %></td>
           <td><%= c.direccion || '—' %></td>
-          <td class="text-end fw-semibold"><a class="enlace-registro" href="/compradores/<%= c.codigo_cpr %>"><%= c.compras.length %></a></td>
+          <td class="text-end fw-semibold"><a class="enlace-registro"
+              href="/compradores/<%= c.codigo_cpr %>"><%= c.compras.length %></a></td>
           <td class="text-end text-nowrap">
-            <a class="btn btn-sm btn-outline-secondary" href="/compradores/<%= c.codigo_cpr %>/editar" title="Editar comprador" aria-label="Editar comprador">
+            <a class="btn btn-sm btn-outline-secondary" href="/compradores/<%= c.codigo_cpr %>/editar"
+              title="Editar comprador" aria-label="Editar comprador">
               <%- icono('pencil', 14) %>
             </a>
             <% if (usuario.rol === 'admin') { %>
-            <form action="/compradores/<%= c.codigo_cpr %>?_method=DELETE" method="POST" class="d-inline" data-confirmar="¿Eliminar este comprador?">
-              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar comprador" aria-label="Eliminar comprador">
+            <form action="/compradores/<%= c.codigo_cpr %>?_method=DELETE" method="POST" class="d-inline"
+              data-confirmar="¿Eliminar este comprador?">
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar comprador"
+                aria-label="Eliminar comprador">
                 <%- icono('trash', 14) %>
               </button>
             </form>
             <% } %>
           </td>
         </tr>
-      <% }) %>
+        <% }) %>
       </tbody>
     </table>
   </div>

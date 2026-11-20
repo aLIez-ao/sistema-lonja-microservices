@@ -10,14 +10,16 @@
           Ábrelo para activar tu cuenta (el enlace vence en 24 horas).
         </p>
         <p class="small text-muted mb-4">
-          Si no llega en unos minutos, revisa la carpeta de spam. Por seguridad, no confirmamos si un correo ya estaba registrado.
+          Si no llega en unos minutos, revisa la carpeta de spam. Por seguridad, no confirmamos si un correo ya estaba
+          registrado.
         </p>
 
         <% if (enlace) { %>
-          <div class="alert alert-info text-start small">
-            <strong>Modo desarrollo:</strong> el correo no está configurado, así que puedes abrir este enlace directamente:
-            <div class="mt-2 text-break"><a href="<%= enlace %>"><%= enlace %></a></div>
-          </div>
+        <div class="alert alert-info text-start small">
+          <strong>Modo desarrollo:</strong> el correo no está configurado, así que puedes abrir este enlace
+          directamente:
+          <div class="mt-2 text-break"><a href="<%= enlace %>"><%= enlace %></a></div>
+        </div>
         <% } %>
 
         <a class="btn btn-primary" href="/acceso">Ir a iniciar sesión</a>

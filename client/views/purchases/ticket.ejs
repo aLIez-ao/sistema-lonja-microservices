@@ -4,7 +4,8 @@
   const _codigo = f.folio.replace('-', '');
 %>
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 d-print-none">
-  <a class="btn btn-sm btn-outline-secondary" href="/compras/<%= compra.id_cmp %>/factura"><%- icono('arrow-left', 14, 'me-1') %>Volver a la factura</a>
+  <a class="btn btn-sm btn-outline-secondary"
+    href="/compras/<%= compra.id_cmp %>/factura"><%- icono('arrow-left', 14, 'me-1') %>Volver a la factura</a>
   <button class="btn btn-primary" type="button" data-print><%- icono('printer', 16, 'me-1') %>Imprimir ticket</button>
 </div>
 
@@ -15,23 +16,48 @@
   </header>
 
   <dl class="ticket__datos">
-    <div><dt>Folio</dt><dd class="fw-bold"><%= f.folio %></dd></div>
-    <div><dt>Fecha</dt><dd><%= f.fecha %></dd></div>
-    <div><dt>Cliente</dt><dd><%= f.cliente.nombre %></dd></div>
-    <div><dt>Código</dt><dd>#<%= f.cliente.codigo %></dd></div>
+    <div>
+      <dt>Folio</dt>
+      <dd class="fw-bold"><%= f.folio %></dd>
+    </div>
+    <div>
+      <dt>Fecha</dt>
+      <dd><%= f.fecha %></dd>
+    </div>
+    <div>
+      <dt>Cliente</dt>
+      <dd><%= f.cliente.nombre %></dd>
+    </div>
+    <div>
+      <dt>Código</dt>
+      <dd>#<%= f.cliente.codigo %></dd>
+    </div>
   </dl>
 
   <div class="ticket__partida">
     <div class="ticket__fila fw-bold"><span><%= f.concepto.especies %></span><span><%= f.concepto.total %></span></div>
-    <div class="ticket__detalle"><%= f.concepto.lote %> · <%= f.concepto.kilos %> kg × <%= f.concepto.final %>/kg · <%= f.concepto.cajas %> caja(s)</div>
+    <div class="ticket__detalle"><%= f.concepto.lote %> · <%= f.concepto.kilos %> kg × <%= f.concepto.final %>/kg ·
+      <%= f.concepto.cajas %> caja(s)</div>
     <div class="ticket__detalle">Precio de salida <%= f.concepto.salida %>/kg</div>
   </div>
 
   <dl class="ticket__totales">
-    <div><dt>Subtotal</dt><dd><%= f.subtotal %></dd></div>
-    <div><dt>IVA (tasa 0 %)</dt><dd><%= f.iva %></dd></div>
-    <div class="total"><dt>TOTAL</dt><dd><%= f.total %></dd></div>
-    <div><dt>Canal</dt><dd><%= compra.id_ped ? 'Pedido en línea' : 'Mostrador' %></dd></div>
+    <div>
+      <dt>Subtotal</dt>
+      <dd><%= f.subtotal %></dd>
+    </div>
+    <div>
+      <dt>IVA (tasa 0 %)</dt>
+      <dd><%= f.iva %></dd>
+    </div>
+    <div class="total">
+      <dt>TOTAL</dt>
+      <dd><%= f.total %></dd>
+    </div>
+    <div>
+      <dt>Canal</dt>
+      <dd><%= compra.id_ped ? 'Pedido en línea' : 'Mostrador' %></dd>
+    </div>
   </dl>
 
   <footer class="ticket__pie">

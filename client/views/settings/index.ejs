@@ -8,54 +8,60 @@
 </div>
 
 <% if (typeof mensaje !== 'undefined' && mensaje) { %>
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <%= mensaje %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <%= mensaje %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 <% } %>
 
 <% if (typeof enlaceVerificacion !== 'undefined' && enlaceVerificacion) { %>
-  <div class="alert alert-info" role="status">
-    Enlace temporal de verificación para desarrollo:
-    <a class="d-block text-break" href="<%= enlaceVerificacion %>"><%= enlaceVerificacion %></a>
-  </div>
+<div class="alert alert-info" role="status">
+  Enlace temporal de verificación para desarrollo:
+  <a class="d-block text-break" href="<%= enlaceVerificacion %>"><%= enlaceVerificacion %></a>
+</div>
 <% } %>
 
 <% if (typeof error !== 'undefined' && error) { %>
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <%= error %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <%= error %>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 <% } %>
 
 <div class="row g-4">
   <!-- Menú lateral de pestañas -->
   <div class="col-lg-3">
     <div class="list-group shadow-sm config-tabs" id="configTabs" role="tablist">
-      <a class="list-group-item list-group-item-action active py-3 fw-semibold" id="tab-sitio" data-bs-toggle="list" href="#pane-sitio" role="tab">
+      <a class="list-group-item list-group-item-action active py-3 fw-semibold" id="tab-sitio" data-bs-toggle="list"
+        href="#pane-sitio" role="tab">
         <%- icono('gear', 16, 'me-2') %>
         Apariencia
       </a>
-      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-cookies" data-bs-toggle="list" href="#pane-cookies" role="tab">
+      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-cookies" data-bs-toggle="list"
+        href="#pane-cookies" role="tab">
         <%- icono('cookie', 16, 'me-2') %>
         Cookies y privacidad
       </a>
       <% if (usuario.rol !== 'comprador') { %>
-      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-cuenta" data-bs-toggle="list" href="#pane-cuenta" role="tab">
+      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-cuenta" data-bs-toggle="list"
+        href="#pane-cuenta" role="tab">
         <%- icono('person', 16, 'me-2') %>
         Mi cuenta
       </a>
       <% } %>
-      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-seguridad" data-bs-toggle="list" href="#pane-seguridad" role="tab">
+      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-seguridad" data-bs-toggle="list"
+        href="#pane-seguridad" role="tab">
         <%- icono('shield-lock', 16, 'me-2') %>
         Seguridad
       </a>
       <% if (usuario.rol === 'admin') { %>
-      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-avisos" data-bs-toggle="list" href="#pane-avisos" role="tab">
+      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-avisos" data-bs-toggle="list"
+        href="#pane-avisos" role="tab">
         <%- icono('megaphone', 16, 'me-2') %>
         Avisos a compradores
       </a>
-      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-correo" data-bs-toggle="list" href="#pane-correo" role="tab">
+      <a class="list-group-item list-group-item-action py-3 fw-semibold" id="tab-correo" data-bs-toggle="list"
+        href="#pane-correo" role="tab">
         <%- icono('envelope', 16, 'me-2') %>
         Correo
       </a>
@@ -66,12 +72,13 @@
   <!-- Contenido de las pestañas -->
   <div class="col-lg-9">
     <div class="tab-content">
-      
+
       <!-- PESTAÑA 1: APARIENCIA -->
       <div class="tab-pane fade show active" id="pane-sitio" role="tabpanel">
         <div class="card p-4">
           <h4 class="h5 fw-bold mb-3 text-primary">Apariencia del sitio</h4>
-          <p class="text-muted small mb-4">Los cambios se aplican al instante y se guardan en tu cuenta. Además se recuerdan en este navegador si aceptaste la categoría de cookies correspondiente.</p>
+          <p class="text-muted small mb-4">Los cambios se aplican al instante y se guardan en tu cuenta. Además se
+            recuerdan en este navegador si aceptaste la categoría de cookies correspondiente.</p>
 
           <form action="/configuracion/guardar" method="POST">
             <div class="row g-3">
@@ -89,7 +96,8 @@
                 <label class="form-label fw-semibold"><%= t('moneda') %></label>
                 <select name="moneda" class="form-select" data-preferencia="moneda">
                   <option value="MXN" <%= pref.moneda === 'MXN' ? 'selected' : '' %>>MXN - Peso Mexicano ($)</option>
-                  <option value="USD" <%= pref.moneda === 'USD' ? 'selected' : '' %>>USD - Dólar Estadounidense ($)</option>
+                  <option value="USD" <%= pref.moneda === 'USD' ? 'selected' : '' %>>USD - Dólar Estadounidense ($)
+                  </option>
                   <option value="EUR" <%= pref.moneda === 'EUR' ? 'selected' : '' %>>EUR - Euro (€)</option>
                 </select>
               </div>
@@ -140,7 +148,8 @@
           <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
             <div>
               <h4 class="h5 fw-bold mb-1 text-primary">Cookies y privacidad</h4>
-              <p class="text-muted small mb-0">Qué guarda el sistema en tu navegador, para qué sirve y qué pasa si lo desactivas.</p>
+              <p class="text-muted small mb-0">Qué guarda el sistema en tu navegador, para qué sirve y qué pasa si lo
+                desactivas.</p>
             </div>
             <span class="badge <%= pref.cookiesConsentidas ? 'bg-success' : 'bg-secondary' %>">
               <%= !pref.cookiesRespondidas ? 'Sin responder: solo esenciales' : pref.cookiesConsentidas ? 'Todas aceptadas' : pref.cookiesPermitidas.length ? 'Selección personalizada' : 'Solo esenciales' %>
@@ -149,36 +158,50 @@
 
           <form action="/configuracion/cookies" method="POST">
             <% cookiesCatalogo.forEach(cat => { const activa = pref.permiteCookies(cat.id); %>
-              <div class="cookies-categoria mb-3">
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                  <div>
-                    <label class="fw-bold" for="cat-<%= cat.id %>"><%= cat.nombre %></label>
-                    <div class="small text-muted"><%= cat.descripcion %></div>
-                  </div>
-                  <div class="form-check form-switch m-0">
-                    <input class="form-check-input" type="checkbox" role="switch" name="categorias" value="<%= cat.id %>" id="cat-<%= cat.id %>" <%= activa ? 'checked' : '' %> <%= cat.obligatoria ? 'disabled' : '' %>>
-                  </div>
+            <div class="cookies-categoria mb-3">
+              <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <label class="fw-bold" for="cat-<%= cat.id %>"><%= cat.nombre %></label>
+                  <div class="small text-muted"><%= cat.descripcion %></div>
                 </div>
-                <div class="table-responsive mt-2">
-                  <table class="table table-sm align-middle mb-0 small">
-                    <thead><tr><th>Cookie</th><th>Para qué sirve</th><th>Duración</th></tr></thead>
-                    <tbody>
-                      <% cat.cookies.forEach(c => { %>
-                        <tr><td><code><%= c.nombre %></code></td><td><%= c.proposito %></td><td><%= c.duracion %></td></tr>
-                      <% }) %>
-                    </tbody>
-                  </table>
+                <div class="form-check form-switch m-0">
+                  <input class="form-check-input" type="checkbox" role="switch" name="categorias" value="<%= cat.id %>"
+                    id="cat-<%= cat.id %>" <%= activa ? 'checked' : '' %> <%= cat.obligatoria ? 'disabled' : '' %>>
                 </div>
-                <% if (cat.siDesactivas) { %>
-                  <div class="small text-muted mt-2"><%- icono('info-circle', 14, 'me-1') %><strong>Si la desactivas:</strong> <%= cat.siDesactivas %> Las cookies de esta categoría se borran de inmediato.</div>
-                <% } %>
               </div>
+              <div class="table-responsive mt-2">
+                <table class="table table-sm align-middle mb-0 small">
+                  <thead>
+                    <tr>
+                      <th>Cookie</th>
+                      <th>Para qué sirve</th>
+                      <th>Duración</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% cat.cookies.forEach(c => { %>
+                    <tr>
+                      <td><code><%= c.nombre %></code></td>
+                      <td><%= c.proposito %></td>
+                      <td><%= c.duracion %></td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+              <% if (cat.siDesactivas) { %>
+              <div class="small text-muted mt-2"><%- icono('info-circle', 14, 'me-1') %><strong>Si la
+                  desactivas:</strong> <%= cat.siDesactivas %> Las cookies de esta categoría se borran de inmediato.
+              </div>
+              <% } %>
+            </div>
             <% }) %>
 
             <div class="d-flex gap-2 flex-wrap">
               <button type="submit" class="btn btn-primary">Guardar selección</button>
               <button type="submit" name="nivel" value="all" class="btn btn-outline-primary">Aceptar todas</button>
-              <button type="submit" name="nivel" value="essential" class="btn btn-outline-secondary">Solo esenciales</button>
+              <button type="submit" name="nivel" value="essential" class="btn btn-outline-secondary">Solo
+                esenciales</button>
             </div>
           </form>
         </div>
@@ -191,7 +214,9 @@
             <%- include('../partials/avatar', { u: us, clase: 'avatar-lg' }) %>
             <div>
               <h4 class="h5 fw-bold mb-0"><%= us.nombre_completo %></h4>
-              <div class="text-muted small">@<%= us.usuario %> &bull; <%= us.rol === 'admin' ? 'Administrador' : us.rol === 'comprador' ? 'Comprador' : 'Capturista' %><% if (us.puesto) { %> &bull; <%= us.puesto %><% } %></div>
+              <div class="text-muted small">@<%= us.usuario %> &bull;
+                <%= us.rol === 'admin' ? 'Administrador' : us.rol === 'comprador' ? 'Comprador' : 'Capturista' %><% if (us.puesto) { %>
+                &bull; <%= us.puesto %><% } %></div>
             </div>
           </div>
 
@@ -200,7 +225,8 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-semibold" for="cuentaNombre">Nombre completo</label>
-                <input type="text" class="form-control" id="cuentaNombre" name="nombre_completo" maxlength="80" value="<%= us.nombre_completo %>" required>
+                <input type="text" class="form-control" id="cuentaNombre" name="nombre_completo" maxlength="80"
+                  value="<%= us.nombre_completo %>" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-semibold" for="cuentaUsuario">Nombre de usuario</label>
@@ -209,19 +235,25 @@
               </div>
               <div class="col-md-7">
                 <label class="form-label fw-semibold" for="cuentaCorreo">Correo electrónico</label>
-                <input type="email" class="form-control" id="cuentaCorreo" name="correo" maxlength="80" value="<%= us.correo || '' %>" placeholder="nombre@ejemplo.com" required>
-                <div class="form-text">Se usa para recuperar tu contraseña y para avisos de seguridad. Si lo cambias, hay que verificarlo otra vez.</div>
+                <input type="email" class="form-control" id="cuentaCorreo" name="correo" maxlength="80"
+                  value="<%= us.correo || '' %>" placeholder="nombre@ejemplo.com" required>
+                <div class="form-text">Se usa para recuperar tu contraseña y para avisos de seguridad. Si lo cambias,
+                  hay que verificarlo otra vez.</div>
               </div>
               <div class="col-md-5">
-                <label class="form-label fw-semibold" for="cuentaTelefono">Teléfono <span class="text-muted fw-normal">(opcional)</span></label>
-                <input type="tel" class="form-control" id="cuentaTelefono" name="telefono" maxlength="20" pattern="[0-9+() \-]{7,20}" value="<%= us.telefono || '' %>">
+                <label class="form-label fw-semibold" for="cuentaTelefono">Teléfono <span
+                    class="text-muted fw-normal">(opcional)</span></label>
+                <input type="tel" class="form-control" id="cuentaTelefono" name="telefono" maxlength="20"
+                  pattern="[0-9+() \-]{7,20}" value="<%= us.telefono || '' %>">
               </div>
             </div>
             <% if (us.rol === 'comprador') { %>
-              <div class="form-check mt-3">
-                <input class="form-check-input" type="checkbox" id="recibir_avisos" name="recibir_avisos" <%= us.recibir_avisos ? 'checked' : '' %>>
-                <label class="form-check-label small" for="recibir_avisos">Recibir avisos de subastas y novedades por correo. Puedes darte de baja desde cualquier aviso.</label>
-              </div>
+            <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" id="recibir_avisos" name="recibir_avisos"
+                <%= us.recibir_avisos ? 'checked' : '' %>>
+              <label class="form-check-label small" for="recibir_avisos">Recibir avisos de subastas y novedades por
+                correo. Puedes darte de baja desde cualquier aviso.</label>
+            </div>
             <% } %>
             <button class="btn btn-primary mt-3" type="submit">Guardar datos</button>
           </form>
@@ -231,23 +263,25 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
               <div>
                 <% if (us.correo && us.email_verificado) { %>
-                  <span class="badge bg-success me-2"><%- icono('check-circle', 12, 'me-1') %>Verificado</span>
-                  <strong><%= us.correo %></strong>
-                  <div class="small text-muted">Podrás recuperar tu contraseña con este correo.</div>
+                <span class="badge bg-success me-2"><%- icono('check-circle', 12, 'me-1') %>Verificado</span>
+                <strong><%= us.correo %></strong>
+                <div class="small text-muted">Podrás recuperar tu contraseña con este correo.</div>
                 <% } else if (us.correo) { %>
-                  <span class="badge bg-warning text-dark me-2">Sin verificar</span>
-                  <strong><%= us.correo %></strong>
-                  <div class="small text-muted">Confirma que el correo es tuyo con el enlace que te enviamos (vence en 24 horas).</div>
+                <span class="badge bg-warning text-dark me-2">Sin verificar</span>
+                <strong><%= us.correo %></strong>
+                <div class="small text-muted">Confirma que el correo es tuyo con el enlace que te enviamos (vence en 24
+                  horas).</div>
                 <% } else { %>
-                  <span class="badge bg-secondary me-2">Sin correo</span>
-                  <strong>Tu cuenta no tiene correo.</strong>
-                  <div class="small text-muted">Sin correo no podrás recuperar la contraseña por tu cuenta.</div>
+                <span class="badge bg-secondary me-2">Sin correo</span>
+                <strong>Tu cuenta no tiene correo.</strong>
+                <div class="small text-muted">Sin correo no podrás recuperar la contraseña por tu cuenta.</div>
                 <% } %>
               </div>
               <% if (us.correo && !us.email_verificado) { %>
-                <form action="/configuracion/solicitar-verificacion" method="POST" class="m-0">
-                  <button type="submit" class="btn btn-sm btn-outline-primary"><%- icono('envelope', 14, 'me-1') %>Enviar enlace de verificación</button>
-                </form>
+              <form action="/configuracion/solicitar-verificacion" method="POST" class="m-0">
+                <button type="submit" class="btn btn-sm btn-outline-primary"><%- icono('envelope', 14, 'me-1') %>Enviar
+                  enlace de verificación</button>
+              </form>
               <% } %>
             </div>
           </div>
@@ -258,17 +292,21 @@
       <div class="tab-pane fade" id="pane-seguridad" role="tabpanel">
         <div class="card p-4">
           <h4 class="h5 fw-bold mb-1 text-primary">Cambiar contraseña</h4>
-          <p class="text-muted small mb-4">Al cambiarla se cierran las sesiones abiertas en otros dispositivos<%= us.correo ? ' y te avisamos por correo' : '' %>.</p>
+          <p class="text-muted small mb-4">Al cambiarla se cierran las sesiones abiertas en otros
+            dispositivos<%= us.correo ? ' y te avisamos por correo' : '' %>.</p>
           <form action="/configuracion/cambiar-password" method="POST" class="col-lg-8" novalidate data-validar>
             <div class="mb-3">
               <label class="form-label fw-semibold" for="password_actual">Contraseña actual</label>
-              <input type="password" class="form-control" id="password_actual" name="password_actual" autocomplete="current-password" required>
+              <input type="password" class="form-control" id="password_actual" name="password_actual"
+                autocomplete="current-password" required>
             </div>
             <%- include('../partials/campo-password', { nombre: 'password_nuevo', etiqueta: 'Contraseña nueva', requerido: true }) %>
             <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
           </form>
           <hr class="my-4">
-          <p class="small text-muted mb-0">¿No recuerdas la actual? Cierra sesión y usa <strong>¿Olvidaste tu contraseña?</strong> en la pantalla de acceso<%= us.correo ? '' : ' (necesitas registrar un correo primero)' %>.</p>
+          <p class="small text-muted mb-0">¿No recuerdas la actual? Cierra sesión y usa <strong>¿Olvidaste tu
+              contraseña?</strong> en la pantalla de
+            acceso<%= us.correo ? '' : ' (necesitas registrar un correo primero)' %>.</p>
         </div>
       </div>
 
@@ -279,12 +317,14 @@
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
               <h4 class="h5 fw-bold mb-0 text-primary">Enviar aviso a compradores suscritos</h4>
-              <p class="text-muted small mb-0">Se enviará solo a compradores con correo verificado que aceptaron recibir estos avisos.</p>
+              <p class="text-muted small mb-0">Se enviará solo a compradores con correo verificado que aceptaron recibir
+                estos avisos.</p>
             </div>
             <span class="badge bg-info text-dark"><%= totalCompradores %> suscriptores activos</span>
           </div>
 
-          <form action="/configuracion/enviar-aviso-clientes" method="POST" data-confirmar="¿Confirmas el envío de este aviso a los compradores suscritos?">
+          <form action="/configuracion/enviar-aviso-clientes" method="POST"
+            data-confirmar="¿Confirmas el envío de este aviso a los compradores suscritos?">
             <div class="row g-3">
               <div class="col-md-4">
                 <label class="form-label fw-semibold">Tipo de Comunicado</label>
@@ -296,15 +336,19 @@
               </div>
               <div class="col-md-8">
                 <label class="form-label fw-semibold">Asunto del Correo</label>
-                <input type="text" name="asunto" class="form-control" maxlength="120" placeholder="Ej. Gran arribo de Huachinango fresco y Robalo de altura" required>
+                <input type="text" name="asunto" class="form-control" maxlength="120"
+                  placeholder="Ej. Gran arribo de Huachinango fresco y Robalo de altura" required>
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold">Título Encabezado (dentro del correo)</label>
-                <input type="text" name="titulo" class="form-control" maxlength="120" placeholder="Ej. Invitación a la Subasta Extraordinaria del Puerto">
+                <input type="text" name="titulo" class="form-control" maxlength="120"
+                  placeholder="Ej. Invitación a la Subasta Extraordinaria del Puerto">
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold">Mensaje para los Compradores</label>
-                <textarea name="mensaje" rows="6" maxlength="4000" class="form-control" placeholder="Escribe aquí los detalles del evento, los precios base esperados, las políticas de cobro o la información relevante..." required></textarea>
+                <textarea name="mensaje" rows="6" maxlength="4000" class="form-control"
+                  placeholder="Escribe aquí los detalles del evento, los precios base esperados, las políticas de cobro o la información relevante..."
+                  required></textarea>
               </div>
             </div>
             <div class="mt-4">
@@ -338,28 +382,33 @@
             <dt class="col-sm-4">Último error técnico</dt>
             <dd class="col-sm-8">
               <% if (estadoCorreo.ultimoError) { %>
-                <span class="text-danger"><%= estadoCorreo.ultimoError.mensaje %></span>
-                <div class="text-muted"><%= fechaHora(estadoCorreo.ultimoError.fecha) %></div>
+              <span class="text-danger"><%= estadoCorreo.ultimoError.mensaje %></span>
+              <div class="text-muted"><%= fechaHora(estadoCorreo.ultimoError.fecha) %></div>
               <% } else { %>
-                <span class="text-muted">Sin errores registrados.</span>
+              <span class="text-muted">Sin errores registrados.</span>
               <% } %>
             </dd>
           </dl>
 
           <% if (!estadoCorreo.configurado) { %>
-            <div class="alert alert-warning">
-              El correo está en <strong>modo simulador</strong>: los enlaces solo se imprimen en la consola y, en desarrollo, se muestran en pantalla. Configura <code>GMAIL_USER</code> y <code>GMAIL_PASS</code> en <code>.env</code> y reinicia el servidor.
-            </div>
+          <div class="alert alert-warning">
+            El correo está en <strong>modo simulador</strong>: los enlaces solo se imprimen en la consola y, en
+            desarrollo, se muestran en pantalla. Configura <code>GMAIL_USER</code> y <code>GMAIL_PASS</code> en
+            <code>.env</code> y reinicia el servidor.
+          </div>
           <% } %>
 
           <form action="/configuracion/correo/prueba" method="POST" class="d-flex align-items-center gap-2 flex-wrap">
-            <button type="submit" class="btn btn-primary"><%- icono('send', 16, 'me-1') %>Enviar correo de prueba</button>
+            <button type="submit" class="btn btn-primary"><%- icono('send', 16, 'me-1') %>Enviar correo de
+              prueba</button>
             <span class="small text-muted">Se envía a tu propio correo (<%= us.correo || 'sin correo' %>).</span>
           </form>
 
           <hr class="my-4">
           <p class="small text-muted mb-0">
-            Para usar Gmail: activa la verificación en 2 pasos, crea una <strong>contraseña de aplicación</strong> de 16 caracteres y colócala en <code>GMAIL_PASS</code>. Define también <code>APP_URL</code> (por ejemplo <code>http://localhost:2800</code>) para que los enlaces funcionen desde otros dispositivos.
+            Para usar Gmail: activa la verificación en 2 pasos, crea una <strong>contraseña de aplicación</strong> de 16
+            caracteres y colócala en <code>GMAIL_PASS</code>. Define también <code>APP_URL</code> (por ejemplo
+            <code>http://localhost:2800</code>) para que los enlaces funcionen desde otros dispositivos.
           </p>
         </div>
       </div>

@@ -18,86 +18,114 @@
     <div>
       <p class="analisis__eyebrow">Análisis mensual · fecha operativa <%= fecha %></p>
       <h1 class="analisis__titulo"><%= p.nombre %><%= p.actual ? ', mes en curso' : '' %></h1>
-      <p class="text-muted small mb-0">Hola, <%= (usuario.nombre_completo || usuario.usuario).split(' ')[0] %>. <%= p.actual ? `Las variaciones comparan con los mismos días de ${p.nombreAnterior.toLowerCase()}.` : `Las variaciones comparan con ${p.nombreAnterior.toLowerCase()} completo.` %></p>
+      <p class="text-muted small mb-0">Hola, <%= (usuario.nombre_completo || usuario.usuario).split(' ')[0] %>.
+        <%= p.actual ? `Las variaciones comparan con los mismos días de ${p.nombreAnterior.toLowerCase()}.` : `Las variaciones comparan con ${p.nombreAnterior.toLowerCase()} completo.` %>
+      </p>
     </div>
     <div class="analisis__herramientas">
       <form class="periodo" method="GET" action="/dashboard">
         <label class="visually-hidden" for="periodoMes">Mes a analizar</label>
         <select class="form-select form-select-sm" id="periodoMes" name="mes" data-submit-form>
-          <% p.opciones.forEach((o) => { %><option value="<%= o.valor %>" <%= o.valor === p.mes ? 'selected' : '' %>><%= o.nombre %></option><% }) %>
+          <% p.opciones.forEach((o) => { %><option value="<%= o.valor %>" <%= o.valor === p.mes ? 'selected' : '' %>>
+            <%= o.nombre %></option><% }) %>
         </select>
         <noscript><button class="btn btn-sm btn-outline-secondary" type="submit">Ver</button></noscript>
       </form>
-      <a class="btn btn-primary" href="/compras/crear"><%- icono('plus-lg', 16, 'me-1') %><%= t('registrar_compra') %></a>
-      <a class="btn btn-outline-primary" href="/lotes/crear"><%- icono('box-seam', 16, 'me-1') %><%= t('registrar_lote') %></a>
-      <a class="btn btn-outline-secondary" href="/reportes/diario"><%- icono('bar-chart-line', 16, 'me-1') %><%= t('reportes') %></a>
+      <a class="btn btn-primary"
+        href="/compras/crear"><%- icono('plus-lg', 16, 'me-1') %><%= t('registrar_compra') %></a>
+      <a class="btn btn-outline-primary"
+        href="/lotes/crear"><%- icono('box-seam', 16, 'me-1') %><%= t('registrar_lote') %></a>
+      <a class="btn btn-outline-secondary"
+        href="/reportes/diario"><%- icono('bar-chart-line', 16, 'me-1') %><%= t('reportes') %></a>
     </div>
   </header>
 
   <section class="kpis" aria-label="Indicadores de <%= p.nombre %>">
-    <div class="kpi kpi--principal"><span class="kpi__rotulo">Ingresos de <%= p.nombreMes.toLowerCase() %></span><span class="kpi__valor"><%= dinero(k.total) %></span><%- variacion(k.variacion.total) %></div>
-    <div class="kpi"><span class="kpi__rotulo">Kilos vendidos</span><span class="kpi__valor"><%= num(k.kilos) %> kg</span><%- variacion(k.variacion.kilos) %></div>
-    <div class="kpi"><span class="kpi__rotulo">Compras</span><span class="kpi__valor"><%= k.compras %></span><%- variacion(k.variacion.compras) %></div>
-    <div class="kpi"><span class="kpi__rotulo">Ticket medio</span><span class="kpi__valor"><%= hayMes ? dinero(k.ticketMedio) : '—' %></span><%- variacion(k.variacion.ticketMedio) %></div>
-    <div class="kpi"><span class="kpi__rotulo">Precio medio por kg</span><span class="kpi__valor"><%= hayMes ? dinero(k.precioMedio) : '—' %></span><%- variacion(k.variacion.precioMedio) %></div>
+    <div class="kpi kpi--principal"><span class="kpi__rotulo">Ingresos de <%= p.nombreMes.toLowerCase() %></span><span
+        class="kpi__valor"><%= dinero(k.total) %></span><%- variacion(k.variacion.total) %></div>
+    <div class="kpi"><span class="kpi__rotulo">Kilos vendidos</span><span class="kpi__valor"><%= num(k.kilos) %>
+        kg</span><%- variacion(k.variacion.kilos) %></div>
+    <div class="kpi"><span class="kpi__rotulo">Compras</span><span
+        class="kpi__valor"><%= k.compras %></span><%- variacion(k.variacion.compras) %></div>
+    <div class="kpi"><span class="kpi__rotulo">Ticket medio</span><span
+        class="kpi__valor"><%= hayMes ? dinero(k.ticketMedio) : '—' %></span><%- variacion(k.variacion.ticketMedio) %>
+    </div>
+    <div class="kpi"><span class="kpi__rotulo">Precio medio por kg</span><span
+        class="kpi__valor"><%= hayMes ? dinero(k.precioMedio) : '—' %></span><%- variacion(k.variacion.precioMedio) %>
+    </div>
   </section>
 
   <nav class="pendientes" aria-label="Pendientes de operación">
     <a href="/pedidos"><strong><%= pendientes.pedidos %></strong> pedidos por atender</a>
     <a href="/preguntas"><strong><%= pendientes.preguntas %></strong> preguntas sin responder</a>
     <a href="/opiniones"><strong><%= pendientes.opiniones %></strong> opiniones nuevas (7 días)</a>
-    <a href="/lotes?estado=disponibles"><strong><%= lotes.disponibles %></strong> de <%= lotes.total %> lotes disponibles</a>
+    <a href="/lotes?estado=disponibles"><strong><%= lotes.disponibles %></strong> de <%= lotes.total %> lotes
+      disponibles</a>
     <span>Hoy: <strong><%= dinero(hoy.total) %></strong> en <%= hoy.compras %> compras</span>
   </nav>
 
-  <script type="application/json" id="datosAnalisis"><%- jsonSeguro({ dias: a.dias, actual: a.ingresosMes.map((v) => v === null ? null : Number(v)), anterior: a.ingresosMesAnterior.map(Number), ...graficas, moneda: monedaInfo }) %></script>
+  <script type="application/json"
+    id="datosAnalisis"><%- jsonSeguro({ dias: a.dias, actual: a.ingresosMes.map((v) => v === null ? null : Number(v)), anterior: a.ingresosMesAnterior.map(Number), ...graficas, moneda: monedaInfo }) %></script>
 
   <div class="analisis__rejilla">
     <section class="panel panel--ancho" aria-labelledby="ingresosTitulo">
-      <h2 id="ingresosTitulo">Ingresos por día: <%= p.nombreMes.toLowerCase() %> contra <%= p.nombreAnterior.toLowerCase() %></h2>
+      <h2 id="ingresosTitulo">Ingresos por día: <%= p.nombreMes.toLowerCase() %> contra
+        <%= p.nombreAnterior.toLowerCase() %></h2>
       <% if (hayMes || a.ingresosMesAnterior.some((v) => Number(v) > 0)) { %>
-        <div class="grafica"><canvas data-grafica="linea" data-fuente="datosAnalisis" data-etiquetas="dias" data-serie="actual" data-comparar="anterior" data-titulo="<%= p.nombreMes %>" data-titulo-comparar="<%= p.nombreAnterior %>" data-formato="dinero" role="img" aria-label="Ingresos diarios de <%= p.nombreMes %> comparados con <%= p.nombreAnterior %>"></canvas></div>
+      <div class="grafica"><canvas data-grafica="linea" data-fuente="datosAnalisis" data-etiquetas="dias"
+          data-serie="actual" data-comparar="anterior" data-titulo="<%= p.nombreMes %>"
+          data-titulo-comparar="<%= p.nombreAnterior %>" data-formato="dinero" role="img"
+          aria-label="Ingresos diarios de <%= p.nombreMes %> comparados con <%= p.nombreAnterior %>"></canvas></div>
       <% } else { %>
-        <div class="grafica-vacia">No hay compras en <%= p.nombreMes.toLowerCase() %> ni en <%= p.nombreAnterior.toLowerCase() %>. <a href="/compras/crear">Registra la primera</a>.</div>
+      <div class="grafica-vacia">No hay compras en <%= p.nombreMes.toLowerCase() %> ni en
+        <%= p.nombreAnterior.toLowerCase() %>. <a href="/compras/crear">Registra la primera</a>.</div>
       <% } %>
     </section>
 
     <section class="panel" aria-labelledby="canalTitulo">
       <h2 id="canalTitulo">Canal de venta</h2>
       <% if (!totalCanales) { %>
-        <p class="text-muted small mb-0">Sin ventas en <%= p.nombreMes.toLowerCase() %>.</p>
+      <p class="text-muted small mb-0">Sin ventas en <%= p.nombreMes.toLowerCase() %>.</p>
       <% } else { %>
-        <ul class="barras-lista">
-          <li>
-            <div class="barras-lista__fila"><span>Tienda en línea · <%= a.canales.tienda.compras %> compras</span><strong><%= dinero(a.canales.tienda.total) %></strong></div>
-            <progress class="barra barra--teal" max="100" value="<%= pct(a.canales.tienda.total) %>" aria-label="Tienda en línea: <%= pct(a.canales.tienda.total) %>%"><%= pct(a.canales.tienda.total) %>%</progress>
-          </li>
-          <li>
-            <div class="barras-lista__fila"><span>Mostrador · <%= a.canales.mostrador.compras %> compras</span><strong><%= dinero(a.canales.mostrador.total) %></strong></div>
-            <progress class="barra" max="100" value="<%= pct(a.canales.mostrador.total) %>" aria-label="Mostrador: <%= pct(a.canales.mostrador.total) %>%"><%= pct(a.canales.mostrador.total) %>%</progress>
-          </li>
-        </ul>
+      <ul class="barras-lista">
+        <li>
+          <div class="barras-lista__fila"><span>Tienda en línea · <%= a.canales.tienda.compras %>
+              compras</span><strong><%= dinero(a.canales.tienda.total) %></strong></div>
+          <progress class="barra barra--teal" max="100" value="<%= pct(a.canales.tienda.total) %>"
+            aria-label="Tienda en línea: <%= pct(a.canales.tienda.total) %>%"><%= pct(a.canales.tienda.total) %>%</progress>
+        </li>
+        <li>
+          <div class="barras-lista__fila"><span>Mostrador · <%= a.canales.mostrador.compras %>
+              compras</span><strong><%= dinero(a.canales.mostrador.total) %></strong></div>
+          <progress class="barra" max="100" value="<%= pct(a.canales.mostrador.total) %>"
+            aria-label="Mostrador: <%= pct(a.canales.mostrador.total) %>%"><%= pct(a.canales.mostrador.total) %>%</progress>
+        </li>
+      </ul>
       <% } %>
 
       <h2 class="mt-4" id="tipoTitulo">Mezcla por tipo, kilos</h2>
       <% if (!a.tipos.length) { %>
-        <p class="text-muted small mb-0">Sin ventas en <%= p.nombreMes.toLowerCase() %>.</p>
+      <p class="text-muted small mb-0">Sin ventas en <%= p.nombreMes.toLowerCase() %>.</p>
       <% } else { %>
-        <ul class="barras-lista" aria-labelledby="tipoTitulo">
-          <% a.tipos.forEach((t) => { %>
-            <li>
-              <div class="barras-lista__fila"><span><%= t.nombre %> · <%= num(t.kilos) %> kg</span><strong><%= t.porcentaje %> %</strong></div>
-              <progress class="barra barra--teal" max="100" value="<%= t.porcentaje %>" aria-label="<%= t.nombre %>: <%= t.porcentaje %>%"><%= t.porcentaje %>%</progress>
-            </li>
-          <% }) %>
-        </ul>
+      <ul class="barras-lista" aria-labelledby="tipoTitulo">
+        <% a.tipos.forEach((t) => { %>
+        <li>
+          <div class="barras-lista__fila"><span><%= t.nombre %> · <%= num(t.kilos) %>
+              kg</span><strong><%= t.porcentaje %> %</strong></div>
+          <progress class="barra barra--teal" max="100" value="<%= t.porcentaje %>"
+            aria-label="<%= t.nombre %>: <%= t.porcentaje %>%"><%= t.porcentaje %>%</progress>
+        </li>
+        <% }) %>
+      </ul>
       <% } %>
     </section>
 
     <section class="panel" aria-labelledby="especiesTitulo">
       <h2 id="especiesTitulo">Especies con más kilos, 30 días</h2>
       <% if (graficas.nombresEspecies.length) { %>
-        <div class="grafica grafica-baja"><canvas data-grafica="barras-h" data-color="secundario" data-fuente="datosAnalisis" data-etiquetas="nombresEspecies" data-serie="kilosEspecies" data-formato="kg" role="img" aria-label="Especies con más kilos vendidos en los últimos 30 días"></canvas></div>
+      <div class="grafica grafica-baja"><canvas data-grafica="barras-h" data-color="secundario"
+          data-fuente="datosAnalisis" data-etiquetas="nombresEspecies" data-serie="kilosEspecies" data-formato="kg"
+          role="img" aria-label="Especies con más kilos vendidos en los últimos 30 días"></canvas></div>
       <% } else { %><div class="grafica-vacia">Sin ventas en el periodo.</div><% } %>
     </section>
 
@@ -108,19 +136,29 @@
       </div>
       <div class="table-responsive">
         <table class="table align-middle mb-0 tabla-ligera">
-          <thead><tr><th scope="col">Comprador</th><th scope="col" class="text-end">Compras</th><th scope="col" class="text-end">Kilos</th><th scope="col" class="text-end">Ticket medio</th><th scope="col" class="text-end">Total</th></tr></thead>
+          <thead>
+            <tr>
+              <th scope="col">Comprador</th>
+              <th scope="col" class="text-end">Compras</th>
+              <th scope="col" class="text-end">Kilos</th>
+              <th scope="col" class="text-end">Ticket medio</th>
+              <th scope="col" class="text-end">Total</th>
+            </tr>
+          </thead>
           <tbody>
             <% if (!a.compradores.length) { %>
-              <tr><td colspan="5" class="text-center text-muted py-4">Sin compras en <%= p.nombreMes.toLowerCase() %>.</td></tr>
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">Sin compras en <%= p.nombreMes.toLowerCase() %>.</td>
+            </tr>
             <% } %>
             <% a.compradores.forEach((c) => { %>
-              <tr>
-                <td><a class="enlace-registro" href="/compradores/<%= c.codigo_cpr %>"><%= c.nombre %></a></td>
-                <td class="text-end"><%= c.compras %></td>
-                <td class="text-end"><%= num(c.kilos) %></td>
-                <td class="text-end"><%= dinero(c.ticket) %></td>
-                <td class="text-end fw-semibold"><%= dinero(c.total) %></td>
-              </tr>
+            <tr>
+              <td><a class="enlace-registro" href="/compradores/<%= c.codigo_cpr %>"><%= c.nombre %></a></td>
+              <td class="text-end"><%= c.compras %></td>
+              <td class="text-end"><%= num(c.kilos) %></td>
+              <td class="text-end"><%= dinero(c.ticket) %></td>
+              <td class="text-end fw-semibold"><%= dinero(c.total) %></td>
+            </tr>
             <% }) %>
           </tbody>
         </table>
@@ -135,20 +173,32 @@
     </div>
     <div class="table-responsive">
       <table class="table align-middle mb-0 tabla-ligera">
-        <thead><tr><th scope="col">Fecha</th><th scope="col">Lote</th><th scope="col">Especies</th><th scope="col">Comprador</th><th scope="col" class="text-end">Kilos</th><th scope="col" class="text-end">Total</th></tr></thead>
+        <thead>
+          <tr>
+            <th scope="col">Fecha</th>
+            <th scope="col">Lote</th>
+            <th scope="col">Especies</th>
+            <th scope="col">Comprador</th>
+            <th scope="col" class="text-end">Kilos</th>
+            <th scope="col" class="text-end">Total</th>
+          </tr>
+        </thead>
         <tbody>
           <% if (!ultimasCompras.length) { %>
-            <tr><td colspan="6" class="text-center text-muted py-4">Todavía no hay compras recientes.</td></tr>
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">Todavía no hay compras recientes.</td>
+          </tr>
           <% } %>
           <% ultimasCompras.forEach(c => { %>
-            <tr>
-              <td class="text-nowrap"><%= c.fecha %> <span class="text-muted small"><%= c.hora %></span></td>
-              <td><a class="enlace-registro" href="/lotes/<%= c.id %>">#<%= c.id %></a></td>
-              <td><%= c.especies %></td>
-              <td><a class="enlace-registro" href="/compradores/<%= c.codigo_cpr %>"><%= c.comprador %></a></td>
-              <td class="text-end"><%= Number(c.kilos).toFixed(2) %></td>
-              <td class="text-end fw-semibold"><a class="enlace-registro" href="/compras/<%= c.id %>/factura"><%= dinero(c.total) %></a></td>
-            </tr>
+          <tr>
+            <td class="text-nowrap"><%= c.fecha %> <span class="text-muted small"><%= c.hora %></span></td>
+            <td><a class="enlace-registro" href="/lotes/<%= c.id %>">#<%= c.id %></a></td>
+            <td><%= c.especies %></td>
+            <td><a class="enlace-registro" href="/compradores/<%= c.codigo_cpr %>"><%= c.comprador %></a></td>
+            <td class="text-end"><%= Number(c.kilos).toFixed(2) %></td>
+            <td class="text-end fw-semibold"><a class="enlace-registro"
+                href="/compras/<%= c.id %>/factura"><%= dinero(c.total) %></a></td>
+          </tr>
           <% }) %>
         </tbody>
       </table>

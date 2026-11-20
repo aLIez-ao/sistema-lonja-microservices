@@ -12,16 +12,19 @@
 <%- include('../partials/mensajes', { errores: (typeof error !== 'undefined' && error) ? [error] : [] }) %>
 <nav class="pestanas" aria-label="Filtrar por estado">
   <% [['', 'Todos'], ['disponibles', 'Disponibles'], ['vendidos', 'Vendidos']].forEach(([estado, rotulo]) => { const activa = (l.filtros.estado || '') === estado; %>
-    <a class="pestanas__item <%= activa ? 'activa' : '' %>" href="<%= l.urlCon({ estado: estado || null }) %>" <%= activa ? 'aria-current=page' : '' %>><%= rotulo %></a>
+  <a class="pestanas__item <%= activa ? 'activa' : '' %>" href="<%= l.urlCon({ estado: estado || null }) %>"
+    <%= activa ? 'aria-current=page' : '' %>><%= rotulo %></a>
   <% }) %>
 </nav>
 <%- include('../partials/barra-listado', { l, entidad: 'lotes', etiqueta: 'lotes', filtros: filtros.filter((f) => f.clave !== 'estado') }) %>
-<form id="lotesBloque" action="/lotes/eliminacion" method="POST" data-confirmar="¿Eliminar los lotes seleccionados y sus especies? Solo se eliminan si todos están disponibles.">
+<form id="lotesBloque" action="/lotes/eliminacion" method="POST"
+  data-confirmar="¿Eliminar los lotes seleccionados y sus especies? Solo se eliminan si todos están disponibles.">
   <div class="barra-bloque" data-barra-bloque hidden>
     <span role="status" aria-live="polite"><strong data-cuenta-bloque>0</strong> seleccionados</span>
-    <button class="btn btn-sm btn-outline-secondary" type="button" data-exportar-bloque><%- icono('download', 14, 'me-1') %>Exportar CSV</button>
+    <button class="btn btn-sm btn-outline-secondary" type="button"
+      data-exportar-bloque><%- icono('download', 14, 'me-1') %>Exportar CSV</button>
     <% if (usuario.rol === 'admin') { %>
-      <button class="btn btn-sm btn-outline-danger" type="submit"><%- icono('trash', 14, 'me-1') %>Eliminar</button>
+    <button class="btn btn-sm btn-outline-danger" type="submit"><%- icono('trash', 14, 'me-1') %>Eliminar</button>
     <% } %>
     <button class="btn btn-sm btn-link" type="button" data-limpiar-bloque>Quitar selección</button>
   </div>
@@ -32,7 +35,8 @@
       <caption class="visually-hidden">Lotes registrados</caption>
       <thead>
         <tr>
-          <th class="col-casilla" data-no-sort><input class="form-check-input" type="checkbox" data-seleccionar-todo aria-label="Seleccionar todos los lotes de esta página"></th>
+          <th class="col-casilla" data-no-sort><input class="form-check-input" type="checkbox" data-seleccionar-todo
+              aria-label="Seleccionar todos los lotes de esta página"></th>
           <%- include('../partials/encabezado-orden', { l, campo: 'id', titulo: 'Lote' }) %>
           <%- include('../partials/encabezado-orden', { l, campo: 'fecha', titulo: 'Fecha' }) %>
           <th>Especies</th>
@@ -44,21 +48,24 @@
         </tr>
       </thead>
       <tbody>
-      <% if (!lotes.length) { %>
+        <% if (!lotes.length) { %>
         <tr class="fila-vacia">
           <td colspan="9" class="text-center py-4 text-muted">
             <%= (l.q || Object.keys(l.filtros).length) ? 'No hay registros que coincidan con la búsqueda.' : 'No hay lotes registrados en el sistema.' %>
           </td>
         </tr>
-      <% } %>
-      <% lotes.forEach(lote => { %>
-        <tr data-csv="<%= JSON.stringify([lote.id_lte, fechaHora(lote.fecha), (lote.especies || []).map((e) => e.nombre).join(', '), lote.numero_cajas, Number(lote.kilos).toFixed(2), Number(lote.precio_kilo_salida).toFixed(2), lote.compra ? 'Vendido' : 'Disponible']) %>">
-          <td class="col-casilla"><input class="form-check-input" type="checkbox" name="ids" value="<%= lote.id_lte %>" form="lotesBloque" data-casilla-bloque aria-label="Seleccionar lote <%= lote.id_lte %>"></td>
+        <% } %>
+        <% lotes.forEach(lote => { %>
+        <tr
+          data-csv="<%= JSON.stringify([lote.id_lte, fechaHora(lote.fecha), (lote.especies || []).map((e) => e.nombre).join(', '), lote.numero_cajas, Number(lote.kilos).toFixed(2), Number(lote.precio_kilo_salida).toFixed(2), lote.compra ? 'Vendido' : 'Disponible']) %>">
+          <td class="col-casilla"><input class="form-check-input" type="checkbox" name="ids" value="<%= lote.id_lte %>"
+              form="lotesBloque" data-casilla-bloque aria-label="Seleccionar lote <%= lote.id_lte %>"></td>
           <td><a class="fw-semibold" href="/lotes/<%= lote.id_lte %>">#<%= lote.id_lte %></a></td>
           <td data-sort-value="<%= new Date(lote.fecha).getTime() %>"><%= fechaHora(lote.fecha) %></td>
           <td>
             <% (lote.especies || []).forEach((e, i) => { %>
-              <a class="enlace-registro" href="/especies/<%= e.id_epe %>"><%= e.nombre %> (<%= e.tipo.nombre %>)</a><%= i < lote.especies.length - 1 ? ', ' : '' %>
+            <a class="enlace-registro" href="/especies/<%= e.id_epe %>"><%= e.nombre %>
+              (<%= e.tipo.nombre %>)</a><%= i < lote.especies.length - 1 ? ', ' : '' %>
             <% }) %>
             <% if (!(lote.especies || []).length) { %>—<% } %>
             <a class="small text-decoration-none ms-1" href="/especies/crear?lote=<%= lote.id_lte %>">+ especie</a>
@@ -68,34 +75,40 @@
           <td class="text-end text-muted"><%= dinero(lote.precio_kilo_salida) %></td>
           <td>
             <% if (lote.compra) { %>
-              <span class="estado estado--cerrado">Vendido</span>
-              <a class="enlace-registro small ms-1" href="/compradores/<%= lote.compra.comprador.codigo_cpr %>">a <%= lote.compra.comprador.nombre %> <%= lote.compra.comprador.apellido_paterno %></a>
-              <a class="enlace-registro small ms-1" href="/compras/<%= lote.compra.id_cmp %>/factura">#<%= lote.compra.id_cmp %></a>
+            <span class="estado estado--cerrado">Vendido</span>
+            <a class="enlace-registro small ms-1" href="/compradores/<%= lote.compra.comprador.codigo_cpr %>">a
+              <%= lote.compra.comprador.nombre %> <%= lote.compra.comprador.apellido_paterno %></a>
+            <a class="enlace-registro small ms-1"
+              href="/compras/<%= lote.compra.id_cmp %>/factura">#<%= lote.compra.id_cmp %></a>
             <% } else { %>
-              <span class="estado estado--ok">Disponible</span>
+            <span class="estado estado--ok">Disponible</span>
             <% } %>
           </td>
           <td class="text-end text-nowrap">
             <% if (!lote.compra) { %>
-              <!-- Vender Lote -->
-              <a class="btn btn-sm btn-outline-primary" href="/compras/crear?lote=<%= lote.id_lte %>" title="Registrar compra de este lote" aria-label="Registrar compra de este lote">
-                <%- icono('cart-plus', 14) %>
-              </a>
-              <!-- Editar Lote -->
-              <a class="btn btn-sm btn-outline-secondary" href="/lotes/<%= lote.id_lte %>/editar" title="Editar lote" aria-label="Editar lote">
-                <%- icono('pencil', 14) %>
-              </a>
+            <!-- Vender Lote -->
+            <a class="btn btn-sm btn-outline-primary" href="/compras/crear?lote=<%= lote.id_lte %>"
+              title="Registrar compra de este lote" aria-label="Registrar compra de este lote">
+              <%- icono('cart-plus', 14) %>
+            </a>
+            <!-- Editar Lote -->
+            <a class="btn btn-sm btn-outline-secondary" href="/lotes/<%= lote.id_lte %>/editar" title="Editar lote"
+              aria-label="Editar lote">
+              <%- icono('pencil', 14) %>
+            </a>
             <% } %>
             <% if (usuario.rol === 'admin' && !lote.compra) { %>
-              <form action="/lotes/<%= lote.id_lte %>?_method=DELETE" method="POST" class="d-inline" data-confirmar="¿Eliminar este lote y sus especies?">
-                <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar lote" aria-label="Eliminar lote">
-                  <%- icono('trash', 14) %>
-                </button>
-              </form>
+            <form action="/lotes/<%= lote.id_lte %>?_method=DELETE" method="POST" class="d-inline"
+              data-confirmar="¿Eliminar este lote y sus especies?">
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar lote"
+                aria-label="Eliminar lote">
+                <%- icono('trash', 14) %>
+              </button>
+            </form>
             <% } %>
           </td>
         </tr>
-      <% }) %>
+        <% }) %>
       </tbody>
     </table>
   </div>

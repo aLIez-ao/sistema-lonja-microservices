@@ -14,14 +14,18 @@
   </a>
   <div class="catalogo-fila__info">
     <h3 class="catalogo-fila__titulo"><a href="<%= _url %>"><%= _nombre %></a></h3>
-    <span class="catalogo-fila__meta">Lote #<%= lote.id_lte %> · <%= Number(lote.kilos).toLocaleString('es-MX', { maximumFractionDigits: 1 }) %> kg · <%= lote.numero_cajas %> cajas</span>
+    <span class="catalogo-fila__meta">Lote #<%= lote.id_lte %> ·
+      <%= Number(lote.kilos).toLocaleString('es-MX', { maximumFractionDigits: 1 }) %> kg · <%= lote.numero_cajas %>
+      cajas</span>
     <span class="catalogo-fila__meta"><%= lote.tipoPrincipal %><%= lote.esDeHoy ? ' · llegó hoy' : '' %></span>
   </div>
   <div class="catalogo-fila__promedio">
     <% if (medio > 0) { %>
-      <span class="catalogo-fila__rotulo">Frente al promedio del día</span>
-      <progress class="barra <%= _dif <= 0 ? 'barra--teal' : 'barra--caro' %>" max="100" value="<%= _barra %>" aria-hidden="true"><%= _barra %>%</progress>
-      <span class="catalogo-fila__comparacion <%= _dif < 0 ? 'es-bajo' : _dif > 0 ? 'es-alto' : '' %>"><%= _dif === 0 ? 'En el promedio' : `${_dif < 0 ? '−' : '+'}${Math.abs(_dif)} % más ${_dif < 0 ? 'barato' : 'caro'}` %></span>
+    <span class="catalogo-fila__rotulo">Frente al promedio del día</span>
+    <progress class="barra <%= _dif <= 0 ? 'barra--teal' : 'barra--caro' %>" max="100" value="<%= _barra %>"
+      aria-hidden="true"><%= _barra %>%</progress>
+    <span
+      class="catalogo-fila__comparacion <%= _dif < 0 ? 'es-bajo' : _dif > 0 ? 'es-alto' : '' %>"><%= _dif === 0 ? 'En el promedio' : `${_dif < 0 ? '−' : '+'}${Math.abs(_dif)} % más ${_dif < 0 ? 'barato' : 'caro'}` %></span>
     <% } %>
   </div>
   <div class="catalogo-fila__precio">

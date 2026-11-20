@@ -5,4 +5,6 @@
   const _partes = _nombre.split(/\s+/).filter(Boolean);
   const _iniciales = (_partes.length >= 2 ? _partes[0][0] + _partes[1][0] : (_partes[0] || 'U').substring(0, 2)).toUpperCase();
   const _clase = typeof clase !== 'undefined' ? clase : '';
-%><% if (u && u.foto) { %><img class="avatar-usuario <%= _clase %>" src="<%= u.foto %>" alt="Foto de <%= _nombre %>"><% } else { %><span class="avatar-usuario <%= _clase %>" aria-hidden="true"><%= _iniciales %></span><% } %>
+%><% if (u && u.foto) { %><img class="avatar-usuario <%= _clase %>" src="<%= u.foto %>"
+  alt="Foto de <%= _nombre %>"><% } else { %><span class="avatar-usuario <%= _clase %>"
+  aria-hidden="true"><%= _iniciales %></span><% } %>

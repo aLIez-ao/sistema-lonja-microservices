@@ -217,14 +217,14 @@ test('registro, cuenta, direcciones y configuración se atienden por HTTP', asyn
   assert.equal((await post('/carrito/agregar/1', {}, cookie)).status, 200);
   const checkout = await fetch(base + '/pedido/nuevo', { headers: { Cookie: cookie } });
   assert.equal(checkout.status, 200);
-  const clave = /name="clave_operacion" value="([^"]+)"/.exec(await checkout.text())[1];
+  const clave = /name="clave_operacion"\s+value="([^"]+)"/.exec(await checkout.text())[1];
   const pedido = await post('/pedido', { entrega: 'recoger', clave_operacion: clave }, cookie);
   assert.equal(pedido.status, 302);
   assert.match(pedido.headers.get('location'), /^\/pedido\/\d+\/pago$/);
   const id = /\/pedido\/(\d+)/.exec(pedido.headers.get('location'))[1];
   const pago = await fetch(base + pedido.headers.get('location'), { headers: { Cookie: cookie } });
   assert.equal(pago.status, 200);
-  const clavePago = /name="clave_operacion" value="([^"]+)"/.exec(await pago.text())[1];
+  const clavePago = /name="clave_operacion"\s+value="([^"]+)"/.exec(await pago.text())[1];
   const aprobado = await post(`/pedido/${id}/pagar`, { metodo: 'transferencia', clave_operacion: clavePago }, cookie);
   assert.equal(aprobado.status, 302);
   assert.equal(aprobado.headers.get('location'), `/cuenta/pedidos/${id}`);

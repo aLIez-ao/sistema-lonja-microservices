@@ -14,7 +14,8 @@
 
 <nav class="pestanas" aria-label="Filtrar por estado">
   <% pestanas.forEach(([estado, rotulo]) => { const activa = (filtros.estado || '') === estado; %>
-    <a class="pestanas__item <%= activa ? 'activa' : '' %>" href="<%= url({ estado: estado || null, pagina: null }) %>" <%= activa ? 'aria-current=page' : '' %>><%= rotulo %></a>
+  <a class="pestanas__item <%= activa ? 'activa' : '' %>" href="<%= url({ estado: estado || null, pagina: null }) %>"
+    <%= activa ? 'aria-current=page' : '' %>><%= rotulo %></a>
   <% }) %>
 </nav>
 
@@ -22,18 +23,32 @@
   <% if (filtros.estado) { %><input type="hidden" name="estado" value="<%= filtros.estado %>"><% } %>
   <div class="filtros-linea__busqueda">
     <label class="visually-hidden" for="busqueda-pedido">Buscar pedido</label>
-    <input id="busqueda-pedido" class="form-control form-control-sm" type="search" name="q" value="<%= filtros.q || '' %>" placeholder="Número, comprador o correo">
+    <input id="busqueda-pedido" class="form-control form-control-sm" type="search" name="q"
+      value="<%= filtros.q || '' %>" placeholder="Número, comprador o correo">
   </div>
   <label class="visually-hidden" for="entrega-pedido">Entrega</label>
-  <select id="entrega-pedido" name="entrega" class="form-select form-select-sm"><option value="">Toda entrega</option><option value="domicilio" <%= filtros.entrega === 'domicilio' ? 'selected' : '' %>>Domicilio</option><option value="recoger" <%= filtros.entrega === 'recoger' ? 'selected' : '' %>>Recoger</option></select>
+  <select id="entrega-pedido" name="entrega" class="form-select form-select-sm">
+    <option value="">Toda entrega</option>
+    <option value="domicilio" <%= filtros.entrega === 'domicilio' ? 'selected' : '' %>>Domicilio</option>
+    <option value="recoger" <%= filtros.entrega === 'recoger' ? 'selected' : '' %>>Recoger</option>
+  </select>
   <label class="visually-hidden" for="desde-pedido">Desde</label>
-  <input id="desde-pedido" type="date" class="form-control form-control-sm" name="desde" value="<%= filtros.desde || '' %>">
+  <input id="desde-pedido" type="date" class="form-control form-control-sm" name="desde"
+    value="<%= filtros.desde || '' %>">
   <label class="visually-hidden" for="hasta-pedido">Hasta</label>
-  <input id="hasta-pedido" type="date" class="form-control form-control-sm" name="hasta" value="<%= filtros.hasta || '' %>">
+  <input id="hasta-pedido" type="date" class="form-control form-control-sm" name="hasta"
+    value="<%= filtros.hasta || '' %>">
   <label class="visually-hidden" for="orden-pedido">Ordenar por</label>
-  <select id="orden-pedido" name="orden" class="form-select form-select-sm"><option value="fecha">Fecha</option><option value="total" <%= filtros.orden === 'total' ? 'selected' : '' %>>Total</option><option value="estado" <%= filtros.orden === 'estado' ? 'selected' : '' %>>Estado</option></select>
+  <select id="orden-pedido" name="orden" class="form-select form-select-sm">
+    <option value="fecha">Fecha</option>
+    <option value="total" <%= filtros.orden === 'total' ? 'selected' : '' %>>Total</option>
+    <option value="estado" <%= filtros.orden === 'estado' ? 'selected' : '' %>>Estado</option>
+  </select>
   <label class="visually-hidden" for="dir-pedido">Dirección</label>
-  <select id="dir-pedido" name="dir" class="form-select form-select-sm"><option value="desc" <%= filtros.dir !== 'asc' ? 'selected' : '' %>>Descendente</option><option value="asc" <%= filtros.dir === 'asc' ? 'selected' : '' %>>Ascendente</option></select>
+  <select id="dir-pedido" name="dir" class="form-select form-select-sm">
+    <option value="desc" <%= filtros.dir !== 'asc' ? 'selected' : '' %>>Descendente</option>
+    <option value="asc" <%= filtros.dir === 'asc' ? 'selected' : '' %>>Ascendente</option>
+  </select>
   <button class="btn btn-sm btn-primary"><%- icono('search', 14, 'me-1') %>Filtrar</button>
 </form>
 
@@ -42,18 +57,31 @@
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0 tabla-ligera">
         <caption class="visually-hidden">Pedidos en línea</caption>
-        <thead><tr><th scope="col">Folio</th><th scope="col">Fecha</th><th scope="col">Comprador</th><th scope="col">Estado</th><th scope="col">Entrega</th><th scope="col" class="text-end">Total</th></tr></thead>
+        <thead>
+          <tr>
+            <th scope="col">Folio</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Comprador</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Entrega</th>
+            <th scope="col" class="text-end">Total</th>
+          </tr>
+        </thead>
         <tbody>
-          <% if (!pedidos.length) { %><tr><td colspan="6" class="text-center text-muted p-4">No hay pedidos con estos filtros.</td></tr><% } %>
+          <% if (!pedidos.length) { %><tr>
+            <td colspan="6" class="text-center text-muted p-4">No hay pedidos con estos filtros.</td>
+          </tr><% } %>
           <% pedidos.forEach(p => { const activo = sel && sel.id_ped === p.id_ped; %>
-            <tr class="<%= activo ? 'fila-activa' : '' %>">
-              <td><a class="fw-semibold" href="<%= url({ ver: p.id_ped, pagina: pagina }) %>#detalle" <%= activo ? 'aria-current=true' : '' %>>PED-<%= String(p.id_ped).padStart(6, '0') %></a></td>
-              <td class="text-nowrap"><%= fechaHora(p.fecha) %></td>
-              <td><%= p.comprador.nombre %> <%= p.comprador.apellido_paterno %><small class="d-block text-muted"><%= p.usuario?.correo || p.comprador.correo %></small></td>
-              <td><%- include('_estado', { estado: p.estado }) %></td>
-              <td><%= p.entrega === 'domicilio' ? 'Domicilio' : 'Recoger' %></td>
-              <td class="text-end fw-semibold"><%= dinero(p.total) %></td>
-            </tr>
+          <tr class="<%= activo ? 'fila-activa' : '' %>">
+            <td><a class="fw-semibold" href="<%= url({ ver: p.id_ped, pagina: pagina }) %>#detalle"
+                <%= activo ? 'aria-current=true' : '' %>>PED-<%= String(p.id_ped).padStart(6, '0') %></a></td>
+            <td class="text-nowrap"><%= fechaHora(p.fecha) %></td>
+            <td><%= p.comprador.nombre %> <%= p.comprador.apellido_paterno %><small
+                class="d-block text-muted"><%= p.usuario?.correo || p.comprador.correo %></small></td>
+            <td><%- include('_estado', { estado: p.estado }) %></td>
+            <td><%= p.entrega === 'domicilio' ? 'Domicilio' : 'Recoger' %></td>
+            <td class="text-end fw-semibold"><%= dinero(p.total) %></td>
+          </tr>
           <% }) %>
         </tbody>
       </table>
@@ -61,40 +89,59 @@
   </div>
 
   <% if (sel) { %>
-    <aside class="panel-detalle" id="detalle" aria-labelledby="detalleTitulo">
-      <div class="panel-detalle__cabecera">
-        <div>
-          <h2 id="detalleTitulo">PED-<%= String(sel.id_ped).padStart(6, '0') %></h2>
-          <p class="text-muted small mb-0"><%= sel.comprador.nombre %> <%= sel.comprador.apellido_paterno %> · <%= sel.entrega === 'domicilio' ? 'Envío a domicilio' : 'Recoge en la lonja' %></p>
-        </div>
-        <a class="btn-close" href="<%= url({ ver: null, pagina: pagina }) %>" aria-label="Cerrar detalle"></a>
+  <aside class="panel-detalle" id="detalle" aria-labelledby="detalleTitulo">
+    <div class="panel-detalle__cabecera">
+      <div>
+        <h2 id="detalleTitulo">PED-<%= String(sel.id_ped).padStart(6, '0') %></h2>
+        <p class="text-muted small mb-0"><%= sel.comprador.nombre %> <%= sel.comprador.apellido_paterno %> ·
+          <%= sel.entrega === 'domicilio' ? 'Envío a domicilio' : 'Recoge en la lonja' %></p>
       </div>
-      <%- include('_linea-tiempo', { pedido: sel }) %>
-      <h3 class="panel-detalle__sub">Contenido</h3>
-      <ul class="panel-detalle__items">
-        <% sel.items.forEach(i => { %>
-          <li><span>Lote #<%= i.id_lte %> · <%= i.kilos %> kg<small class="d-block text-muted"><%= (i.lote?.especies || []).map(e => e.nombre).join(', ') %></small></span><strong><%= dinero(i.subtotal) %></strong></li>
-        <% }) %>
-      </ul>
-      <dl class="panel-detalle__totales">
-        <div><dt>Subtotal</dt><dd><%= dinero(sel.subtotal) %></dd></div>
-        <div><dt>IVA (tasa 0 %)</dt><dd><%= dinero(0) %></dd></div>
-        <div><dt>Envío</dt><dd><%= dinero(sel.costo_envio) %></dd></div>
-        <div class="total"><dt>Total</dt><dd><%= dinero(sel.total) %></dd></div>
-      </dl>
-      <div class="panel-detalle__acciones">
-        <a class="btn btn-primary btn-sm" href="/pedidos/<%= sel.id_ped %>"><%= seleccionado.siguiente || sel.estado === 'pendiente_pago' ? 'Atender pedido' : 'Ver pedido completo' %></a>
-        <% (seleccionado.compras || []).forEach(c => { %><a class="btn btn-outline-secondary btn-sm" href="/compras/<%= c.id_cmp %>/factura">Factura lote #<%= c.id_cmp %></a><% }) %>
+      <a class="btn-close" href="<%= url({ ver: null, pagina: pagina }) %>" aria-label="Cerrar detalle"></a>
+    </div>
+    <%- include('_linea-tiempo', { pedido: sel }) %>
+    <h3 class="panel-detalle__sub">Contenido</h3>
+    <ul class="panel-detalle__items">
+      <% sel.items.forEach(i => { %>
+      <li><span>Lote #<%= i.id_lte %> · <%= i.kilos %> kg<small
+            class="d-block text-muted"><%= (i.lote?.especies || []).map(e => e.nombre).join(', ') %></small></span><strong><%= dinero(i.subtotal) %></strong>
+      </li>
+      <% }) %>
+    </ul>
+    <dl class="panel-detalle__totales">
+      <div>
+        <dt>Subtotal</dt>
+        <dd><%= dinero(sel.subtotal) %></dd>
       </div>
-    </aside>
+      <div>
+        <dt>IVA (tasa 0 %)</dt>
+        <dd><%= dinero(0) %></dd>
+      </div>
+      <div>
+        <dt>Envío</dt>
+        <dd><%= dinero(sel.costo_envio) %></dd>
+      </div>
+      <div class="total">
+        <dt>Total</dt>
+        <dd><%= dinero(sel.total) %></dd>
+      </div>
+    </dl>
+    <div class="panel-detalle__acciones">
+      <a class="btn btn-primary btn-sm"
+        href="/pedidos/<%= sel.id_ped %>"><%= seleccionado.siguiente || sel.estado === 'pendiente_pago' ? 'Atender pedido' : 'Ver pedido completo' %></a>
+      <% (seleccionado.compras || []).forEach(c => { %><a class="btn btn-outline-secondary btn-sm"
+        href="/compras/<%= c.id_cmp %>/factura">Factura lote #<%= c.id_cmp %></a><% }) %>
+    </div>
+  </aside>
   <% } %>
 </div>
 
 <nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3" aria-label="Paginación de pedidos">
   <span class="text-muted small">Página <%= pagina %> de <%= paginas %> · <%= total %> pedidos</span>
   <div class="d-flex gap-2">
-    <% if (pagina > 1) { %><a class="btn btn-sm btn-outline-secondary" href="<%= url({ pagina: pagina - 1, ver: null }) %>">Anterior</a><% } %>
-    <% if (pagina < paginas) { %><a class="btn btn-sm btn-outline-secondary" href="<%= url({ pagina: pagina + 1, ver: null }) %>">Siguiente</a><% } %>
+    <% if (pagina > 1) { %><a class="btn btn-sm btn-outline-secondary"
+      href="<%= url({ pagina: pagina - 1, ver: null }) %>">Anterior</a><% } %>
+    <% if (pagina < paginas) { %><a class="btn btn-sm btn-outline-secondary"
+      href="<%= url({ pagina: pagina + 1, ver: null }) %>">Siguiente</a><% } %>
   </div>
 </nav>
 <%- include('../partials/footer') %>

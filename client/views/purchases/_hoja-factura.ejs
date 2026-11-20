@@ -22,7 +22,8 @@
     <div class="factura-tarjetas">
       <section class="factura-tarjeta">
         <div class="factura-tarjeta-titulo">FACTURADO A</div>
-        <div class="factura-tarjeta-nombre"><a class="enlace-registro" href="/compradores/<%= compra.comprador.codigo_cpr %>"><%= f.cliente.nombre %></a></div>
+        <div class="factura-tarjeta-nombre"><a class="enlace-registro"
+            href="/compradores/<%= compra.comprador.codigo_cpr %>"><%= f.cliente.nombre %></a></div>
         <div><span>Código de comprador: </span>#<%= f.cliente.codigo %></div>
         <div><span>Correo: </span><%= f.cliente.correo %></div>
         <div><span>Uso CFDI: </span><%= f.cliente.usoCfdi %></div>
@@ -38,17 +39,33 @@
 
     <table class="hoja-tabla factura-tabla">
       <colgroup>
-        <col class="factura-col-lote"><col class="factura-col-descripcion"><col class="factura-col-cajas"><col class="factura-col-peso"><col class="factura-col-salida"><col class="factura-col-final"><col class="factura-col-total">
+        <col class="factura-col-lote">
+        <col class="factura-col-descripcion">
+        <col class="factura-col-cajas">
+        <col class="factura-col-peso">
+        <col class="factura-col-salida">
+        <col class="factura-col-final">
+        <col class="factura-col-total">
       </colgroup>
       <thead>
         <tr>
-          <th>LOTE</th><th>ESPECIES / DESCRIPCIÓN</th><th class="der">CAJAS</th><th class="der">PESO (KG)</th><th class="der">SALIDA/KG</th><th class="der">FINAL/KG</th><th class="der">TOTAL</th>
+          <th>LOTE</th>
+          <th>ESPECIES / DESCRIPCIÓN</th>
+          <th class="der">CAJAS</th>
+          <th class="der">PESO (KG)</th>
+          <th class="der">SALIDA/KG</th>
+          <th class="der">FINAL/KG</th>
+          <th class="der">TOTAL</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td class="fuerte marino"><a class="enlace-registro" href="/lotes/<%= compra.id_cmp %>"><%= f.concepto.lote %></a></td>
-          <td><div class="fuerte"><%= f.concepto.especies %></div><div class="nota"><%= f.concepto.nota %></div></td>
+          <td class="fuerte marino"><a class="enlace-registro"
+              href="/lotes/<%= compra.id_cmp %>"><%= f.concepto.lote %></a></td>
+          <td>
+            <div class="fuerte"><%= f.concepto.especies %></div>
+            <div class="nota"><%= f.concepto.nota %></div>
+          </td>
           <td class="der"><%= f.concepto.cajas %></td>
           <td class="der"><%= f.concepto.kilos %></td>
           <td class="der tenue"><%= f.concepto.salida %></td>

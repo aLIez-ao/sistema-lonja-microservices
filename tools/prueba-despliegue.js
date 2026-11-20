@@ -101,14 +101,14 @@ assert.ok(cookies.get('lonja_sid'));
 assert.equal((await pedir('POST', '/carrito/agregar/' + lote.id_lte, {})).status, 200);
 const formulario = await pedir('GET', '/pedido/nuevo', undefined, { form: true });
 assert.equal(formulario.status, 200);
-const clave = /name="clave_operacion" value="([^"]+)"/.exec(await formulario.text())?.[1];
+const clave = /name="clave_operacion"\s+value="([^"]+)"/.exec(await formulario.text())?.[1];
 assert.ok(clave);
 const creado = await pedir('POST', '/pedido', { entrega: 'recoger', clave_operacion: clave }, { form: true });
 assert.equal(creado.status, 302);
 const rutaPago = creado.headers.get('location');
 assert.match(rutaPago, /^\/pedido\/\d+\/pago$/);
 const pago = await pedir('GET', rutaPago, undefined, { form: true });
-const clavePago = /name="clave_operacion" value="([^"]+)"/.exec(await pago.text())?.[1];
+const clavePago = /name="clave_operacion"\s+value="([^"]+)"/.exec(await pago.text())?.[1];
 assert.ok(clavePago);
 const pagado = await pedir(
   'POST',

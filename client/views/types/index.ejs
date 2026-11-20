@@ -23,32 +23,36 @@
         </tr>
       </thead>
       <tbody>
-      <% if (!tipos.length) { %>
+        <% if (!tipos.length) { %>
         <tr class="fila-vacia">
           <td colspan="4" class="text-center py-4 text-muted">
             <%= (l.q || Object.keys(l.filtros).length) ? 'No hay registros que coincidan con la búsqueda.' : 'No hay tipos registrados en el sistema.' %>
           </td>
         </tr>
-      <% } %>
-      <% tipos.forEach(tipo => { %>
+        <% } %>
+        <% tipos.forEach(tipo => { %>
         <tr>
           <td><span class="badge bg-secondary">#<%= tipo.id_tpo %></span></td>
           <td><strong><%= tipo.nombre %></strong></td>
-          <td class="text-end fw-semibold"><a class="enlace-registro" href="/tipos/<%= tipo.id_tpo %>"><%= tipo.especies.length %></a></td>
+          <td class="text-end fw-semibold"><a class="enlace-registro"
+              href="/tipos/<%= tipo.id_tpo %>"><%= tipo.especies.length %></a></td>
           <td class="text-end text-nowrap">
-            <a class="btn btn-sm btn-outline-secondary" href="/tipos/<%= tipo.id_tpo %>/editar" title="Editar tipo" aria-label="Editar tipo">
+            <a class="btn btn-sm btn-outline-secondary" href="/tipos/<%= tipo.id_tpo %>/editar" title="Editar tipo"
+              aria-label="Editar tipo">
               <%- icono('pencil', 14) %>
             </a>
             <% if (usuario.rol === 'admin') { %>
-            <form action="/tipos/<%= tipo.id_tpo %>?_method=DELETE" method="POST" class="d-inline" data-confirmar="¿Eliminar este tipo?">
-              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar tipo" aria-label="Eliminar tipo">
+            <form action="/tipos/<%= tipo.id_tpo %>?_method=DELETE" method="POST" class="d-inline"
+              data-confirmar="¿Eliminar este tipo?">
+              <button class="btn btn-sm btn-outline-danger" type="submit" title="Eliminar tipo"
+                aria-label="Eliminar tipo">
                 <%- icono('trash', 14) %>
               </button>
             </form>
             <% } %>
           </td>
         </tr>
-      <% }) %>
+        <% }) %>
       </tbody>
     </table>
   </div>

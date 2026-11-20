@@ -3,36 +3,50 @@
 <div class="row justify-content-center">
   <div class="col-lg-9">
     <div class="card p-4">
-      <h1 class="h3 mb-3 fw-bold"><%= editando ? 'Editar compra del lote ' + compra.id_cmp : 'Registrar compra en subasta' %></h1>
-      <p class="text-muted small mb-4">Selecciona el lote adjudicado y el precio final pactado en la subasta. El total se calcula automáticamente.</p>
+      <h1 class="h3 mb-3 fw-bold">
+        <%= editando ? 'Editar compra del lote ' + compra.id_cmp : 'Registrar compra en subasta' %></h1>
+      <p class="text-muted small mb-4">Selecciona el lote adjudicado y el precio final pactado en la subasta. El total
+        se calcula automáticamente.</p>
 
       <%- include('../partials/mensajes', { mensaje: null }) %>
 
       <form action="<%= action %>" method="POST">
-<input type="hidden" name="_etag" value="<%= typeof etag !== 'undefined' ? etag : '' %>">
+        <input type="hidden" name="_etag" value="<%= typeof etag !== 'undefined' ? etag : '' %>">
         <div class="row g-3">
 
           <div class="col-12">
             <span class="form-label fw-semibold d-block">Lote adjudicado</span>
             <% if (editando) { %>
-              <input type="hidden" name="id_cmp" id="id_cmp" value="<%= compra.id_cmp %>" data-kilos="<%= compra.lote ? compra.lote.kilos : 0 %>" data-salida="<%= compra.lote ? compra.lote.precio_kilo_salida : 0 %>">
-              <div class="border rounded p-3 bg-body-tertiary">Lote #<%= compra.id_cmp %><% if (compra.lote) { %> · <%= Number(compra.lote.kilos).toFixed(2) %> kg<% } %></div>
+            <input type="hidden" name="id_cmp" id="id_cmp" value="<%= compra.id_cmp %>"
+              data-kilos="<%= compra.lote ? compra.lote.kilos : 0 %>"
+              data-salida="<%= compra.lote ? compra.lote.precio_kilo_salida : 0 %>">
+            <div class="border rounded p-3 bg-body-tertiary">Lote #<%= compra.id_cmp %><% if (compra.lote) { %> ·
+              <%= Number(compra.lote.kilos).toFixed(2) %> kg<% } %></div>
             <% } else if (!lotes.length) { %>
-              <div class="alert alert-warning mb-0">No hay lotes disponibles: todos están vendidos o no hay lotes registrados. <a class="alert-link" href="/lotes/crear">Registrar un lote</a>.</div>
+            <div class="alert alert-warning mb-0">No hay lotes disponibles: todos están vendidos o no hay lotes
+              registrados. <a class="alert-link" href="/lotes/crear">Registrar un lote</a>.</div>
             <% } else { %>
-              <div class="lista-seleccion" role="radiogroup" aria-label="Lote adjudicado">
-                <% lotes.forEach(l => { const marcado = compra && String(compra.id_cmp) === String(l.id_lte); %>
-                  <label class="opcion-seleccion <%= marcado ? 'tarjeta-seleccionada' : '' %> <%= l.reservaActiva ? 'opacity-75' : '' %>" data-tarjeta aria-pressed="<%= marcado ? 'true' : 'false' %>">
-                    <input type="radio" name="id_cmp" id="id_cmp_<%= l.id_lte %>" value="<%= l.id_lte %>" data-kilos="<%= l.kilos %>" data-salida="<%= l.precio_kilo_salida %>" <%= marcado ? 'checked' : '' %> <%= l.reservaActiva ? 'disabled' : 'required' %>>
-                    <span class="flex-grow-1">
-                      <span class="fw-bold">Lote #<%= l.id_lte %></span>
-                      <span class="d-block small text-muted"><%= l.especies.map(e => e.nombre).join(', ') || 'Sin especies' %></span>
-                      <span class="d-block small text-muted"><%= Number(l.kilos).toFixed(2) %> kg · <%= l.numero_cajas %> cajas · salida <%= dinero(l.precio_kilo_salida) %>/kg</span>
-                      <% if (l.reservaActiva) { %><span class="d-block small text-warning-emphasis">Reservado por un pedido en línea hasta <%= new Date(l.reservaActiva.reservado_hasta).toLocaleString('es-MX') %></span><% } %>
-                    </span>
-                  </label>
-                <% }) %>
-              </div>
+            <div class="lista-seleccion" role="radiogroup" aria-label="Lote adjudicado">
+              <% lotes.forEach(l => { const marcado = compra && String(compra.id_cmp) === String(l.id_lte); %>
+              <label
+                class="opcion-seleccion <%= marcado ? 'tarjeta-seleccionada' : '' %> <%= l.reservaActiva ? 'opacity-75' : '' %>"
+                data-tarjeta aria-pressed="<%= marcado ? 'true' : 'false' %>">
+                <input type="radio" name="id_cmp" id="id_cmp_<%= l.id_lte %>" value="<%= l.id_lte %>"
+                  data-kilos="<%= l.kilos %>" data-salida="<%= l.precio_kilo_salida %>" <%= marcado ? 'checked' : '' %>
+                  <%= l.reservaActiva ? 'disabled' : 'required' %>>
+                <span class="flex-grow-1">
+                  <span class="fw-bold">Lote #<%= l.id_lte %></span>
+                  <span
+                    class="d-block small text-muted"><%= l.especies.map(e => e.nombre).join(', ') || 'Sin especies' %></span>
+                  <span class="d-block small text-muted"><%= Number(l.kilos).toFixed(2) %> kg · <%= l.numero_cajas %>
+                    cajas · salida <%= dinero(l.precio_kilo_salida) %>/kg</span>
+                  <% if (l.reservaActiva) { %><span class="d-block small text-warning-emphasis">Reservado por un pedido
+                    en línea hasta
+                    <%= new Date(l.reservaActiva.reservado_hasta).toLocaleString('es-MX') %></span><% } %>
+                </span>
+              </label>
+              <% }) %>
+            </div>
             <% } %>
           </div>
 
@@ -41,21 +55,27 @@
             <select class="form-select" id="codigo_cpr" name="codigo_cpr" required>
               <option value="">Selecciona al comprador…</option>
               <% compradores.forEach(c => { %>
-                <option value="<%= c.codigo_cpr %>" <%= compra && String(compra.codigo_cpr) === String(c.codigo_cpr) ? 'selected' : '' %>>
-                  #<%= c.codigo_cpr %> · <%= c.nombre %> <%= c.apellido_paterno %> <%= c.apellido_materno || '' %> <%= c.correo ? '(' + c.correo + ')' : '' %>
-                </option>
+              <option value="<%= c.codigo_cpr %>"
+                <%= compra && String(compra.codigo_cpr) === String(c.codigo_cpr) ? 'selected' : '' %>>
+                #<%= c.codigo_cpr %> · <%= c.nombre %> <%= c.apellido_paterno %> <%= c.apellido_materno || '' %>
+                <%= c.correo ? '(' + c.correo + ')' : '' %>
+              </option>
               <% }) %>
             </select>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold" for="precio_kilo_final">Precio final por kilo (<%= pref.moneda %>)</label>
-            <input class="form-control" type="number" step="0.01" min="0.01" id="precio_kilo_final" name="precio_kilo_final" value="<%= compra ? (compra.precio_kilo_final || '') : '' %>" placeholder="0.00" required data-pasos="1" data-rapidos="50,100,150,200" data-teclado>
+            <label class="form-label fw-semibold" for="precio_kilo_final">Precio final por kilo
+              (<%= pref.moneda %>)</label>
+            <input class="form-control" type="number" step="0.01" min="0.01" id="precio_kilo_final"
+              name="precio_kilo_final" value="<%= compra ? (compra.precio_kilo_final || '') : '' %>" placeholder="0.00"
+              required data-pasos="1" data-rapidos="50,100,150,200" data-teclado>
             <div class="form-text">Precio acordado al caer el martillo.</div>
           </div>
 
           <div class="col-md-6">
-            <div id="cajaCalculoEnVivo" class="border rounded p-3 bg-body-tertiary h-100 d-flex flex-column justify-content-center">
+            <div id="cajaCalculoEnVivo"
+              class="border rounded p-3 bg-body-tertiary h-100 d-flex flex-column justify-content-center">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="small text-muted">Kilos a procesar:</span>
                 <span id="kilosLoteInfo" class="fw-semibold">0.00 kg</span>

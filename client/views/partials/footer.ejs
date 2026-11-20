@@ -1,60 +1,70 @@
-  </main>
-  <% if (!usuario || usuario.rol === 'comprador') { %><%- include('_barra-movil') %><% } %>
+</main>
+<% if (!usuario || usuario.rol === 'comprador') { %><%- include('_barra-movil') %><% } %>
 
-  <footer class="container text-center text-muted py-4 mt-auto d-print-none">
-    <div class="row align-items-center gy-2">
-      <div class="col-12">
-        <small class="fw-semibold text-secondary">Sistema Lonja de Veracruz &bull; Web 2 &bull; FES Aragón, UNAM</small>
-        <div class="small text-muted">Hector Ardan Montiel Olvera &bull; Jesus Armando Serrano Medina &bull; Mendoza Lemus Leonardo</div>
-      </div>
+<footer class="container text-center text-muted py-4 mt-auto d-print-none">
+  <div class="row align-items-center gy-2">
+    <div class="col-12">
+      <small class="fw-semibold text-secondary">Sistema Lonja de Veracruz &bull; Web 2 &bull; FES Aragón, UNAM</small>
+      <div class="small text-muted">Hector Ardan Montiel Olvera &bull; Jesus Armando Serrano Medina &bull; Mendoza Lemus
+        Leonardo</div>
     </div>
-  </footer>
+  </div>
+</footer>
 
-  <!-- Banner de consentimiento de cookies: solo con sesión iniciada y mientras no se haya respondido -->
-  <% if (usuario && !pref.cookiesRespondidas) { %>
-    <div id="cookieConsentBanner" class="cookie-consent-bar d-print-none" role="dialog" aria-labelledby="cookiesTitulo">
-      <div class="d-flex align-items-start gap-3">
-        <div class="text-primary pt-1"><%- icono('cookie', 26) %></div>
-        <div class="flex-grow-1">
-          <h6 class="fw-bold mb-1" id="cookiesTitulo"><%= t('cookies_banner_titulo') %></h6>
-          <p class="small text-muted mb-2"><%= t('cookies_banner_desc') %></p>
+<!-- Banner de consentimiento de cookies: solo con sesión iniciada y mientras no se haya respondido -->
+<% if (usuario && !pref.cookiesRespondidas) { %>
+<div id="cookieConsentBanner" class="cookie-consent-bar d-print-none" role="dialog" aria-labelledby="cookiesTitulo">
+  <div class="d-flex align-items-start gap-3">
+    <div class="text-primary pt-1"><%- icono('cookie', 26) %></div>
+    <div class="flex-grow-1">
+      <h6 class="fw-bold mb-1" id="cookiesTitulo"><%= t('cookies_banner_titulo') %></h6>
+      <p class="small text-muted mb-2"><%= t('cookies_banner_desc') %></p>
 
-          <!-- Qué hace cada cookie y selección por categoría -->
-          <div class="collapse" id="cookiesPersonalizar">
-            <div class="cookies-categorias mb-2">
-              <% cookiesCatalogo.forEach(cat => { %>
-                <div class="cookies-categoria">
-                  <div class="form-check form-switch mb-1">
-                    <input class="form-check-input" type="checkbox" role="switch" name="categorias" value="<%= cat.id %>" id="bannerCat-<%= cat.id %>" checked <%= cat.obligatoria ? 'disabled' : '' %>>
-                    <label class="form-check-label fw-semibold" for="bannerCat-<%= cat.id %>"><%= cat.nombre %><%= cat.obligatoria ? ' (siempre activas)' : '' %></label>
-                  </div>
-                  <div class="small text-muted"><%= cat.descripcion %></div>
-                  <ul class="small text-muted mb-0 ps-3">
-                    <% cat.cookies.forEach(c => { %>
-                      <li><code><%= c.nombre %></code>: <%= c.proposito %> <span class="text-nowrap">(<%= c.duracion %>)</span></li>
-                    <% }) %>
-                  </ul>
-                </div>
-              <% }) %>
+      <!-- Qué hace cada cookie y selección por categoría -->
+      <div class="collapse" id="cookiesPersonalizar">
+        <div class="cookies-categorias mb-2">
+          <% cookiesCatalogo.forEach(cat => { %>
+          <div class="cookies-categoria">
+            <div class="form-check form-switch mb-1">
+              <input class="form-check-input" type="checkbox" role="switch" name="categorias" value="<%= cat.id %>"
+                id="bannerCat-<%= cat.id %>" checked <%= cat.obligatoria ? 'disabled' : '' %>>
+              <label class="form-check-label fw-semibold"
+                for="bannerCat-<%= cat.id %>"><%= cat.nombre %><%= cat.obligatoria ? ' (siempre activas)' : '' %></label>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-primary mb-2" data-cookies-guardar>Guardar mi selección</button>
+            <div class="small text-muted"><%= cat.descripcion %></div>
+            <ul class="small text-muted mb-0 ps-3">
+              <% cat.cookies.forEach(c => { %>
+              <li><code><%= c.nombre %></code>: <%= c.proposito %> <span class="text-nowrap">(<%= c.duracion %>)</span>
+              </li>
+              <% }) %>
+            </ul>
           </div>
+          <% }) %>
         </div>
+        <button type="button" class="btn btn-sm btn-outline-primary mb-2" data-cookies-guardar>Guardar mi
+          selección</button>
       </div>
-      <div class="d-flex gap-2 justify-content-end flex-wrap">
-        <button type="button" class="btn btn-sm btn-link text-decoration-none me-auto" data-bs-toggle="collapse" data-bs-target="#cookiesPersonalizar" aria-expanded="false" aria-controls="cookiesPersonalizar"><%= t('cookies_personalizar') %></button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-cookies-nivel="essential"><%= t('cookies_esenciales') %></button>
-        <button type="button" class="btn btn-sm btn-primary" data-cookies-nivel="all"><%= t('cookies_aceptar') %></button>
-      </div>
-      <div class="small text-muted">Puedes cambiar esta decisión cuando quieras en Configuración &rsaquo; Cookies y privacidad.</div>
     </div>
-  <% } %>
+  </div>
+  <div class="d-flex gap-2 justify-content-end flex-wrap">
+    <button type="button" class="btn btn-sm btn-link text-decoration-none me-auto" data-bs-toggle="collapse"
+      data-bs-target="#cookiesPersonalizar" aria-expanded="false"
+      aria-controls="cookiesPersonalizar"><%= t('cookies_personalizar') %></button>
+    <button type="button" class="btn btn-sm btn-outline-secondary"
+      data-cookies-nivel="essential"><%= t('cookies_esenciales') %></button>
+    <button type="button" class="btn btn-sm btn-primary" data-cookies-nivel="all"><%= t('cookies_aceptar') %></button>
+  </div>
+  <div class="small text-muted">Puedes cambiar esta decisión cuando quieras en Configuración &rsaquo; Cookies y
+    privacidad.</div>
+</div>
+<% } %>
 
-  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script type="module" src="/js/lonja-app.js"></script>
-  <script src="/js/lonja-clics.js"></script>
-  <% if ((rutaActual || '') === '/' || (rutaActual || '').startsWith('/tienda') || (rutaActual || '').startsWith('/carrito') || (rutaActual || '').startsWith('/pedido') || (usuario && usuario.rol === 'comprador')) { %>
-    <script type="module" src="/js/lonja-tienda.js"></script>
-  <% } %>
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="/js/lonja-app.js"></script>
+<script src="/js/lonja-clics.js"></script>
+<% if ((rutaActual || '') === '/' || (rutaActual || '').startsWith('/tienda') || (rutaActual || '').startsWith('/carrito') || (rutaActual || '').startsWith('/pedido') || (usuario && usuario.rol === 'comprador')) { %>
+<script type="module" src="/js/lonja-tienda.js"></script>
+<% } %>
 </body>
+
 </html>

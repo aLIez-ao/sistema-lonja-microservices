@@ -12,7 +12,7 @@ Cada workspace ejecuta su suite con `node:test`. El ayudante `api/test/ayuda.js`
 
 Con solo Docker, construye `tools` y usa los comandos del [catálogo operativo](07-comandos.md). Ese contenedor incluye el módulo SQLite nativo que no se instala en los servicios de desarrollo. La API no carga el `.env` local bajo `node:test` ni con `NODE_ENV=test`; las pruebas reciben sus valores de ensayo explícitos. Redis se omite sin `SESSION_REDIS_TEST_URL` y el bloqueo de filas MariaDB se omite en SQLite; CI ejecuta esas integraciones con sus servicios reales.
 
-`npm run format` aplica Prettier a JavaScript, JSON, YAML/YML, CSS, HTML y Markdown; `npm run format:check` valida sin escribir. La configuración compartida está en `package.json` y las exclusiones en `.prettierignore`. Las plantillas EJS, SVG, DBML y shell no forman parte de ese formateador. `views:check` revisa las vistas y `docs:check` el contrato y los enlaces; no sustituyen una revisión visual.
+`npm run format` aplica Prettier a JavaScript, JSON, YAML/YML, CSS y Markdown, y el motor oficial de HTML Language Features a HTML/HTM/EJS; `npm run format:check` valida sin escribir. Las exclusiones compartidas están en `tools/formato.js`; `.prettierignore` es solo una ampliación local opcional. La regresión `client/test/formato.test.js` comprueba que el formato conserve las etiquetas EJS, el HTML renderizado, los atributos dinámicos y el contenido preformateado, y que una segunda pasada sea estable. `views:check` revisa las vistas y `docs:check` el contrato y los enlaces; no sustituyen una revisión visual. SVG, DBML y shell quedan fuera del formateador.
 
 ## Alcance
 

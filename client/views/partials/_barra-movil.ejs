@@ -10,14 +10,15 @@
 %>
 <div class="barra-movil d-print-none">
   <% if (usuario && carritoCount) { %>
-    <a class="barra-movil__carrito" href="/carrito">
-      <span><strong><%= carritoCount %> <%= carritoCount === 1 ? 'lote' : 'lotes' %></strong> en tu carrito</span>
-      <span class="barra-movil__carrito-cta">Ver carrito</span>
-    </a>
+  <a class="barra-movil__carrito" href="/carrito">
+    <span><strong><%= carritoCount %> <%= carritoCount === 1 ? 'lote' : 'lotes' %></strong> en tu carrito</span>
+    <span class="barra-movil__carrito-cta">Ver carrito</span>
+  </a>
   <% } %>
   <nav class="barra-movil__nav" aria-label="Navegación de la tienda">
     <% _items.forEach(([href, rotulo, ico, activo]) => { %>
-      <a href="<%= href %>" class="<%= activo ? 'activo' : '' %>" <%= activo ? 'aria-current=page' : '' %>><%- icono(ico, 18) %><span><%= rotulo %></span></a>
+    <a href="<%= href %>" class="<%= activo ? 'activo' : '' %>"
+      <%= activo ? 'aria-current=page' : '' %>><%- icono(ico, 18) %><span><%= rotulo %></span></a>
     <% }) %>
   </nav>
 </div>

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="<%= pref.idioma %>" data-theme="<%= pref.tema %>" data-bs-theme="<%= pref.tema === 'dark' ? 'dark' : 'light' %>" data-font-size="<%= pref.tamanoFuente %>" data-font-family="<%= pref.tipoFuente %>">
+<html lang="<%= pref.idioma %>" data-theme="<%= pref.tema %>"
+  data-bs-theme="<%= pref.tema === 'dark' ? 'dark' : 'light' %>" data-font-size="<%= pref.tamanoFuente %>"
+  data-font-family="<%= pref.tipoFuente %>">
 
 <head>
   <meta charset="UTF-8">
@@ -19,6 +21,7 @@
     || ruta.startsWith('/registro') || ruta.startsWith('/recuperar-password')
     || ruta.startsWith('/olvide-password') || ruta.startsWith('/verificar-email');
 %>
+
 <body data-protegida="<%= usuario && !esPublica ? 1 : 0 %>">
   <%
     const banderas = { es: { src: '/img/flags/mx.svg', nombre: 'Español' }, en: { src: '/img/flags/us.svg', nombre: 'English' } };

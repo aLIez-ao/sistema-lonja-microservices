@@ -13,16 +13,25 @@
 
   <div class="lote-card__cuerpo">
     <h3 class="lote-card__titulo"><a href="<%= _url %>"><%= _nombre %></a></h3>
-    <p class="lote-card__meta">Lote #<%= lote.id_lte %> · <%= Number(lote.kilos).toLocaleString('es-MX', { maximumFractionDigits: 1 }) %> kg · <%= lote.numero_cajas %> cajas</p>
-    <% if (lote.esDeHoy) { %><p class="lote-card__aviso">Llegó hoy</p><% } else if (lote.mejorPrecio) { %><p class="lote-card__aviso lote-card__aviso--precio">Mejor precio</p><% } %>
+    <p class="lote-card__meta">Lote #<%= lote.id_lte %> ·
+      <%= Number(lote.kilos).toLocaleString('es-MX', { maximumFractionDigits: 1 }) %> kg · <%= lote.numero_cajas %>
+      cajas</p>
+    <% if (lote.esDeHoy) { %><p class="lote-card__aviso">Llegó hoy</p><% } else if (lote.mejorPrecio) { %><p
+      class="lote-card__aviso lote-card__aviso--precio">Mejor precio</p><% } %>
     <div class="lote-card__pie">
       <span class="lote-card__precio"><%= dinero(lote.precio_kilo_salida) %> <small>/kg</small></span>
       <% if (usuario && usuario.rol === 'comprador') { %>
-        <button class="btn btn-sm lote-card__agregar" type="button" data-agregar-lote="<%= lote.id_lte %>" aria-label="Agregar <%= _nombre %> al carrito"><span class="lote-card__agregar-texto">Agregar</span><span class="lote-card__agregar-mas" aria-hidden="true">+</span></button>
+      <button class="btn btn-sm lote-card__agregar" type="button" data-agregar-lote="<%= lote.id_lte %>"
+        aria-label="Agregar <%= _nombre %> al carrito"><span class="lote-card__agregar-texto">Agregar</span><span
+          class="lote-card__agregar-mas" aria-hidden="true">+</span></button>
       <% } else if (!usuario) { %>
-        <a class="btn btn-sm lote-card__agregar" href="/acceso?volver=<%= encodeURIComponent(_url) %>" aria-label="Iniciar sesión para agregar <%= _nombre %>"><span class="lote-card__agregar-texto">Agregar</span><span class="lote-card__agregar-mas" aria-hidden="true">+</span></a>
+      <a class="btn btn-sm lote-card__agregar" href="/acceso?volver=<%= encodeURIComponent(_url) %>"
+        aria-label="Iniciar sesión para agregar <%= _nombre %>"><span
+          class="lote-card__agregar-texto">Agregar</span><span class="lote-card__agregar-mas"
+          aria-hidden="true">+</span></a>
       <% } else { %>
-        <a class="btn btn-sm lote-card__agregar" href="<%= _url %>"><span class="lote-card__agregar-texto">Ver</span><span class="lote-card__agregar-mas" aria-hidden="true">›</span></a>
+      <a class="btn btn-sm lote-card__agregar" href="<%= _url %>"><span class="lote-card__agregar-texto">Ver</span><span
+          class="lote-card__agregar-mas" aria-hidden="true">›</span></a>
       <% } %>
     </div>
   </div>

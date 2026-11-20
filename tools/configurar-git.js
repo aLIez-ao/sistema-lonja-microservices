@@ -17,6 +17,7 @@ const patrones = [
   '.gitignore',
   '.gitattributes',
   '.prettierrc.json',
+  '.prettierignore',
   'docs/.plan/',
   'docs/.reports/',
   'docs/code-guide/',

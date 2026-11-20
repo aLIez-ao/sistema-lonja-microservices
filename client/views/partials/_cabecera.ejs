@@ -12,73 +12,105 @@
     return ruta.startsWith(href);
   };
 %>
-<nav class="navbar navbar-expand-xl navbar-lonja cabecera <%= esPersonal ? '' : 'cabecera--tienda' %> d-print-none" aria-label="Navegación principal">
+<nav class="navbar navbar-expand-xl navbar-lonja cabecera <%= esPersonal ? '' : 'cabecera--tienda' %> d-print-none"
+  aria-label="Navegación principal">
   <div class="container-fluid lonja-header">
     <a class="navbar-brand" href="<%= esPersonal ? '/dashboard' : '/' %>" title="Lonja de Veracruz">
-      <svg class="cabecera__marca-icono" viewBox="0 0 32 32" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M3 12c4-4 8-4 13 0s9 4 13 0"/><path d="M3 20c4-4 8-4 13 0s9 4 13 0"/></svg>
+      <svg class="cabecera__marca-icono" viewBox="0 0 32 32" width="26" height="26" fill="none" stroke="currentColor"
+        stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 12c4-4 8-4 13 0s9 4 13 0" />
+        <path d="M3 20c4-4 8-4 13 0s9 4 13 0" />
+      </svg>
       <span class="cabecera__marca">Lonja Veracruz</span>
     </a>
     <div class="collapse navbar-collapse header-navigation" id="menuPrincipal">
       <ul class="navbar-nav">
         <% enlaces.forEach(([href, label]) => { const act = navActivo(href); %>
-          <li class="nav-item"><a class="nav-link <%= act ? 'active' : '' %>" href="<%= href %>" <%= act ? 'aria-current=page' : '' %>><%= label %></a></li>
+        <li class="nav-item"><a class="nav-link <%= act ? 'active' : '' %>" href="<%= href %>"
+            <%= act ? 'aria-current=page' : '' %>><%= label %></a></li>
         <% }) %>
       </ul>
     </div>
     <% if (!esPersonal) { %><div class="tienda-buscador-header"><%- include('buscador-tienda') %></div><% } %>
     <div class="header-tools">
       <% if (esPersonal) { %>
-        <a class="nav-link header-icon" href="/" title="<%= t('tienda') %>" aria-label="<%= t('tienda') %>"><%- icono('basket', 20) %></a>
+      <a class="nav-link header-icon" href="/" title="<%= t('tienda') %>"
+        aria-label="<%= t('tienda') %>"><%- icono('basket', 20) %></a>
       <% } else if (usuario) { %>
-        <a class="nav-link header-icon" href="/cuenta/listas" title="Favoritos" aria-label="Favoritos"><%- icono('heart', 20) %></a>
-        <a class="nav-link header-icon header-carrito" href="/carrito" title="Carrito" aria-label="Carrito, <%= carritoCount %> lotes"><%- icono('basket', 20) %><% if (carritoCount) { %><span class="header-contador" aria-hidden="true"><%= carritoCount %></span><% } %></a>
+      <a class="nav-link header-icon" href="/cuenta/listas" title="Favoritos"
+        aria-label="Favoritos"><%- icono('heart', 20) %></a>
+      <a class="nav-link header-icon header-carrito" href="/carrito" title="Carrito"
+        aria-label="Carrito, <%= carritoCount %> lotes"><%- icono('basket', 20) %><% if (carritoCount) { %><span
+          class="header-contador" aria-hidden="true"><%= carritoCount %></span><% } %></a>
       <% } %>
       <% if (usuario) { %>
-        <div class="dropdown">
-          <button class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill py-1 px-2" type="button" data-bs-toggle="dropdown" title="<%= t('moneda') %>"><%= pref.moneda %></button>
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-            <li><button class="dropdown-item <%= pref.moneda === 'MXN' ? 'active' : '' %>" data-pref="moneda" data-valor="MXN">MXN (Pesos mexicanos)</button></li>
-            <li><button class="dropdown-item <%= pref.moneda === 'USD' ? 'active' : '' %>" data-pref="moneda" data-valor="USD">USD (Dólares)</button></li>
-            <li><button class="dropdown-item <%= pref.moneda === 'EUR' ? 'active' : '' %>" data-pref="moneda" data-valor="EUR">EUR (Euros)</button></li>
-          </ul>
-        </div>
-        <div class="dropdown">
-          <button class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill py-1 px-2 d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" title="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>" aria-label="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>">
-            <img class="bandera" src="<%= banderas[pref.idioma].src %>" alt="<%= banderas[pref.idioma].nombre %>" width="24" height="18">
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-            <% Object.entries(banderas).forEach(([cod, b]) => { %>
-              <li><button class="dropdown-item d-flex align-items-center gap-2 <%= pref.idioma === cod ? 'active' : '' %>" data-pref="idioma" data-valor="<%= cod %>"><img class="bandera" src="<%= b.src %>" alt="" width="24" height="18"> <%= b.nombre %></button></li>
-            <% }) %>
-          </ul>
-        </div>
-        <div class="dropdown ms-1">
-          <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="<%= usuario.nombre_completo || usuario.usuario %>" aria-label="Menú de cuenta">
-            <%- include('avatar', { u: usuario }) %>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-2 mt-2 menu-cuenta">
-            <li class="px-3 py-2 border-bottom">
-              <div class="fw-bold text-truncate"><%= usuario.nombre_completo || usuario.usuario %></div>
-              <div class="small text-muted">@<%= usuario.usuario %> &bull; <span class="badge bg-secondary text-uppercase"><%= usuario.rol %></span></div>
-              <% if (usuario.correo) { %><div class="small text-muted text-truncate mt-1"><%= usuario.correo %></div><% } %>
-            </li>
-            <li><a class="dropdown-item py-2 d-flex align-items-center gap-2 mt-1" href="<%= usuario.rol === 'comprador' ? '/cuenta' : '/configuracion#pane-cuenta' %>"><%- icono('person') %> <%= t('mi_cuenta') %></a></li>
-            <% if (usuario.rol === 'comprador') { %>
-              <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="/cuenta/opiniones"><%- icono('star') %> Mis opiniones</a></li>
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill py-1 px-2" type="button"
+          data-bs-toggle="dropdown" title="<%= t('moneda') %>"><%= pref.moneda %></button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+          <li><button class="dropdown-item <%= pref.moneda === 'MXN' ? 'active' : '' %>" data-pref="moneda"
+              data-valor="MXN">MXN (Pesos mexicanos)</button></li>
+          <li><button class="dropdown-item <%= pref.moneda === 'USD' ? 'active' : '' %>" data-pref="moneda"
+              data-valor="USD">USD (Dólares)</button></li>
+          <li><button class="dropdown-item <%= pref.moneda === 'EUR' ? 'active' : '' %>" data-pref="moneda"
+              data-valor="EUR">EUR (Euros)</button></li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button
+          class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill py-1 px-2 d-flex align-items-center gap-1"
+          type="button" data-bs-toggle="dropdown" title="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>"
+          aria-label="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>">
+          <img class="bandera" src="<%= banderas[pref.idioma].src %>" alt="<%= banderas[pref.idioma].nombre %>"
+            width="24" height="18">
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+          <% Object.entries(banderas).forEach(([cod, b]) => { %>
+          <li><button class="dropdown-item d-flex align-items-center gap-2 <%= pref.idioma === cod ? 'active' : '' %>"
+              data-pref="idioma" data-valor="<%= cod %>"><img class="bandera" src="<%= b.src %>" alt="" width="24"
+                height="18"> <%= b.nombre %></button></li>
+          <% }) %>
+        </ul>
+      </div>
+      <div class="dropdown ms-1">
+        <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+          title="<%= usuario.nombre_completo || usuario.usuario %>" aria-label="Menú de cuenta">
+          <%- include('avatar', { u: usuario }) %>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-2 mt-2 menu-cuenta">
+          <li class="px-3 py-2 border-bottom">
+            <div class="fw-bold text-truncate"><%= usuario.nombre_completo || usuario.usuario %></div>
+            <div class="small text-muted">@<%= usuario.usuario %> &bull; <span
+                class="badge bg-secondary text-uppercase"><%= usuario.rol %></span></div>
+            <% if (usuario.correo) { %><div class="small text-muted text-truncate mt-1"><%= usuario.correo %></div>
             <% } %>
-            <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="/configuracion"><%- icono('gear') %> <%= t('configuracion') %></a></li>
-            <li><hr class="dropdown-divider my-1"></li>
-            <li>
-              <form action="/cerrarsesion" method="POST" class="m-0">
-                <button class="dropdown-item py-2 text-danger d-flex align-items-center gap-2" type="submit"><%- icono('box-arrow-right') %> <%= t('cerrar_sesion') %></button>
-              </form>
-            </li>
-          </ul>
-        </div>
+          </li>
+          <li><a class="dropdown-item py-2 d-flex align-items-center gap-2 mt-1"
+              href="<%= usuario.rol === 'comprador' ? '/cuenta' : '/configuracion#pane-cuenta' %>"><%- icono('person') %>
+              <%= t('mi_cuenta') %></a></li>
+          <% if (usuario.rol === 'comprador') { %>
+          <li><a class="dropdown-item py-2 d-flex align-items-center gap-2"
+              href="/cuenta/opiniones"><%- icono('star') %> Mis opiniones</a></li>
+          <% } %>
+          <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="/configuracion"><%- icono('gear') %>
+              <%= t('configuracion') %></a></li>
+          <li>
+            <hr class="dropdown-divider my-1">
+          </li>
+          <li>
+            <form action="/cerrarsesion" method="POST" class="m-0">
+              <button class="dropdown-item py-2 text-danger d-flex align-items-center gap-2"
+                type="submit"><%- icono('box-arrow-right') %> <%= t('cerrar_sesion') %></button>
+            </form>
+          </li>
+        </ul>
+      </div>
       <% } else { %>
-        <a class="btn btn-sm cabecera__acceder" href="/acceso">Acceder</a>
+      <a class="btn btn-sm cabecera__acceder" href="/acceso">Acceder</a>
       <% } %>
     </div>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú"><span class="navbar-toggler-icon"></span></button>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+      aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú"><span
+        class="navbar-toggler-icon"></span></button>
   </div>
 </nav>
