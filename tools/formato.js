@@ -42,6 +42,15 @@ export function formatearHtml(texto, nombre = 'plantilla.ejs') {
   return resultado;
 }
 
+/** Conservar el estilo de finales de línea del archivo evita diferencias por el checkout de Windows. */
+export async function formatearContenido(texto, nombre, configuracion = {}) {
+  const entrada = texto.replace(/\r\n?/g, '\n');
+  const resultado = /\.(?:html?|ejs)$/i.test(nombre)
+    ? formatearHtml(entrada, nombre)
+    : await prettier.format(entrada, { ...configuracion, filepath: nombre });
+  return texto.includes('\r\n') ? resultado.replace(/\r?\n/g, '\r\n') : resultado;
+}
+
 const soportado = /\.(?:js|mjs|cjs|json|yaml|yml|css|md|html?|ejs)$/i;
 // Estas exclusiones públicas funcionan también en clones sin configuración local.
 const excluido =
@@ -71,9 +80,7 @@ async function ejecutar() {
     const info = await prettier.getFileInfo(absoluto, { ignorePath: existsSync(local) ? local : undefined });
     if (info.ignored) continue;
     const texto = readFileSync(absoluto, 'utf8');
-    const salida = /\.(?:html?|ejs)$/i.test(relativo)
-      ? formatearHtml(texto, relativo)
-      : await prettier.format(texto, { ...configuracion, filepath: absoluto });
+    const salida = await formatearContenido(texto, absoluto, configuracion);
     revisados++;
     if (salida !== texto) pendientes.push({ absoluto, relativo, salida });
   }

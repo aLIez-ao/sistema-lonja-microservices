@@ -83,6 +83,8 @@ Con Node instalado, `npm ci` y los mismos comandos `npm run ...` funcionan en el
 
 La configuración de Prettier está en `package.json`; las opciones HTML y las exclusiones públicas están en `tools/formato.js`. `.prettierignore` es opcional y local: se respeta si existe, pero CI y los clones limpios no dependen de él. Los comandos revisan los archivos versionados; para uno nuevo que aún no está preparado en Git puedes pasar su ruta, por ejemplo `npm run format -- client/views/store/nueva.ejs`. También puedes prepararlo con `git add` antes de ejecutar el formato general.
 
+Los archivos conservan sus finales de línea LF o CRLF. Así un checkout de Windows no genera diferencias de formato por sí solo; el contenido de las etiquetas EJS se comprueba normalizando únicamente esos finales de línea.
+
 La referencia REST generada también se formatea antes de escribirse. `format:check` detecta diferencias y no modifica archivos; `format` prepara los resultados y después los escribe. `views:check` verifica el inventario de vistas; DBML, SVG y shell no se formatean con estos comandos.
 
 Para usar el mismo formateador de HTML en VS Code, configura el espacio de trabajo con estas opciones. En este equipo están en `.vscode/settings.json`, conservado solo localmente:

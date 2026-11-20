@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import ejs from 'ejs';
 import html from 'vscode-html-languageservice';
-import { formatearHtml } from '../../tools/formato.js';
+import { formatearHtml, formatearContenido } from '../../tools/formato.js';
 const { getLanguageService, TokenType } = html;
 
 test('el formato HTML conserva etiquetas EJS, atributos dinámicos y contenido preformateado', () => {
@@ -30,4 +30,18 @@ test('el formato HTML conserva etiquetas EJS, atributos dinámicos y contenido p
 test('normaliza CRLF sin cambiar el código EJS en clones de Windows', () => {
   const plantilla = '<%\nconst nombre = "Lonja";\n%><p><%= nombre %></p>\n';
   assert.equal(formatearHtml(plantilla.replaceAll('\n', '\r\n')), formatearHtml(plantilla));
+});
+
+test('el formato de archivos conserva LF o CRLF y queda estable para JavaScript y EJS', async () => {
+  for (const [nombre, texto] of [
+    ['prueba.js', 'const valor=1;\n'],
+    ['prueba.ejs', '<div><%= nombre %></div>\n'],
+  ]) {
+    for (const salto of ['\n', '\r\n']) {
+      const entrada = texto.replaceAll('\n', salto);
+      const salida = await formatearContenido(entrada, nombre);
+      assert.equal(salida.includes('\r\n'), salto === '\r\n');
+      assert.equal(await formatearContenido(salida, nombre), salida);
+    }
+  }
 });
