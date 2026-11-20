@@ -8,6 +8,7 @@
 
   <div class="d-flex gap-2 flex-wrap">
     <%- include('_acciones-factura', { compra, f }) %>
+    <a class="btn btn-outline-secondary" href="/compras/<%= compra.id_cmp %>/ticket"><%- icono('receipt', 16, 'me-1') %>Ticket</a>
   </div>
 </div>
 

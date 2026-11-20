@@ -14,7 +14,7 @@ Las escrituras comprueban que `Origin` coincida con el origen de `CLIENTE_URL`. 
 
 La respuesta usa `Referrer-Policy: same-origin` para conservar el origen de los formularios enviados dentro del sitio y no enviar referencias a otros orígenes. `no-referrer` puede convertir `Origin` en `null` en un POST HTML normal y provocar un 403 incluso con credenciales correctas; véase [el comportamiento documentado por MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy). La protección sigue rechazando orígenes ausentes, nulos y ajenos.
 
-Helmet aplica CSP con scripts y estilos del propio origen, sin manejadores inline, sin objetos incrustados y sin permiso para enmarcar páginas. Bootstrap y Chart.js se sirven localmente. EJS escapa los datos de usuario; mantén el contenido sin escapar limitado a fragmentos controlados del proyecto.
+Helmet aplica CSP con scripts y estilos del propio origen, sin manejadores inline, sin objetos incrustados y sin permiso para enmarcar páginas. Bootstrap, Chart.js y las fuentes se sirven localmente; no se cargan recursos de CDN ni de Google Fonts. `api/test/csp-vistas.test.js` rechaza atributos `style`, manejadores `on*` y scripts en línea que no sean JSON. EJS escapa los datos de usuario; mantén el contenido sin escapar limitado a fragmentos controlados del proyecto.
 
 La validación del formulario reutiliza OpenAPI, pero la API conserva la validación definitiva de entradas, permisos, propiedad, importes e inventario. La navegación visible no sustituye autorización. Los archivos se validan y almacenan en la API; el cliente los transmite sin montar su volumen.
 

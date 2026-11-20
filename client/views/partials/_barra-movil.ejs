@@ -1,0 +1,23 @@
+<%
+  // Navegación inferior de la tienda en móvil (propuesta «Tienda C») y aviso del carrito.
+  const _r = rutaActual || '';
+  const _items = [
+    ['/', 'Tienda', 'basket', _r === '/' || _r.startsWith('/tienda')],
+    [usuario ? '/cuenta/listas' : '/acceso?volver=%2Fcuenta%2Flistas', 'Favoritos', 'heart', _r.startsWith('/cuenta/listas')],
+    [usuario ? '/cuenta/pedidos' : '/acceso?volver=%2Fcuenta%2Fpedidos', 'Pedidos', 'receipt', _r.startsWith('/cuenta/pedidos')],
+    [usuario ? '/cuenta' : '/acceso', 'Cuenta', 'person', _r === '/cuenta' || _r.startsWith('/cuenta/datos') || _r.startsWith('/acceso')],
+  ];
+%>
+<div class="barra-movil d-print-none">
+  <% if (usuario && carritoCount) { %>
+    <a class="barra-movil__carrito" href="/carrito">
+      <span><strong><%= carritoCount %> <%= carritoCount === 1 ? 'lote' : 'lotes' %></strong> en tu carrito</span>
+      <span class="barra-movil__carrito-cta">Ver carrito</span>
+    </a>
+  <% } %>
+  <nav class="barra-movil__nav" aria-label="Navegación de la tienda">
+    <% _items.forEach(([href, rotulo, ico, activo]) => { %>
+      <a href="<%= href %>" class="<%= activo ? 'activo' : '' %>" <%= activo ? 'aria-current=page' : '' %>><%- icono(ico, 18) %><span><%= rotulo %></span></a>
+    <% }) %>
+  </nav>
+</div>

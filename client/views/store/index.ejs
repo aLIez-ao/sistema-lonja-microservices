@@ -1,225 +1,109 @@
 <%- include('../partials/header') %>
 <%
-  const primerDestacado = destacados[0] || null;
+  // Dos presentaciones con los mismos datos: «Mercado del día» en la portada y
+  // «Catálogo con filtros» cuando hay búsqueda, filtros o se pide el catálogo.
+  const destacado = destacados[0] || null;
+  const kg = (n) => Number(n).toLocaleString('es-MX', { maximumFractionDigits: 1 });
+  const hoyTexto = new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Mexico_City' }).format(new Date());
+  const ordenes = [['nuevos-desc', 'Más recientes'], ['precio-asc', 'Menor precio por kg'], ['precio-desc', 'Mayor precio por kg'], ['kilos-desc', 'Más kilos'], ['total-asc', 'Menor importe del lote']];
+  const ordenActual = `${l.campo}-${l.dir}`;
+  const tono = (tipo) => ({ pescado: 'escama', escama: 'escama', marisco: 'crustaceo', 'crustáceo': 'crustaceo', molusco: 'molusco' })[String(tipo || '').toLowerCase()] || 'escama';
+  const medio = Number(limites.precioMedio) || 0;
+  const urlCatalogo = '/?vista=catalogo' + (categoriaActiva ? '&tipo=' + categoriaActiva : '');
 %>
 
 <div class="tienda">
+  <% if (!vistaCatalogo) { %>
+      <!-- Banda móvil de la propuesta «Tienda C»; en escritorio se muestra el héroe completo -->
+      <div class="mercado-movil">
+        <span class="mercado-movil__eyebrow">Hoy · <%= totalDisponibles %> lotes disponibles</span>
+        <h1 class="mercado-movil__titulo">¿Qué llegó esta mañana?</h1>
+      </div>
+  <% } %>
   <% if (usuario?.rol === 'comprador' && !usuario.recibir_avisos && !usuario.aviso_suscripcion_descartado) { %>
     <aside class="alert alert-info alert-dismissible fade show mx-auto mt-3 aviso-suscripcion" role="status" data-aviso-suscripcion>
       <strong>Recibe novedades de la lonja.</strong> Activa los avisos por correo desde tu <a href="/configuracion">configuración</a>. Puedes darte de baja en cualquier momento.
       <button type="button" class="btn-close" aria-label="Cerrar aviso" data-cerrar-aviso-suscripcion></button>
     </aside>
   <% } %>
-  <!-- ===================== HÉROE ===================== -->
-  <section class="tienda-heroe" aria-label="Lotes destacados">
-    <% if (destacados.length) { %>
-      <div class="tienda-heroe__slides" data-heroe role="region" aria-roledescription="carrusel" aria-label="Lotes destacados" tabindex="0">
-        <% destacados.forEach((lote, i) => { %>
-          <a class="tienda-heroe__slide <%= i === 0 ? 'activo' : '' %>" href="/tienda/lote/<%= lote.id_lte %>">
-            <img class="tienda-heroe__imagen" src="<%= lote.imagen %>" alt="" aria-hidden="true">
-            <span class="tienda-heroe__velo"></span>
-            <span class="tienda-heroe__contenido">
-              <span class="tienda-heroe__etiqueta"><%- icono('fire', 13, 'me-1') %>Destacado de hoy</span>
-              <span class="tienda-heroe__nombre"><%= lote.nombresEspecies || `Lote #${lote.id_lte}` %></span>
-              <span class="tienda-heroe__desc"><%= lote.tipoPrincipal %> fresco del puerto de Veracruz · lote #<%= lote.id_lte %></span>
-              <span class="tienda-heroe__datos">
-                <span><strong><%= Number(lote.kilos).toLocaleString('es-MX', { maximumFractionDigits: 2 }) %></strong> kg</span>
-                <span><strong><%= lote.numero_cajas %></strong> cajas</span>
-                <span><strong><%= dinero(lote.precio_kilo_salida) %></strong>/kg</span>
-              </span>
-              <span class="btn btn-light tienda-heroe__cta">Ver este lote <%- icono('arrow-right', 15, 'ms-1') %></span>
-            </span>
+
+  <% if (!vistaCatalogo) { %>
+    <!-- ===================== MERCADO DEL DÍA ===================== -->
+    <section class="mercado" aria-labelledby="mercadoTitulo">
+      <div class="mercado__texto">
+        <span class="mercado__eyebrow">Desembarque · <%= hoyTexto %></span>
+        <h1 id="mercadoTitulo" class="mercado__titulo">Pescado del día, por lote y al precio de salida.</h1>
+        <p class="mercado__desc">Compra lotes completos de lo que llegó esta mañana al puerto de Veracruz. Pagas al confirmar y lo recoges en el muelle o lo recibes en tu negocio.</p>
+        <dl class="mercado__cifras">
+          <div><dt>lotes disponibles</dt><dd><%= totalDisponibles %></dd></div>
+          <div><dt>en venta hoy</dt><dd><%= kg(limites.kilosTotal) %> kg</dd></div>
+          <div><dt>precio más bajo por kg</dt><dd><%= limites.hayLotes ? dinero(limites.precioMin) : '—' %></dd></div>
+        </dl>
+        <div class="mercado__acciones">
+          <a class="btn btn-primary" href="#lotes">Ver lotes del día</a>
+          <a class="mercado__enlace" href="#como-comprar">Cómo funciona la compra</a>
+        </div>
+      </div>
+
+      <% if (destacado) { %>
+        <article class="mercado__destacado" aria-labelledby="destacadoNombre">
+          <a class="mercado__destacado-media lote-media--<%= tono(destacado.tipoPrincipal) %>" href="/tienda/lote/<%= destacado.id_lte %>" tabindex="-1" aria-hidden="true">
+            <%- include('_media-lote', { imagen: destacado.imagen }) %>
+            <span class="mercado__destacado-etiqueta">Destacado del día</span>
           </a>
-        <% }) %>
-        <% if (destacados.length > 1) { %>
-          <button class="tienda-heroe__flecha tienda-heroe__flecha--izq" type="button" data-heroe-prev aria-label="Lote anterior"><%- icono('chevron-left', 18) %></button>
-          <button class="tienda-heroe__flecha tienda-heroe__flecha--der" type="button" data-heroe-next aria-label="Lote siguiente"><%- icono('chevron-right', 18) %></button>
-          <div class="tienda-heroe__puntos" aria-label="Elegir lote destacado">
-            <% destacados.forEach((_, i) => { %>
-              <button type="button" class="tienda-heroe__punto <%= i === 0 ? 'activo' : '' %>" data-heroe-punto="<%= i %>" aria-label="Ir al destacado <%= i + 1 %>" aria-current="<%= i === 0 ? 'true' : 'false' %>"></button>
-            <% }) %>
+          <div class="mercado__destacado-cuerpo">
+            <div class="mercado__destacado-fila">
+              <h2 class="mercado__destacado-nombre" id="destacadoNombre"><a href="/tienda/lote/<%= destacado.id_lte %>"><%= destacado.nombresEspecies || `Lote #${destacado.id_lte}` %></a></h2>
+              <span class="mercado__destacado-lote">Lote #<%= destacado.id_lte %> · <%= destacado.tipoPrincipal %></span>
+            </div>
+            <span class="mercado__destacado-datos"><%= kg(destacado.kilos) %> kg · <%= destacado.numero_cajas %> cajas<%= destacado.esDeHoy ? ' · llegó hoy' : '' %></span>
+            <div class="mercado__destacado-fila mercado__destacado-fila--precio">
+              <span class="mercado__destacado-precio"><strong><%= dinero(destacado.precio_kilo_salida) %></strong> /kg salida</span>
+              <% if (usuario && usuario.rol === 'comprador') { %>
+                <button class="btn btn-teal" type="button" data-agregar-lote="<%= destacado.id_lte %>">Agregar al carrito</button>
+              <% } else { %>
+                <a class="btn btn-teal" href="/tienda/lote/<%= destacado.id_lte %>">Ver lote</a>
+              <% } %>
+            </div>
           </div>
-        <% } %>
-      </div>
-    <% } else { %>
-      <div class="tienda-heroe__vacio">
-        <div>
-          <span class="tienda-heroe__etiqueta">Lonja de Veracruz</span>
-          <h1>Hoy todavía no hay lotes disponibles</h1>
-          <p>Vuelve más tarde: la subasta del puerto se actualiza durante la madrugada.</p>
-          <a class="btn btn-primary" href="/registro">Crear mi cuenta de comprador</a>
+        </article>
+      <% } else { %>
+        <div class="mercado__destacado mercado__destacado--vacio">
+          <span class="mercado__destacado-nombre">Hoy todavía no hay lotes disponibles</span>
+          <span class="mercado__destacado-datos">La subasta del puerto se actualiza durante la madrugada.</span>
+          <% if (!usuario) { %><a class="btn btn-outline-primary btn-sm mt-2" href="/registro">Crear mi cuenta de comprador</a><% } %>
         </div>
-      </div>
-    <% } %>
-
-    <aside class="tienda-heroe__panel">
-      <div class="tienda-heroe__contador">
-        <span class="tienda-heroe__numero"><%= totalDisponibles %></span>
-        <span class="tienda-heroe__unidad">lotes disponibles</span>
-      </div>
-      <ul class="tienda-heroe__beneficios">
-        <li><%- icono('shield-check', 17) %><span>Compra directo al puerto, sin intermediarios</span></li>
-        <li><%- icono('truck', 17) %><span>Entrega a domicilio o recoge en la lonja</span></li>
-        <li><%- icono('clock', 17) %><span>Lotes frescos del día, actualizados en tiempo real</span></li>
-      </ul>
-      <a class="btn btn-primary w-100" href="#catalogo">Explorar todos los lotes</a>
-      <% if (!usuario) { %>
-        <p class="tienda-heroe__nota mb-0">¿Primera vez? <a href="/registro">Crea tu cuenta</a> y compra en línea.</p>
       <% } %>
-    </aside>
-  </section>
+    </section>
 
-  <!-- ===================== CATEGORÍAS Y BUSCADOR ===================== -->
-  <div class="tienda-barra">
-    <nav class="tienda-categorias" aria-label="Categorías de la tienda">
-      <a class="tienda-chip <%= !categoriaActiva ? 'activo' : '' %>" href="/">
-        Todo <span class="tienda-chip__cuenta"><%= totalDisponibles %></span>
-      </a>
-      <% categorias.forEach((cat) => { %>
-        <a class="tienda-chip <%= String(categoriaActiva) === String(cat.id_tpo) ? 'activo' : '' %>" href="/?tipo=<%= cat.id_tpo %>">
-          <%= cat.nombre %> <span class="tienda-chip__cuenta"><%= cat.total %></span>
-        </a>
-      <% }) %>
-    </nav>
-
-  </div>
-
-  <!-- ===================== FILAS POR TEMA ===================== -->
-  <% if (recien.length) { %>
-    <%- include('_fila-temas', { titulo: 'Recién llegados (hoy)', subtitulo: 'Lotes capturados hoy en la lonja', lotes: recien }) %>
-  <% } %>
-  <% if (baratos.length) { %>
-    <%- include('_fila-temas', { titulo: 'Mejor precio por kilo', subtitulo: 'Las oportunidades del día', lotes: baratos }) %>
-  <% } %>
-  <% if (grandes.length) { %>
-    <%- include('_fila-temas', { titulo: 'Lotes grandes', subtitulo: 'Ideales para restaurantes y mayoristas', lotes: grandes }) %>
-  <% } %>
-  <% if (pequenos.length) { %>
-    <%- include('_fila-temas', { titulo: 'Últimas piezas', subtitulo: 'Lotes pequeños para completar tu compra', lotes: pequenos }) %>
-  <% } %>
-
-  <!-- ===================== CUADRÍCULA Y FILTROS ===================== -->
-  <section class="tienda-catalogo" id="catalogo">
-    <aside class="tienda-filtros" aria-label="Filtros">
-      <form action="/" method="GET" class="tienda-filtros__form" data-filtros-tienda>
-        <% if (l.q) { %><input type="hidden" name="q" value="<%= l.q %>"><% } %>
-        <input type="hidden" name="orden" value="<%= l.campo %>">
-        <input type="hidden" name="dir" value="<%= l.dir %>">
-        <input type="hidden" name="tam" value="<%= l.tam %>">
-
-        <h2 class="tienda-filtros__titulo"><%- icono('funnel', 15, 'me-1') %>Filtros</h2>
-
-        <% if (l.q) { %>
-          <div class="tienda-filtros__activo">
-            <span>Buscando: <strong><%= l.q %></strong></span>
-            <a href="<%= l.urlCon({ q: null }) %>" aria-label="Quitar búsqueda"><%- icono('x-lg', 12) %></a>
-          </div>
-        <% } %>
-
-        <div class="tienda-filtros__grupo">
-          <label class="form-label" for="filtroTipo">Tipo</label>
-          <select class="form-select form-select-sm" id="filtroTipo" name="tipo">
-            <option value="">Todos</option>
-            <% categorias.forEach((cat) => { %>
-              <option value="<%= cat.id_tpo %>" <%= String(categoriaActiva) === String(cat.id_tpo) ? 'selected' : '' %>><%= cat.nombre %> (<%= cat.total %>)</option>
-            <% }) %>
-          </select>
-        </div>
-
-        <div class="tienda-filtros__grupo">
-          <label class="form-label" for="filtroEspecie">Especie</label>
-          <select class="form-select form-select-sm" id="filtroEspecie" name="especie">
-            <option value="">Todas</option>
-            <% catalogo.forEach((cat) => { %>
-              <option value="<%= cat.id_cat %>" <%= String(l.filtros.especie) === String(cat.id_cat) ? 'selected' : '' %>><%= cat.nombre %></option>
-            <% }) %>
-          </select>
-        </div>
-
-        <div class="tienda-filtros__grupo">
-          <label class="form-label" for="precioMin">Precio por kilo</label>
-          <% if (limites.hayLotes) { %>
-            <div class="tienda-slider" data-rango-precio data-limite-min="<%= limites.precioMin %>" data-limite-max="<%= limites.precioMax %>">
-              <div class="tienda-slider__barra" data-barra-precio></div>
-              <input class="tienda-slider__rango" id="precioMin" type="range" name="precioMin" min="<%= limites.precioMin %>" max="<%= limites.precioMax %>" step="<%= limites.pasoPrecio %>" value="<%= l.filtros.precioMin ?? limites.precioMin %>" aria-label="Precio mínimo por kilo" aria-valuemin="<%= limites.precioMin %>" aria-valuemax="<%= limites.precioMax %>" data-precio-min>
-              <input class="tienda-slider__rango tienda-slider__rango--superior" type="range" name="precioMax" min="<%= limites.precioMin %>" max="<%= limites.precioMax %>" step="<%= limites.pasoPrecio %>" value="<%= l.filtros.precioMax ?? limites.precioMax %>" aria-label="Precio máximo por kilo" aria-valuemin="<%= limites.precioMin %>" aria-valuemax="<%= limites.precioMax %>" data-precio-max>
-            </div>
-            <div class="d-flex justify-content-between small mt-2">
-              <output data-etiqueta-precio-min>Desde <%= dinero(l.filtros.precioMin ?? limites.precioMin) %>/kg</output>
-              <output data-etiqueta-precio-max>Hasta <%= dinero(l.filtros.precioMax ?? limites.precioMax) %>/kg</output>
-            </div>
-            <small class="text-muted" data-conteo-precio><%= l.total %> lotes</small>
-          <% } else { %>
-            <input class="form-range" type="range" disabled aria-label="Precio por kilo">
-            <small class="text-muted">No hay lotes disponibles para filtrar.</small>
-          <% } %>
-        </div>
-
-        <div class="tienda-filtros__grupo">
-          <label class="form-label" for="filtroKilos">Kilos mínimos</label>
-          <% if (limites.hayLotes) { %>
-            <input class="form-range" id="filtroKilos" type="range" name="kilosMin" min="<%= limites.kilosMin %>" max="<%= limites.kilosMax %>" step="1" value="<%= l.filtros.kilosMin ?? limites.kilosMin %>" aria-label="Filtrar por kilos mínimos" aria-valuemin="<%= limites.kilosMin %>" aria-valuemax="<%= limites.kilosMax %>" data-kilos-min>
-            <div class="d-flex justify-content-between small">
-              <output data-etiqueta-kilos>Al menos <%= l.filtros.kilosMin ?? limites.kilosMin %> kg</output>
-              <small class="text-muted" data-conteo-kilos><%= l.total %> lotes</small>
-            </div>
-          <% } else { %>
-            <input class="form-range" id="filtroKilos" type="range" disabled aria-label="Filtrar por kilos mínimos">
-            <small class="text-muted">No hay lotes disponibles para filtrar.</small>
-          <% } %>
-        </div>
-
-        <button class="btn btn-primary w-100" type="submit">Aplicar filtros</button>
-        <% if (hayFiltros) { %>
-          <a class="btn btn-link btn-sm w-100 text-decoration-none" href="/">Limpiar filtros</a>
-        <% } %>
-      </form>
-    </aside>
-
-    <div class="tienda-resultados">
-      <div class="tienda-resultados__cabecera">
+    <!-- ===================== LOTES DISPONIBLES ===================== -->
+    <section class="mercado-lotes" id="lotes" aria-labelledby="lotesTitulo">
+      <div class="mercado-lotes__cabecera">
         <div>
-          <h2>Lotes disponibles</h2>
-          <p>Mostrando <%= l.inicio %>–<%= l.fin %> de <%= l.total %> lotes</p>
+          <h2 id="lotesTitulo">Lotes disponibles</h2>
+          <p><%= l.total %> lotes · precios por kilo de salida, IVA tasa 0 %<%= l.paginas > 1 ? ` · página ${l.pagina} de ${l.paginas}` : '' %></p>
         </div>
-        <form action="/" method="GET" class="tienda-orden" data-orden-tienda>
-          <% Object.entries(l.params).forEach(([clave, valor]) => { %>
-            <% if (clave !== 'orden' && clave !== 'dir') { %><input type="hidden" name="<%= clave %>" value="<%= valor %>"><% } %>
-          <% }) %>
-          <label for="ordenTienda" class="visually-hidden">Ordenar por</label>
-          <select class="form-select form-select-sm" id="ordenTienda" name="orden" data-orden>
-            <option value="nuevos" <%= l.campo === 'nuevos' ? 'selected' : '' %>>Más nuevos</option>
-            <option value="precio" <%= l.campo === 'precio' ? 'selected' : '' %>>Precio por kilo</option>
-            <option value="total" <%= l.campo === 'total' ? 'selected' : '' %>>Precio total</option>
-            <option value="kilos" <%= l.campo === 'kilos' ? 'selected' : '' %>>Kilos</option>
-          </select>
-          <label for="dirTienda" class="visually-hidden">Dirección</label>
-          <select class="form-select form-select-sm" id="dirTienda" name="dir" data-dir>
-            <option value="desc" <%= l.dir === 'desc' ? 'selected' : '' %>>Descendente</option>
-            <option value="asc" <%= l.dir === 'asc' ? 'selected' : '' %>>Ascendente</option>
+        <form class="mercado-lotes__orden" action="/" method="GET">
+          <% if (categoriaActiva) { %><input type="hidden" name="tipo" value="<%= categoriaActiva %>"><% } %>
+          <label for="ordenarPortada">Ordenar por</label>
+          <select class="form-select form-select-sm" id="ordenarPortada" name="ordenar" data-submit-form>
+            <% ordenes.forEach(([valor, texto]) => { %><option value="<%= valor %>" <%= ordenActual === valor ? 'selected' : '' %>><%= texto %></option><% }) %>
           </select>
           <noscript><button class="btn btn-sm btn-outline-secondary" type="submit">Ordenar</button></noscript>
         </form>
       </div>
-
-      <% if (l.filtros.precioMin !== undefined || l.filtros.precioMax !== undefined || l.filtros.kilosMin !== undefined) { %>
-        <div class="tienda-filtros-activos" aria-label="Filtros activos">
-          <% if (l.filtros.precioMin !== undefined || l.filtros.precioMax !== undefined) { %>
-            <a class="badge rounded-pill text-bg-light text-decoration-none" href="<%= l.urlCon({ precioMin: null, precioMax: null }) %>">
-              Precio: <%= dinero(l.filtros.precioMin ?? limites.precioMin) %>–<%= dinero(l.filtros.precioMax ?? limites.precioMax) %>/kg ×
-            </a>
-          <% } %>
-          <% if (l.filtros.kilosMin !== undefined) { %>
-            <a class="badge rounded-pill text-bg-light text-decoration-none" href="<%= l.urlCon({ kilosMin: null }) %>">Desde <%= l.filtros.kilosMin %> kg ×</a>
-          <% } %>
-        </div>
-      <% } %>
-
+      <nav class="tienda-categorias mercado-lotes__chips" aria-label="Categorías de la tienda">
+        <a class="tienda-chip <%= !categoriaActiva ? 'activo' : '' %>" href="/#lotes" <%= !categoriaActiva ? 'aria-current=page' : '' %>>Todos</a>
+        <% categorias.forEach((cat) => { const activa = String(categoriaActiva) === String(cat.id_tpo); %>
+          <a class="tienda-chip <%= activa ? 'activo' : '' %>" href="/?tipo=<%= cat.id_tpo %>#lotes" <%= activa ? 'aria-current=page' : '' %>><%= cat.nombre %></a>
+        <% }) %>
+        <a class="tienda-chip tienda-chip--enlace" href="<%= urlCatalogo %>"><%- icono('funnel', 13, 'me-1') %>Más filtros</a>
+      </nav>
       <% if (!l.filas.length) { %>
         <div class="tienda-vacio">
           <div class="tienda-vacio__icono"><%- icono('search', 34) %></div>
-          <h3>No encontramos lotes con esos filtros</h3>
-          <p>Prueba con otra especie, amplía el rango de precio o limpia los filtros.</p>
+          <h3>No hay lotes en esta categoría</h3>
+          <p>Prueba con otra categoría o vuelve más tarde.</p>
           <a class="btn btn-outline-primary" href="/">Ver todos los lotes</a>
         </div>
       <% } else { %>
@@ -230,8 +114,123 @@
         </div>
         <%- include('../partials/paginacion', { l, etiqueta: 'lotes' }) %>
       <% } %>
-    </div>
-  </section>
+    </section>
+
+    <!-- ===================== CÓMO COMPRAR ===================== -->
+    <section class="mercado-pasos" id="como-comprar" aria-labelledby="pasosTitulo">
+      <h2 id="pasosTitulo">Cómo comprar en la lonja</h2>
+      <ol>
+        <li><span class="mercado-pasos__num">1</span><div><strong>Elige un lote completo</strong><p>Cada lote se vende entero, con los kilos y cajas que indica su ficha.</p></div></li>
+        <li><span class="mercado-pasos__num">2</span><div><strong>Confirma tu pedido</strong><p>Revisa el subtotal y el envío; el lote queda reservado mientras pagas.</p></div></li>
+        <li><span class="mercado-pasos__num">3</span><div><strong>Recibe o recoge</strong><p>Entrega a domicilio en Veracruz y zona conurbada, o en el Muelle Fiscal.</p></div></li>
+      </ol>
+    </section>
+  <% } else { %>
+    <!-- ===================== CATÁLOGO CON FILTROS ===================== -->
+    <header class="catalogo-cabecera">
+      <nav class="tienda-migas" aria-label="Ruta"><a href="/">Inicio</a><span aria-hidden="true">/</span><span aria-current="page">Catálogo</span></nav>
+      <div class="catalogo-cabecera__fila">
+        <h1>Catálogo de lotes</h1>
+        <form class="catalogo-cabecera__buscar" action="/" method="GET" role="search">
+          <input type="hidden" name="vista" value="catalogo">
+          <% Object.entries(l.params).forEach(([clave, valor]) => { if (['q', 'pagina', 'vista'].includes(clave)) return; %><input type="hidden" name="<%= clave %>" value="<%= valor %>"><% }) %>
+          <label class="visually-hidden" for="catalogoQ">Buscar en el catálogo</label>
+          <input class="form-control form-control-sm" id="catalogoQ" type="search" name="q" value="<%= l.q || '' %>" placeholder="Especie o número de lote">
+          <button class="btn btn-sm btn-primary" type="submit">Buscar</button>
+        </form>
+      </div>
+    </header>
+
+    <section class="tienda-catalogo" id="catalogo">
+      <aside class="tienda-filtros" aria-label="Filtros">
+        <form action="/" method="GET" class="tienda-filtros__form" data-filtros-tienda>
+          <input type="hidden" name="vista" value="catalogo">
+          <% if (l.q) { %><input type="hidden" name="q" value="<%= l.q %>"><% } %>
+          <input type="hidden" name="orden" value="<%= l.campo %>">
+          <input type="hidden" name="dir" value="<%= l.dir %>">
+          <div class="tienda-filtros__titulo">
+            <h2>Filtros</h2>
+            <a href="/?vista=catalogo">Limpiar</a>
+          </div>
+
+          <fieldset class="tienda-filtros__grupo">
+            <legend class="form-label">Tipo</legend>
+            <label class="filtro-opcion"><input class="form-check-input" type="radio" name="tipo" value="" <%= !categoriaActiva ? 'checked' : '' %> data-submit-form> <span>Todos</span><span class="filtro-opcion__n"><%= totalDisponibles %></span></label>
+            <% categorias.forEach((cat) => { %>
+              <label class="filtro-opcion"><input class="form-check-input" type="radio" name="tipo" value="<%= cat.id_tpo %>" <%= String(categoriaActiva) === String(cat.id_tpo) ? 'checked' : '' %> data-submit-form> <span><%= cat.nombre %></span><span class="filtro-opcion__n"><%= cat.total %></span></label>
+            <% }) %>
+          </fieldset>
+
+          <div class="tienda-filtros__grupo">
+            <label class="form-label" for="filtroEspecie">Especie</label>
+            <select class="form-select form-select-sm" id="filtroEspecie" name="especie" data-submit-form>
+              <option value="">Todas</option>
+              <% catalogo.forEach((cat) => { %>
+                <option value="<%= cat.id_cat %>" <%= String(l.filtros.especie) === String(cat.id_cat) ? 'selected' : '' %>><%= cat.nombre %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <fieldset class="tienda-filtros__grupo">
+            <legend class="form-label">Precio por kg</legend>
+            <div class="filtro-rango">
+              <label><span>Desde</span><input class="form-control form-control-sm" type="number" name="precioMin" min="<%= limites.precioMin %>" max="<%= limites.precioMax %>" step="<%= limites.pasoPrecio %>" value="<%= l.filtros.precioMin ?? '' %>" placeholder="<%= limites.precioMin %>"></label>
+              <label><span>Hasta</span><input class="form-control form-control-sm" type="number" name="precioMax" min="<%= limites.precioMin %>" max="<%= limites.precioMax %>" step="<%= limites.pasoPrecio %>" value="<%= l.filtros.precioMax ?? '' %>" placeholder="<%= limites.precioMax %>"></label>
+            </div>
+          </fieldset>
+
+          <div class="tienda-filtros__grupo">
+            <label class="form-label" for="filtroKilos">Peso mínimo del lote</label>
+            <% if (limites.hayLotes) { %>
+              <input class="form-range" id="filtroKilos" type="range" name="kilosMin" min="<%= limites.kilosMin %>" max="<%= limites.kilosMax %>" step="1" value="<%= l.filtros.kilosMin ?? limites.kilosMin %>" aria-valuemin="<%= limites.kilosMin %>" aria-valuemax="<%= limites.kilosMax %>" data-kilos-min>
+              <div class="filtro-escala"><span><%= limites.kilosMin %> kg</span><output data-etiqueta-kilos>Al menos <%= l.filtros.kilosMin ?? limites.kilosMin %> kg</output><span><%= limites.kilosMax %> kg</span></div>
+            <% } else { %>
+              <small class="text-muted">No hay lotes disponibles para filtrar.</small>
+            <% } %>
+          </div>
+
+          <button class="btn btn-sm btn-primary w-100" type="submit">Aplicar filtros</button>
+        </form>
+      </aside>
+
+      <div class="tienda-resultados">
+        <div class="tienda-resultados__cabecera">
+          <div class="catalogo-activos" aria-label="Búsqueda y filtros activos">
+            <span><%= l.total %> resultados<%= l.q ? ' para' : '' %></span>
+            <% if (l.q) { %><a class="catalogo-activo" href="<%= l.urlCon({ q: null }) %>" aria-label="Quitar búsqueda <%= l.q %>">“<%= l.q %>” ×</a><% } %>
+            <% const tipoActivo = categorias.find((c) => String(c.id_tpo) === String(categoriaActiva)); if (tipoActivo) { %><a class="catalogo-activo" href="<%= l.urlCon({ tipo: null }) %>" aria-label="Quitar tipo <%= tipoActivo.nombre %>"><%= tipoActivo.nombre %> ×</a><% } %>
+            <% const especieActiva = catalogo.find((c) => String(c.id_cat) === String(l.filtros.especie)); if (especieActiva) { %><a class="catalogo-activo" href="<%= l.urlCon({ especie: null }) %>"><%= especieActiva.nombre %> ×</a><% } %>
+            <% if (l.filtros.precioMin !== undefined || l.filtros.precioMax !== undefined) { %><a class="catalogo-activo" href="<%= l.urlCon({ precioMin: null, precioMax: null }) %>"><%= dinero(l.filtros.precioMin ?? limites.precioMin) %>–<%= dinero(l.filtros.precioMax ?? limites.precioMax) %>/kg ×</a><% } %>
+            <% if (l.filtros.kilosMin !== undefined) { %><a class="catalogo-activo" href="<%= l.urlCon({ kilosMin: null }) %>">≥ <%= l.filtros.kilosMin %> kg ×</a><% } %>
+          </div>
+          <form action="/" method="GET" class="tienda-orden">
+            <% Object.entries(l.params).forEach(([clave, valor]) => { if (['orden', 'dir', 'pagina'].includes(clave)) return; %><input type="hidden" name="<%= clave %>" value="<%= valor %>"><% }) %>
+            <label for="ordenTienda">Ordenar</label>
+            <select class="form-select form-select-sm" id="ordenTienda" name="ordenar" data-submit-form>
+              <% ordenes.forEach(([valor, texto]) => { %><option value="<%= valor %>" <%= ordenActual === valor ? 'selected' : '' %>><%= texto %></option><% }) %>
+            </select>
+            <noscript><button class="btn btn-sm btn-outline-secondary" type="submit">Ordenar</button></noscript>
+          </form>
+        </div>
+
+        <% if (!l.filas.length) { %>
+          <div class="tienda-vacio">
+            <div class="tienda-vacio__icono"><%- icono('search', 34) %></div>
+            <h3>No encontramos lotes con esos filtros</h3>
+            <p>Prueba con otra especie, amplía el rango de precio o limpia los filtros.</p>
+            <a class="btn btn-outline-primary" href="/?vista=catalogo">Ver todo el catálogo</a>
+          </div>
+        <% } else { %>
+          <ul class="catalogo-lista">
+            <% l.filas.forEach((lote) => { %>
+              <%- include('_fila-lote', { lote, medio }) %>
+            <% }) %>
+          </ul>
+          <%- include('../partials/paginacion', { l, etiqueta: 'lotes' }) %>
+        <% } %>
+      </div>
+    </section>
+  <% } %>
 </div>
 
 <div class="tienda-toasts" aria-live="polite" aria-atomic="true" data-toasts></div>

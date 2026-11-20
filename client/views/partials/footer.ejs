@@ -1,4 +1,5 @@
   </main>
+  <% if (!usuario || usuario.rol === 'comprador') { %><%- include('_barra-movil') %><% } %>
 
   <footer class="container text-center text-muted py-4 mt-auto d-print-none">
     <div class="row align-items-center gy-2">

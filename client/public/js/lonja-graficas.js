@@ -2,7 +2,8 @@
  * Gráficas del sistema (Chart.js local en /vendor/chartjs).
  * Uso: <canvas data-grafica="barras" data-fuente="idDelJson" data-serie="importes" data-formato="dinero">
  * y un <script type="application/json" id="idDelJson"> con { etiquetas, <serie>: [...] , moneda }.
- * Una sola serie por gráfica y un solo eje; los colores salen del tema activo (variables CSS).
+ * Un solo eje. Con data-comparar="<serie>" se agrega una serie de referencia punteada y
+ * leyenda (data-titulo y data-titulo-comparar la nombran). Los colores salen del tema activo.
  */
 (function () {
   if (!window.Chart) return;
@@ -56,6 +57,7 @@
     };
 
     const esLinea = tipo === 'linea';
+    const comparar = esLinea && canvas.dataset.comparar ? datos[canvas.dataset.comparar] || null : null;
     const grafica = new Chart(canvas, {
       type: esLinea ? 'line' : 'bar',
       data: {
@@ -63,6 +65,7 @@
         datasets: [
           {
             label: canvas.dataset.titulo || '',
+            spanGaps: false,
             data: serie,
             backgroundColor: esLinea ? color + '22' : color,
             borderColor: color,
@@ -72,7 +75,7 @@
             maxBarThickness: horizontal ? 22 : 38,
             categoryPercentage: 0.82,
             barPercentage: 0.9,
-            fill: esLinea,
+            fill: esLinea && !comparar,
             tension: 0.25,
             pointRadius: esLinea ? (serie.length > 45 ? 0 : 3) : 0,
             pointHoverRadius: 5,
@@ -80,6 +83,22 @@
             pointBorderColor: superficie,
             pointBorderWidth: 2,
           },
+          ...(comparar
+            ? [
+                {
+                  label: canvas.dataset.tituloComparar || '',
+                  data: comparar,
+                  borderColor: tinta,
+                  backgroundColor: 'transparent',
+                  borderWidth: 1.5,
+                  borderDash: [5, 4],
+                  fill: false,
+                  tension: 0.25,
+                  pointRadius: 0,
+                  pointHoverRadius: 4,
+                },
+              ]
+            : []),
         ],
       },
       options: {
@@ -89,11 +108,21 @@
         animation: { duration: 350 },
         interaction: { mode: 'index', intersect: false, axis: horizontal ? 'y' : 'x' },
         plugins: {
-          legend: { display: false }, // una sola serie: el título de la tarjeta la nombra
+          // Con una sola serie el título de la tarjeta la nombra; con comparación se muestra leyenda.
+          legend: {
+            display: Boolean(comparar),
+            position: 'bottom',
+            labels: { color: tinta, boxWidth: 18, boxHeight: 2 },
+          },
           tooltip: {
-            displayColors: false,
+            displayColors: Boolean(comparar),
             padding: 10,
-            callbacks: { label: (ctx) => fmt.valor(horizontal ? ctx.parsed.x : ctx.parsed.y) },
+            callbacks: {
+              label: (ctx) => {
+                const valor = horizontal ? ctx.parsed.x : ctx.parsed.y;
+                return (comparar ? ctx.dataset.label + ': ' : '') + fmt.valor(valor);
+              },
+            },
           },
         },
         scales: horizontal ? { x: ejeValores, y: ejeCategorias } : { x: ejeCategorias, y: ejeValores },

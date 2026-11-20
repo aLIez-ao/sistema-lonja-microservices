@@ -1,8 +1,6 @@
-<!-- Hoja carta con la misma distribución, medidas (pt) y tipografía que helpers/facturaPdf.js -->
+<!-- Hoja carta con la misma distribución, medidas (pt) y tipografía que api/shared/helpers/facturaPdf.js -->
 <div class="hoja-visor">
   <article class="hoja-carta factura">
-    <div class="hoja-franja"></div>
-
     <header class="factura-encabezado">
       <div>
         <img class="factura-logo" src="/img/logo.svg" alt="Lonja de Veracruz" width="223" height="46">
@@ -15,26 +13,28 @@
       </div>
       <div class="factura-folio">
         <div class="factura-folio-titulo">FACTURA COMERCIAL</div>
-        <div class="factura-folio-fila borde"><span>FOLIO:</span><strong><%= f.folio %></strong></div>
-        <div class="factura-folio-fila"><span>FECHA:</span><em><%= f.fecha %></em></div>
+        <div class="factura-folio-fila borde"><span>FOLIO</span><strong><%= f.folio %></strong></div>
+        <div class="factura-folio-fila <%= f.pedido ? 'borde' : '' %>"><span>FECHA</span><em><%= f.fecha %></em></div>
+        <% if (f.pedido) { %><div class="factura-folio-fila"><span>PEDIDO</span><em><%= f.pedido %></em></div><% } %>
       </div>
     </header>
 
-    <section class="hoja-caja factura-receptor">
-      <div class="hoja-caja-titulo">DATOS DEL RECEPTOR / COMPRADOR</div>
-      <div class="factura-receptor-cols">
-        <div>
-          <div><span>Cliente: </span><a class="enlace-registro" href="/compradores/<%= compra.comprador.codigo_cpr %>"><%= f.cliente.nombre %></a></div>
-          <div><span>Código de comprador: </span>#<%= f.cliente.codigo %></div>
-          <div><span>Correo: </span><%= f.cliente.correo %></div>
-        </div>
-        <div>
-          <div><span>Dirección: </span><%= f.cliente.direccion %></div>
-          <div><span>Uso CFDI: </span><%= f.cliente.usoCfdi %></div>
-          <div><span>Método de pago: </span><%= f.cliente.metodoPago %></div>
-        </div>
-      </div>
-    </section>
+    <div class="factura-tarjetas">
+      <section class="factura-tarjeta">
+        <div class="factura-tarjeta-titulo">FACTURADO A</div>
+        <div class="factura-tarjeta-nombre"><a class="enlace-registro" href="/compradores/<%= compra.comprador.codigo_cpr %>"><%= f.cliente.nombre %></a></div>
+        <div><span>Código de comprador: </span>#<%= f.cliente.codigo %></div>
+        <div><span>Correo: </span><%= f.cliente.correo %></div>
+        <div><span>Uso CFDI: </span><%= f.cliente.usoCfdi %></div>
+      </section>
+      <section class="factura-tarjeta">
+        <div class="factura-tarjeta-titulo">ENTREGA Y PAGO</div>
+        <div class="factura-tarjeta-nombre"><%= f.canal %></div>
+        <div><span>Dirección: </span><%= f.cliente.direccion %></div>
+        <div><span>Método de pago: </span><%= f.cliente.metodoPago %></div>
+        <div><span>Moneda: </span>MXN</div>
+      </section>
+    </div>
 
     <table class="hoja-tabla factura-tabla">
       <colgroup>
@@ -59,14 +59,16 @@
     </table>
 
     <section class="factura-resumen">
-      <div class="hoja-caja factura-notas">
-        <div class="hoja-caja-titulo">INFORMACIÓN FISCAL Y GARANTÍA:</div>
+      <div class="factura-notas">
+        <div class="factura-tarjeta-titulo">IMPORTE CON LETRA</div>
+        <div class="factura-letra"><%= f.importeLetra %></div>
+        <div class="factura-tarjeta-titulo">INFORMACIÓN FISCAL Y GARANTÍA</div>
         <% f.notasFiscales.forEach(n => { %><div>•&nbsp; <%= n %></div><% }) %>
       </div>
-      <div class="hoja-caja factura-totales">
-        <div class="fila"><span>Subtotal:</span><b><%= f.subtotal %></b></div>
-        <div class="fila borde"><span>IVA (0%):</span><b><%= f.iva %></b></div>
-        <div class="fila total"><span>TOTAL:</span><strong><%= f.total %></strong></div>
+      <div class="factura-totales">
+        <div class="fila"><span>Subtotal</span><b><%= f.subtotal %></b></div>
+        <div class="fila"><span>IVA (0 %)</span><b><%= f.iva %></b></div>
+        <div class="fila total"><span>TOTAL</span><strong><%= f.total %></strong></div>
       </div>
     </section>
 
@@ -76,6 +78,7 @@
       <div class="etiqueta">SELLO DIGITAL DE LA LONJA:</div>
       <div class="mono"><%= f.sello %></div>
       <div class="leyenda"><%= f.leyenda %></div>
+      <div class="factura-pagina">Página 1 de 1</div>
     </footer>
   </article>
 </div>

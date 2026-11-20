@@ -140,10 +140,23 @@ export function crearCliente({ api = crearApi(), sesiones = crearSesiones() } = 
   );
   app.get('/cerrarsesion', (req, res) => res.redirect('/'));
   app.get('/', async (req, res) => {
-    const query = new URLSearchParams(Object.entries(req.query).filter(([, v]) => typeof v === 'string'));
+    const query = new URLSearchParams(
+      Object.entries(req.query).filter(([k, v]) => typeof v === 'string' && !['vista', 'ordenar'].includes(k)),
+    );
+    // «ordenar» combina campo y dirección en un solo selector de la portada (p. ej. precio-asc).
+    const ordenar = /^(nuevos|precio|total|kilos)-(asc|desc)$/.exec(String(req.query.ordenar || ''));
+    if (ordenar) {
+      query.set('orden', ordenar[1]);
+      query.set('dir', ordenar[2]);
+    }
     const { datos } = await pedir(req, 'tienda/portada?' + query);
-    reconstruirListado(datos.l);
-    res.render('store/index', datos);
+    // Portada «Mercado del día» salvo que haya búsqueda, filtros distintos del tipo o se pida el catálogo.
+    const { l } = datos;
+    const catalogo =
+      req.query.vista === 'catalogo' || Boolean(l.q) || Object.keys(l.filtros).some((clave) => clave !== 'tipo');
+    if (catalogo) l.params.vista = 'catalogo';
+    reconstruirListado(l);
+    res.render('store/index', { ...datos, vistaCatalogo: catalogo });
   });
   app.get('/acceso', (req, res) =>
     req.sesion

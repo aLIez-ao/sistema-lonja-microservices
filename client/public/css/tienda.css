@@ -12,286 +12,6 @@
   --tienda-hero-3: #087e8b;
 }
 
-/* ---------- Héroe ---------- */
-.tienda-heroe {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--tienda-gap);
-  margin-bottom: 1.5rem;
-}
-
-.tienda-heroe__slides {
-  position: relative;
-  min-height: 390px;
-  border-radius: var(--tienda-radio);
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--tienda-hero-1), var(--tienda-hero-2) 55%, var(--tienda-hero-3));
-  box-shadow: var(--lonja-shadow-lg);
-}
-
-.tienda-heroe__slide {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  padding: clamp(1.25rem, 3vw, 2.5rem);
-  color: #f8fafc;
-  text-decoration: none;
-  background-size: cover;
-  background-position: center;
-  opacity: 0;
-  transform: scale(1.03);
-  transition:
-    opacity 0.7s ease,
-    transform 6s ease;
-  pointer-events: none;
-}
-
-.tienda-heroe__imagen {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.tienda-heroe__slide.activo {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
-  z-index: 1;
-}
-
-.tienda-heroe__velo {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(6, 34, 51, 0.9) 0%, rgba(6, 34, 51, 0.62) 45%, rgba(6, 34, 51, 0.18) 100%);
-}
-
-.tienda-heroe__contenido {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  max-width: 560px;
-}
-
-.tienda-heroe__etiqueta {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #f8fafc;
-  border-radius: 999px;
-  padding: 0.25rem 0.7rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  backdrop-filter: blur(6px);
-}
-
-.tienda-heroe__nombre {
-  font-size: clamp(1.75rem, 4vw, 3rem);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.35);
-}
-
-.tienda-heroe__desc {
-  color: rgba(248, 250, 252, 0.86);
-  font-size: 0.98rem;
-}
-
-.tienda-heroe__datos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.4rem;
-  margin: 0.4rem 0 0.8rem;
-  font-size: 0.9rem;
-  color: rgba(248, 250, 252, 0.92);
-}
-
-.tienda-heroe__datos strong {
-  font-size: 1.1rem;
-  color: #ffffff;
-}
-
-.tienda-heroe__cta {
-  align-self: flex-start;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 0.5rem 1.15rem;
-}
-
-.tienda-heroe__puntos {
-  position: absolute;
-  right: 1.25rem;
-  bottom: 1.1rem;
-  z-index: 3;
-  display: flex;
-  gap: 0.35rem;
-}
-
-.tienda-heroe__punto {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-}
-
-.tienda-heroe__punto::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.6);
-  transition:
-    width 0.25s ease,
-    background 0.25s ease;
-}
-
-.tienda-heroe__punto.activo::before {
-  width: 22px;
-  background: #ffffff;
-}
-
-.tienda-heroe__flecha {
-  position: absolute;
-  top: 50%;
-  z-index: 5;
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: 50%;
-  color: #062233;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-  transform: translateY(-50%);
-  cursor: pointer;
-}
-
-.tienda-heroe__flecha--izq {
-  left: 1rem;
-}
-.tienda-heroe__flecha--der {
-  right: 1rem;
-}
-.tienda-heroe__flecha:hover {
-  background: #fff;
-}
-.tienda-heroe__flecha:focus-visible,
-.tienda-heroe__punto:focus-visible {
-  outline: 3px solid #f8b84e;
-  outline-offset: 2px;
-}
-
-.tienda-heroe__slides[data-solo] .tienda-heroe__flecha,
-.tienda-heroe__slides[data-solo] .tienda-heroe__puntos {
-  display: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tienda-heroe__slide,
-  .tienda-heroe__punto::before {
-    transition: none;
-  }
-}
-
-.tienda-heroe__vacio {
-  min-height: 390px;
-  display: flex;
-  align-items: center;
-  padding: clamp(1.5rem, 4vw, 3rem);
-  border-radius: var(--tienda-radio);
-  color: #f8fafc;
-  background: linear-gradient(135deg, var(--tienda-hero-1), var(--tienda-hero-2) 55%, var(--tienda-hero-3));
-  box-shadow: var(--lonja-shadow-lg);
-}
-
-.tienda-heroe__vacio h1 {
-  font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-  font-weight: 800;
-  margin: 0.75rem 0 0.5rem;
-}
-
-.tienda-heroe__vacio p {
-  color: rgba(248, 250, 252, 0.82);
-  max-width: 46ch;
-}
-
-.tienda-heroe__panel {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
-  border-radius: var(--tienda-radio);
-  background: var(--lonja-surface);
-  border: 1px solid var(--lonja-border);
-  box-shadow: var(--lonja-shadow);
-}
-
-.tienda-heroe__contador {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  padding-bottom: 3rem;
-  border-bottom: 1px solid var(--lonja-border);
-}
-
-.tienda-heroe__numero {
-  font-size: 3.2rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--lonja-navy);
-}
-
-.tienda-heroe__unidad {
-  color: var(--lonja-text-muted);
-  font-size: 0.9rem;
-}
-
-.tienda-heroe__beneficios {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 0.8rem;
-}
-
-.tienda-heroe__beneficios li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  font-size: 0.88rem;
-  color: var(--lonja-text-muted);
-}
-
-.tienda-heroe__beneficios svg {
-  flex: none;
-  margin-top: 0.1rem;
-  color: var(--lonja-teal);
-}
-
-.tienda-heroe__nota {
-  font-size: 0.8rem;
-  color: var(--lonja-text-muted);
-  text-align: center;
-}
-
 /* ---------- Barra de categorías y buscador ---------- */
 .tienda-barra {
   display: flex;
@@ -552,59 +272,7 @@
   scroll-snap-align: start;
 }
 
-/* ---------- Tarjeta de lote ---------- */
-.lote-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border-radius: var(--tienda-radio);
-  background: var(--lonja-surface);
-  border: 1px solid var(--lonja-border);
-  box-shadow: var(--lonja-shadow-sm);
-  overflow: hidden;
-  animation: tienda-aparece 0.5s ease both;
-  transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    border-color 0.22s ease;
-}
-
-.lote-card:hover,
-.lote-card:focus-within {
-  transform: translateY(-3px);
-  box-shadow: var(--lonja-shadow-lg);
-  border-color: var(--lonja-border-hover);
-}
-
-.lote-card__media {
-  position: relative;
-  display: block;
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  background: linear-gradient(135deg, #0b3954, #087e8b);
-}
-
-.lote-card__media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.45s ease;
-}
-
-.lote-card:hover .lote-card__media img {
-  transform: scale(1.06);
-}
-
-.lote-card__insignias {
-  position: absolute;
-  top: 0.55rem;
-  left: 0.55rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
+/* ---------- Insignias y favorito de la tarjeta ---------- */
 .insignia {
   display: inline-flex;
   align-items: center;
@@ -628,33 +296,6 @@
 
 .insignia--nuevo {
   background: rgba(0, 166, 251, 0.94);
-}
-
-.lote-card__vista {
-  position: absolute;
-  left: 0.6rem;
-  right: 0.6rem;
-  bottom: 0.6rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #0b3954;
-  font-size: 0.78rem;
-  font-weight: 700;
-  opacity: 0;
-  transform: translateY(6px);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.lote-card:hover .lote-card__vista,
-.lote-card:focus-within .lote-card__vista {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .lote-card__corazon {
@@ -702,99 +343,6 @@
   color: #0b3954;
   font-size: 1.2rem;
   line-height: 1;
-}
-
-.lote-card__cuerpo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.85rem;
-  flex-grow: 1;
-}
-
-.lote-card__tipo {
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lonja-teal);
-}
-
-.lote-card__titulo {
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.25;
-  margin: 0;
-  color: var(--lonja-text);
-}
-
-.lote-card__titulo a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.lote-card__titulo a:hover {
-  color: var(--lonja-teal);
-}
-
-.lote-card__meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.4rem;
-  font-size: 0.76rem;
-  color: var(--lonja-text-muted);
-}
-
-.lote-card__estrellas {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.1rem;
-  color: #f59e0b;
-  font-size: 0.72rem;
-}
-
-.lote-card__estrellas span {
-  margin-left: 0.3rem;
-  color: var(--lonja-text-muted);
-}
-
-.lote-card__precios {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.4rem;
-  margin-top: 0.15rem;
-}
-
-.lote-card__precio {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--lonja-text);
-  white-space: nowrap;
-}
-
-.lote-card__precio small {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--lonja-text-muted);
-}
-
-.lote-card__total {
-  font-size: 0.7rem;
-  color: var(--lonja-text-muted);
-  text-align: right;
-}
-
-.lote-card__acciones {
-  display: flex;
-  gap: 0.4rem;
-  margin-top: auto;
-  padding-top: 0.35rem;
-}
-
-.lote-card__acciones .btn {
-  border-radius: 0.6rem;
-  font-weight: 600;
 }
 
 /* ---------- Cuadrícula y filtros ---------- */
@@ -1271,47 +819,6 @@
 }
 
 /* ---------- Ficha de especie ---------- */
-.tienda-especie__cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  align-items: center;
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
-  border-radius: var(--tienda-radio);
-  background: var(--lonja-surface);
-  border: 1px solid var(--lonja-border);
-  box-shadow: var(--lonja-shadow-sm);
-}
-
-.tienda-especie__cabecera img {
-  width: 180px;
-  height: 130px;
-  object-fit: cover;
-  border-radius: var(--tienda-radio-sm);
-  flex: none;
-}
-
-.tienda-especie__cabecera h1 {
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  font-weight: 800;
-  margin: 0 0 0.35rem;
-  color: var(--lonja-text);
-}
-
-.tienda-especie__desc {
-  color: var(--lonja-text-muted);
-  max-width: 65ch;
-  margin-bottom: 0.6rem;
-}
-
-.tienda-especie__resumen {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.8rem;
-}
-
 .tienda-distribucion {
   list-style: none;
   padding: 0;
@@ -1424,19 +931,6 @@
 }
 
 @media (max-width: 991.98px) {
-  .tienda-heroe {
-    grid-template-columns: 1fr;
-  }
-
-  .tienda-heroe__slides,
-  .tienda-heroe__vacio {
-    min-height: 340px;
-  }
-
-  .tienda-heroe__contador {
-    padding-bottom: 1rem;
-  }
-
   .tienda-catalogo {
     grid-template-columns: 1fr;
   }
@@ -1464,23 +958,6 @@
 }
 
 @media (max-width: 575.98px) {
-  .tienda-heroe__slides,
-  .tienda-heroe__vacio {
-    min-height: 300px;
-  }
-
-  .tienda-heroe__velo {
-    background: linear-gradient(0deg, rgba(6, 34, 51, 0.94) 0%, rgba(6, 34, 51, 0.55) 70%, rgba(6, 34, 51, 0.2) 100%);
-  }
-
-  .tienda-heroe__contenido {
-    gap: 0.4rem;
-  }
-
-  .tienda-heroe__datos {
-    gap: 0.35rem 1rem;
-  }
-
   .tienda-filtros__form {
     grid-template-columns: 1fr;
   }
@@ -1511,49 +988,13 @@
     min-width: 0;
   }
 
-  .tienda-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
-  }
-
   .tienda-fila__pista > .lote-card {
     flex-basis: 200px;
-  }
-
-  .lote-card__cuerpo {
-    padding: 0.65rem;
-  }
-
-  .lote-card__precio {
-    font-size: 1rem;
-  }
-
-  .lote-card__total {
-    display: none;
-  }
-
-  .lote-card__acciones {
-    flex-direction: column;
-  }
-
-  .tienda-especie__cabecera img {
-    width: 100%;
-    height: 180px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lote-card,
   .tienda-toast {
     animation: none;
-  }
-
-  .tienda-heroe__slide {
-    transition: opacity 0.2s linear;
-  }
-
-  .lote-card,
-  .lote-card__media img {
-    transition: none;
   }
 }

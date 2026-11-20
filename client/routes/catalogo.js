@@ -15,6 +15,17 @@ const seleccionar = (b, claves) => Object.fromEntries(claves.filter((k) => b[k] 
 export function crearRutasCatalogo({ pedir }) {
   const rutas = Router();
   rutas.use(['/tipos', '/catalogo', '/especies', '/lotes'], proteger('admin', 'capturista'));
+  rutas.post('/lotes/eliminacion', proteger('admin'), async (req, res) => {
+    const valores = [req.body.ids].flat().filter((v) => typeof v === 'string');
+    const ids = [...new Set(valores.filter((v) => /^\d+$/.test(v)).map(Number))];
+    try {
+      await pedir(req, 'lotes/eliminacion', { method: 'POST', body: { ids } });
+      res.redirect('/lotes?mensaje=' + encodeURIComponent(`Se eliminaron ${ids.length} lotes.`));
+    } catch (error) {
+      if (!(error instanceof ErrorApi) || ![400, 404, 409].includes(error.status)) throw error;
+      res.redirect('/lotes?error=' + encodeURIComponent(error.message + ' No se eliminó ningún lote.'));
+    }
+  });
   for (const recurso of Object.keys(singular)) {
     rutas.get('/' + recurso, async (req, res) => {
       const query = consultaListado(req);

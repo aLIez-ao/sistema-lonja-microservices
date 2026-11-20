@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/css/lonja.css">
   <link rel="stylesheet" href="/css/tienda.css">
   <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/rediseno.css">
 </head>
 
 <%
@@ -21,98 +22,7 @@
 <body data-protegida="<%= usuario && !esPublica ? 1 : 0 %>">
   <%
     const banderas = { es: { src: '/img/flags/mx.svg', nombre: 'Español' }, en: { src: '/img/flags/us.svg', nombre: 'English' } };
-    const activo = (ruta) => (rutaActual || '').startsWith(ruta) ? 'active' : '';
   %>
 
-  <nav class="navbar navbar-expand-xl navbar-lonja d-print-none" aria-label="Navegación principal">
-    <div class="container-fluid lonja-header px-lg-4">
-      <a class="navbar-brand" href="/" title="Lonja de Veracruz">
-        <img class="logo-claro" src="/img/logo.svg" alt="Lonja de Veracruz" width="204" height="42">
-        <img class="logo-oscuro" src="/img/logo-oscuro.svg" alt="" aria-hidden="true" width="204" height="42">
-      </a>
-      <div class="header-shortcuts">
-        <% if (usuario && usuario.rol !== 'comprador') { %>
-          <a class="nav-link header-icon <%= activo('/dashboard') %>" href="/dashboard" title="Dashboard" aria-label="Dashboard"><%- icono('speedometer2', 20) %></a>
-        <% } %>
-        <a class="nav-link header-icon <%= rutaActual === '/' ? 'active' : '' %>" href="/" title="<%= t('tienda') %>" aria-label="<%= t('tienda') %>"><%- icono('basket', 20) %></a>
-      </div>
-      <div class="tienda-buscador-header"><%- include('buscador-tienda') %></div>
-      <div class="header-tools">
-        <% if (usuario) { %>
-            <!-- Moneda -->
-            <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill py-1 px-2" type="button" data-bs-toggle="dropdown" title="<%= t('moneda') %>">
-                <%= pref.moneda %>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                <li><button class="dropdown-item <%= pref.moneda === 'MXN' ? 'active' : '' %>" data-pref="moneda" data-valor="MXN">MXN (Pesos mexicanos)</button></li>
-                <li><button class="dropdown-item <%= pref.moneda === 'USD' ? 'active' : '' %>" data-pref="moneda" data-valor="USD">USD (Dólares)</button></li>
-                <li><button class="dropdown-item <%= pref.moneda === 'EUR' ? 'active' : '' %>" data-pref="moneda" data-valor="EUR">EUR (Euros)</button></li>
-              </ul>
-            </div>
-
-            <!-- Idioma: bandera del país en lugar de siglas -->
-            <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill py-1 px-2 d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" title="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>" aria-label="<%= t('idioma') %>: <%= banderas[pref.idioma].nombre %>">
-                <img class="bandera" src="<%= banderas[pref.idioma].src %>" alt="<%= banderas[pref.idioma].nombre %>" width="24" height="18">
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                <% Object.entries(banderas).forEach(([cod, b]) => { %>
-                  <li><button class="dropdown-item d-flex align-items-center gap-2 <%= pref.idioma === cod ? 'active' : '' %>" data-pref="idioma" data-valor="<%= cod %>">
-                    <img class="bandera" src="<%= b.src %>" alt="" width="24" height="18"> <%= b.nombre %>
-                  </button></li>
-                <% }) %>
-              </ul>
-            </div>
-
-            <!-- Cuenta: avatar circular con menú rápido (perfil, configuración y cerrar sesión) -->
-            <div class="dropdown ms-1">
-              <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="<%= usuario.nombre_completo || usuario.usuario %>" aria-label="Menú de cuenta">
-                <%- include('avatar', { u: usuario }) %>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-2 mt-2 menu-cuenta">
-                <li class="px-3 py-2 border-bottom">
-                  <div class="fw-bold text-truncate"><%= usuario.nombre_completo || usuario.usuario %></div>
-                  <div class="small text-muted">@<%= usuario.usuario %> &bull; <span class="badge bg-secondary text-uppercase"><%= usuario.rol %></span></div>
-                  <% if (usuario.correo) { %>
-                    <div class="small text-muted text-truncate mt-1"><%= usuario.correo %></div>
-                  <% } %>
-                </li>
-                <li>
-                  <a class="dropdown-item py-2 d-flex align-items-center gap-2 mt-1" href="<%= usuario.rol === 'comprador' ? '/cuenta' : '/configuracion#pane-cuenta' %>">
-                    <%- icono('person') %> <%= t('mi_cuenta') %>
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="/configuracion">
-                    <%- icono('gear') %> <%= t('configuracion') %>
-                  </a>
-                </li>
-                <li><hr class="dropdown-divider my-1"></li>
-                <li>
-                  <form action="/cerrarsesion" method="POST" class="m-0">
-                    <button class="dropdown-item py-2 text-danger d-flex align-items-center gap-2" type="submit">
-                      <%- icono('box-arrow-right') %> <%= t('cerrar_sesion') %>
-                    </button>
-                  </form>
-                </li>
-              </ul>
-            </div>
-        <% } else { %>
-          <a class="btn btn-outline-secondary header-icon" href="/acceso" title="Iniciar sesión" aria-label="Iniciar sesión"><%- icono('person', 20) %></a>
-        <% } %>
-      </div>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú"><span class="navbar-toggler-icon"></span></button>
-      <div class="collapse navbar-collapse header-navigation" id="menuPrincipal">
-        <ul class="navbar-nav">
-          <% const enlaces = !usuario ? [['/acceso','Iniciar sesión'],['/registro','Crear cuenta']] : usuario.rol === 'comprador'
-            ? [['/carrito','Carrito'],['/cuenta','Mi cuenta'],['/cuenta/listas','Favoritos'],['/cuenta/opiniones','Mis opiniones']]
-            : [['/compras',t('compras')],['/pedidos','Pedidos'],['/lotes',t('lotes')],['/especies','Especies por lote'],['/catalogo','Catálogo'],['/compradores',t('compradores')],['/tipos',t('tipos')],['/reportes/diario',t('reportes')],...(usuario.rol === 'admin' ? [['/usuarios',t('usuarios')]] : [])]; %>
-          <% enlaces.forEach(([href,label]) => { %>
-            <li class="nav-item"><a class="nav-link <%= activo(href) %>" href="<%= href %>"><%= label %></a></li>
-          <% }) %>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <%- include('_cabecera', { ruta, banderas }) %>
   <main class="container py-4">

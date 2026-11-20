@@ -1,0 +1,4 @@
+<%
+  // Chip de estado de pedido: texto siempre visible; el color solo refuerza.
+  const _clases = { pendiente_pago: 'estado--aviso', pagado: 'estado--info', preparando: 'estado--info', enviado: 'estado--info', entregado: 'estado--ok', cancelado: 'estado--cerrado', expirado: 'estado--cerrado' };
+%><span class="estado <%= _clases[estado] || '' %>"><%= estado.replace('_', ' ') %></span>

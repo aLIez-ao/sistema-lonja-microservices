@@ -817,20 +817,6 @@ body:has(.cookie-consent-bar) footer {
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
   text-align: left;
 }
-.hoja-franja {
-  height: 6pt;
-  background: #0b3954;
-}
-.hoja-caja {
-  background: #f1f5f9;
-  border: 0.75pt solid #cbd5e1;
-  border-radius: 6pt;
-}
-.hoja-caja-titulo {
-  color: #0b3954;
-  font-weight: 700;
-  letter-spacing: 0.4pt;
-}
 .hoja-carta .der {
   text-align: right;
 }
@@ -856,8 +842,8 @@ body:has(.cookie-consent-bar) footer {
   table-layout: fixed;
 }
 .hoja-tabla th {
-  background: #0b3954;
-  color: #ffffff;
+  color: #0b3954;
+  border-bottom: 1.5pt solid #0b3954;
   font-size: 8pt;
   font-weight: 700;
   padding: 0 8pt;
@@ -866,7 +852,7 @@ body:has(.cookie-consent-bar) footer {
   white-space: nowrap;
 }
 .hoja-tabla td {
-  border: 0.75pt solid #cbd5e1;
+  border-bottom: 0.75pt solid #cbd5e1;
   padding: 6pt 8pt;
   vertical-align: middle;
   background: #ffffff;
@@ -876,7 +862,6 @@ body:has(.cookie-consent-bar) footer {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-top: 10pt;
 }
 .factura-logo {
   height: 46pt;
@@ -931,30 +916,6 @@ body:has(.cookie-consent-bar) footer {
   font-style: normal;
 }
 
-.factura-receptor {
-  margin-top: 12pt;
-  padding: 9pt 12pt;
-  min-height: 62pt;
-}
-.factura-receptor-cols {
-  display: flex;
-  gap: 18pt;
-  margin-top: 5pt;
-  line-height: 12pt;
-}
-.factura-receptor-cols > div {
-  flex: 1;
-  min-width: 0;
-}
-.factura-receptor-cols > div > div {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.factura-receptor-cols span {
-  color: #64748b;
-}
-
 .factura-tabla {
   margin-top: 16pt;
 }
@@ -973,21 +934,55 @@ body:has(.cookie-consent-bar) footer {
   align-items: stretch;
   margin-top: 14pt;
 }
+.factura-tarjetas {
+  display: flex;
+  gap: 12pt;
+  margin-top: 14pt;
+}
+.factura-tarjeta {
+  flex: 1;
+  min-width: 0;
+  min-height: 70pt;
+  padding: 9pt 12pt;
+  border: 0.75pt solid #cbd5e1;
+  border-radius: 6pt;
+  line-height: 12pt;
+}
+.factura-tarjeta > div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.factura-tarjeta span {
+  color: #64748b;
+}
+.factura-tarjeta-titulo {
+  color: #64748b;
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.4pt;
+}
+.factura-tarjeta-nombre {
+  margin: 2pt 0 1pt;
+  color: #0b3954;
+  font-size: 10pt;
+  font-weight: 700;
+}
 .factura-notas {
   width: 320pt;
-  padding: 9pt 10pt;
   font-size: 7.5pt;
 }
-.factura-notas .hoja-caja-titulo {
-  font-size: 8pt;
-  margin-bottom: 4pt;
+.factura-letra {
+  margin: 2pt 0 8pt;
+  color: #334155;
+  font-size: 8.5pt;
+  font-weight: 700;
 }
 .factura-notas > div + div {
   margin-top: 2pt;
 }
 .factura-totales {
   width: 197pt;
-  padding: 8pt 12pt;
 }
 .factura-totales .fila {
   display: flex;
@@ -1000,12 +995,10 @@ body:has(.cookie-consent-bar) footer {
 .factura-totales .fila b {
   font-weight: 400;
 }
-.factura-totales .fila.borde {
-  border-bottom: 0.5pt solid #cbd5e1;
-  padding-bottom: 6pt;
-}
 .factura-totales .fila.total {
+  margin-top: 4pt;
   padding-top: 7pt;
+  border-top: 1.5pt solid #0b3954;
   color: #0b3954;
   font-weight: 700;
   font-size: 10pt;
@@ -1030,6 +1023,12 @@ body:has(.cookie-consent-bar) footer {
 }
 .factura-sello .mono + .etiqueta {
   margin-top: 8pt;
+}
+.factura-pagina {
+  margin-top: 6pt;
+  text-align: right;
+  font-size: 7pt;
+  color: #64748b;
 }
 .factura-sello .leyenda {
   text-align: center;

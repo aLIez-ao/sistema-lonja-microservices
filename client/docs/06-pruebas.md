@@ -23,7 +23,7 @@ Las regresiones de navegación comprueban que los listados conservan filtros, us
 
 El ejecutor de c8 en `tools/cobertura.js` mide el servidor e incluye archivos no ejecutados. Excluye pruebas y recursos estáticos y exige 80 % de líneas por aplicación. Guarda los informes fuera del proyecto, en el directorio temporal del sistema.
 
-La revisión del 18 de noviembre de 2026 registró 16 pruebas propias del cliente y 17 de sistema, con Redis real; la cobertura del cliente fue 85,63 %. La cabecera se comprobó en navegador entre 320 y 1920 píxeles, incluidos menús de idioma y cuenta y las pantallas principales. Esto no cubre todos los tamaños, temas o navegadores ni constituye una suite visual automatizada.
+La revisión del 18 de noviembre de 2026 registró 16 pruebas propias del cliente y 17 de sistema, con Redis real; la cobertura del cliente fue 85,63 %. La del 19 de noviembre, tras el rediseño y sin Redis de ensayo, registró 29 pruebas correctas y 2 omisiones de Redis en la medición conjunta, con 83,59 % de líneas. Ese día se revisaron en navegador tienda, catálogo, fichas, análisis mensual, lotes, pedidos, factura y ticket a 390 y 1440 píxeles con invitado, comprador y administrador. Esto no cubre todos los tamaños, el tema oscuro ni otros navegadores, ni constituye una suite visual automatizada.
 
 El recorrido HTTPS de las imágenes finales verifica registro → correo Mailpit → verificación → acceso → carrito → pedido → pago → PDF. Su ejecución y restricciones se explican en [pruebas compartidas](../../docs/06-pruebas.md). Los pagos no hacen cargos reales.
 

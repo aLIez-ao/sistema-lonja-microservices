@@ -1,5 +1,72 @@
 <%- include('../partials/header') %>
-<main class="container py-4"><a href="/pedidos">← Pedidos</a><div class="d-flex justify-content-between align-items-start flex-wrap mt-3"><div><h1>Pedido #<%= pedido.id_ped %></h1><p class="text-muted"><%= fechaHora(pedido.fecha) %> · <%= pedido.estado.replace('_',' ') %></p></div><div class="d-flex gap-2"><% if (pedido.estado === 'pendiente_pago' && pedido.pago_metodo === 'Efectivo en lonja') { %><form method="post" action="/pedidos/<%= pedido.id_ped %>/confirmar-cobro"><input type="hidden" name="clave_operacion" value="<%= typeof claveOperacion !== 'undefined' ? claveOperacion : '' %>"><button class="btn btn-success">Confirmar cobro</button></form><% } %><% if (siguiente) { %><form method="post" action="/pedidos/<%= pedido.id_ped %>/estado"><input type="hidden" name="estado" value="<%= siguiente %>"><button class="btn btn-primary">Marcar como <%= siguiente.replace('_',' ') %></button></form><% } %></div></div>
-<% if (mensaje) { %><div class="alert alert-success"><%= mensaje %></div><% } %><% if (error) { %><div class="alert alert-warning"><%= error %></div><% } %>
-<div class="row g-3"><section class="col-lg-7"><div class="card mb-3"><div class="card-body"><h2 class="h5">Artículos</h2><% pedido.items.forEach(i => { %><div class="d-flex justify-content-between border-bottom py-2"><span><a href="/lotes/<%= i.id_lte %>">Lote #<%= i.id_lte %></a> · <%= i.kilos %> kg<small class="d-block text-muted"><%= (i.lote?.especies || []).map(e => e.nombre).join(', ') %></small></span><strong><%= dinero(i.subtotal) %></strong></div><% }) %><div class="text-end mt-3">Subtotal <%= dinero(pedido.subtotal) %> · Envío <%= dinero(pedido.costo_envio) %><div class="h5">Total <%= dinero(pedido.total) %></div></div></div></div><div class="card"><div class="card-body"><h2 class="h5">Entrega</h2><p><%= pedido.entrega === 'domicilio' ? pedido.dir_destinatario : 'Recoger en la lonja' %></p><pre class="mb-0"><%= pedido.dir_texto || 'Muelle Fiscal de Veracruz' %></pre></div></div></section>
-<aside class="col-lg-5"><div class="card mb-3"><div class="card-body"><h2 class="h5">Comprador</h2><p><%= pedido.comprador.nombre %> <%= pedido.comprador.apellido_paterno %><br><%= pedido.usuario?.correo || pedido.comprador.correo %></p><a href="/compradores/<%= pedido.codigo_cpr %>">Ficha del comprador</a></div></div><div class="card"><div class="card-body"><h2 class="h5">Pago</h2><p>Método: <%= pedido.pago_metodo || 'Pendiente' %><br>Referencia: <%= pedido.pago_ref || '—' %><br>Tarjeta: <%= pedido.pago_ultimos4 ? `•••• ${pedido.pago_ultimos4}` : '—' %></p><% compras.forEach(c => { %><a class="d-block" href="/compras/<%= c.id_cmp %>/factura">Factura del lote #<%= c.id_cmp %></a><% }) %></div></div></aside></div></main><%- include('../partials/footer') %>
+<nav class="tienda-migas" aria-label="Ruta"><a href="/pedidos"><%- icono('arrow-left', 14, 'me-1') %>Pedidos</a><span aria-hidden="true">/</span><span aria-current="page">PED-<%= String(pedido.id_ped).padStart(6, '0') %></span></nav>
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mt-2 mb-3">
+  <div>
+    <h1 class="h3 fw-bold mb-1">Pedido PED-<%= String(pedido.id_ped).padStart(6, '0') %></h1>
+    <p class="text-muted mb-0"><%= fechaHora(pedido.fecha) %> · <%- include('_estado', { estado: pedido.estado }) %></p>
+  </div>
+  <div class="d-flex gap-2">
+    <% if (pedido.estado === 'pendiente_pago' && pedido.pago_metodo === 'Efectivo en lonja') { %>
+      <form method="post" action="/pedidos/<%= pedido.id_ped %>/confirmar-cobro" data-confirmar="¿Confirmar que se cobró este pedido en efectivo?">
+        <input type="hidden" name="clave_operacion" value="<%= typeof claveOperacion !== 'undefined' ? claveOperacion : '' %>">
+        <button class="btn btn-success">Confirmar cobro</button>
+      </form>
+    <% } %>
+    <% if (siguiente) { %>
+      <form method="post" action="/pedidos/<%= pedido.id_ped %>/estado">
+        <input type="hidden" name="estado" value="<%= siguiente %>">
+        <button class="btn btn-primary">Marcar como <%= siguiente.replace('_', ' ') %></button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<% if (mensaje) { %><div class="alert alert-success"><%= mensaje %></div><% } %>
+<% if (error) { %><div class="alert alert-warning"><%= error %></div><% } %>
+
+<section class="panel mb-3" aria-labelledby="seguimientoTitulo">
+  <h2 id="seguimientoTitulo">Seguimiento</h2>
+  <%- include('_linea-tiempo', { pedido }) %>
+</section>
+
+<div class="row g-3">
+  <section class="col-lg-7" aria-labelledby="articulosTitulo">
+    <div class="panel mb-3">
+      <h2 id="articulosTitulo">Artículos</h2>
+      <ul class="panel-detalle__items">
+        <% pedido.items.forEach(i => { %>
+          <li><span><a href="/lotes/<%= i.id_lte %>">Lote #<%= i.id_lte %></a> · <%= i.kilos %> kg<small class="d-block text-muted"><%= (i.lote?.especies || []).map(e => e.nombre).join(', ') %></small></span><strong><%= dinero(i.subtotal) %></strong></li>
+        <% }) %>
+      </ul>
+      <dl class="panel-detalle__totales">
+        <div><dt>Subtotal</dt><dd><%= dinero(pedido.subtotal) %></dd></div>
+        <div><dt>IVA (tasa 0 %)</dt><dd><%= dinero(0) %></dd></div>
+        <div><dt>Envío</dt><dd><%= dinero(pedido.costo_envio) %></dd></div>
+        <div class="total"><dt>Total</dt><dd><%= dinero(pedido.total) %></dd></div>
+      </dl>
+    </div>
+    <div class="panel">
+      <h2>Entrega</h2>
+      <p class="mb-1 fw-semibold"><%= pedido.entrega === 'domicilio' ? pedido.dir_destinatario : 'Recoger en la lonja' %></p>
+      <p class="mb-0 texto-preformateado"><%= pedido.dir_texto || 'Muelle Fiscal de Veracruz' %></p>
+    </div>
+  </section>
+  <aside class="col-lg-5">
+    <div class="panel mb-3">
+      <h2>Comprador</h2>
+      <p><%= pedido.comprador.nombre %> <%= pedido.comprador.apellido_paterno %><br><span class="text-muted"><%= pedido.usuario?.correo || pedido.comprador.correo %></span></p>
+      <a href="/compradores/<%= pedido.codigo_cpr %>">Ficha del comprador</a>
+    </div>
+    <div class="panel">
+      <h2>Pago</h2>
+      <dl class="panel-detalle__totales">
+        <div><dt>Método</dt><dd><%= pedido.pago_metodo || 'Pendiente' %></dd></div>
+        <div><dt>Referencia</dt><dd><%= pedido.pago_ref || '—' %></dd></div>
+        <div><dt>Tarjeta</dt><dd><%= pedido.pago_ultimos4 ? `•••• ${pedido.pago_ultimos4}` : '—' %></dd></div>
+      </dl>
+      <% compras.forEach(c => { %><a class="d-block mt-2" href="/compras/<%= c.id_cmp %>/factura">Factura del lote #<%= c.id_cmp %></a><% }) %>
+    </div>
+  </aside>
+</div>
+<%- include('../partials/footer') %>

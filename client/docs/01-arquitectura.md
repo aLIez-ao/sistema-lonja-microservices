@@ -21,7 +21,7 @@ sequenceDiagram
 
 ## Módulos
 
-`routes/` organiza cuenta, configuración, usuarios, catálogo, ventas, pedidos y actividad de tienda. Las rutas públicas y el acceso se componen en `app.js`. `views/` agrupa las páginas por función; `public/` aloja JavaScript, estilos e imágenes propios. Bootstrap y Chart.js se sirven localmente desde las dependencias instaladas.
+`routes/` organiza cuenta, configuración, usuarios, catálogo, ventas, pedidos y actividad de tienda. Las rutas públicas y el acceso se componen en `app.js`. `views/` agrupa las páginas por función; `public/` aloja JavaScript, estilos, imágenes y fuentes propios. Bootstrap y Chart.js se sirven localmente desde las dependencias instaladas; Inter y Space Grotesk, desde `public/fonts/` con sus licencias OFL. El [diseño visual](../../docs/08-propuesta-visual.md) explica qué vista y hoja de estilo corresponde a cada pantalla.
 
 `api.js` restringe destinos al origen y prefijo de `API_URL`, usa fetch nativo con límite de diez segundos, propaga `X-Request-Id` y convierte errores de la API en `ErrorApi`. `validacion.js` reutiliza esquemas de OpenAPI para validar entradas antes de enviarlas; la API vuelve a validar siempre.
 

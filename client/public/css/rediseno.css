@@ -1,0 +1,2002 @@
+/* ==========================================================================
+   REDISEÑO: tienda (mercado del día y catálogo), fichas de lote y especie,
+   análisis mensual, tablas con detalle y ticket de mostrador.
+   Usa los tokens de lonja.css; los fondos oscuros tienen token propio porque
+   --lonja-navy se aclara en el tema oscuro.
+   ========================================================================== */
+
+/* Fuentes servidas localmente (OFL 1.1, licencias en /fonts); la CSP solo permite 'self'. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-variable.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-latin-variable.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* Títulos y cifras destacadas; con otra fuente elegida en preferencias se usa esa. */
+  --font-titulos: 'Space Grotesk', var(--font-base);
+  --rd-oscuro: #0b3954;
+  --rd-oscuro-2: #062233;
+  --rd-sobre-oscuro: #ffffff;
+  --rd-sobre-oscuro-tenue: #c4d4e0;
+  --rd-acento: #7fe3ec;
+  --rd-teal-texto: #06707b;
+  --rd-ok-bg: #e3f4ef;
+  --rd-ok: #146c43;
+  --rd-aviso-bg: #fff4d6;
+  --rd-aviso: #7a5200;
+  --rd-info-bg: #e2eef8;
+  --rd-info: #0b3954;
+  --rd-cerrado-bg: #eef1f5;
+  --rd-cerrado: #475569;
+  --rd-radio: 12px;
+}
+
+[data-theme='dark'] {
+  --rd-oscuro: #1c2541;
+  --rd-oscuro-2: #0b132b;
+  --rd-sobre-oscuro-tenue: #a8b8cc;
+  --rd-teal-texto: #2dd4bf;
+  --rd-ok-bg: rgba(45, 212, 191, 0.14);
+  --rd-ok: #5eead4;
+  --rd-aviso-bg: rgba(250, 204, 21, 0.14);
+  --rd-aviso: #fde68a;
+  --rd-info-bg: rgba(56, 189, 248, 0.14);
+  --rd-info: #7dd3fc;
+  --rd-cerrado-bg: rgba(148, 163, 184, 0.14);
+  --rd-cerrado: #cbd5e1;
+}
+
+[data-font-family='roboto'],
+[data-font-family='segoe'],
+[data-font-family='serif'] {
+  --font-titulos: var(--font-base);
+}
+
+h1,
+h2,
+.mercado__titulo,
+.mercado__cifras dd,
+.mercado__destacado-nombre,
+.mercado__destacado-precio strong,
+.catalogo-fila__precio strong,
+.especie-heroe__cifras dd,
+.kpi__valor,
+.tienda-detalle__precio-kilo,
+.lote-card__precio,
+.panel-detalle__totales .total {
+  font-family: var(--font-titulos);
+}
+
+/* ---------- Chips de estado ---------- */
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: capitalize;
+  background: var(--rd-cerrado-bg);
+  color: var(--rd-cerrado);
+}
+
+.estado::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.estado--ok {
+  background: var(--rd-ok-bg);
+  color: var(--rd-ok);
+}
+
+.estado--aviso {
+  background: var(--rd-aviso-bg);
+  color: var(--rd-aviso);
+}
+
+.estado--info {
+  background: var(--rd-info-bg);
+  color: var(--rd-info);
+}
+
+/* ---------- Tablas ligeras ---------- */
+.tabla-ligera {
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla-ligera thead th {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lonja-text-muted);
+  background: var(--lonja-surface-subtle);
+  border-bottom: 1px solid var(--lonja-border);
+}
+
+.tabla-ligera .fila-activa > * {
+  background: var(--lonja-teal-light);
+}
+
+/* ---------- Tienda: medidas y colores de la propuesta (Tienda A, B y C) ---------- */
+.tienda {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+.btn-teal {
+  border: 0;
+  background: var(--lonja-teal);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.btn-teal:hover,
+.btn-teal:focus-visible {
+  background: #066a75;
+  color: #ffffff;
+}
+
+/* Fondos tenues por tipo, como en los mockups */
+.lote-media--escama {
+  background: #dce8f1;
+}
+
+.lote-media--crustaceo {
+  background: #f6e2d9;
+}
+
+.lote-media--molusco {
+  background: #e6e4f1;
+}
+
+[data-theme='dark'] .lote-media--escama {
+  background: #1f3550;
+}
+
+[data-theme='dark'] .lote-media--crustaceo {
+  background: #45302b;
+}
+
+[data-theme='dark'] .lote-media--molusco {
+  background: #34314d;
+}
+
+.media-pez {
+  width: 34px;
+  height: auto;
+  color: var(--rd-oscuro);
+}
+
+[data-theme='dark'] .media-pez {
+  color: #c4d4e0;
+}
+
+/* Hero «Mercado del día» */
+.mercado {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+  gap: 3rem;
+  align-items: center;
+  padding: 2.5rem 0 2rem;
+}
+
+.mercado__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rd-teal-texto);
+}
+
+.mercado__titulo {
+  max-width: 13em;
+  margin: 0.6rem 0 0.9rem;
+  font-size: clamp(2rem, 1.3rem + 2.2vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--lonja-navy);
+}
+
+.mercado__desc {
+  max-width: 46ch;
+  margin-bottom: 1.25rem;
+  color: var(--lonja-text-muted);
+}
+
+.mercado__cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+}
+
+.mercado__cifras > div {
+  display: flex;
+  flex-direction: column-reverse;
+  min-width: 7.5rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--lonja-border);
+  border-radius: 8px;
+  background: var(--lonja-surface);
+}
+
+.mercado__cifras dd {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--lonja-navy);
+}
+
+.mercado__cifras dt {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--lonja-text-muted);
+}
+
+.mercado__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.mercado__enlace {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lonja-navy);
+}
+
+.mercado__destacado {
+  overflow: hidden;
+  border: 1px solid var(--lonja-border);
+  border-radius: 12px;
+  background: var(--lonja-surface);
+  box-shadow: 0 12px 32px rgba(11, 57, 84, 0.1);
+}
+
+.mercado__destacado-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 190px;
+  overflow: hidden;
+}
+
+.mercado__destacado-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mercado__destacado-media .media-pez {
+  width: 48px;
+}
+
+.mercado__destacado-etiqueta {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--rd-oscuro);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.mercado__destacado-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.mercado__destacado-fila {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+
+.mercado__destacado-fila--precio {
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.mercado__destacado-nombre {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.mercado__destacado-nombre a {
+  color: var(--lonja-text);
+  text-decoration: none;
+}
+
+.mercado__destacado-lote,
+.mercado__destacado-datos {
+  font-size: 0.8rem;
+  color: var(--lonja-text-muted);
+}
+
+.mercado__destacado-precio {
+  font-size: 0.8rem;
+  color: var(--lonja-text-muted);
+}
+
+.mercado__destacado-precio strong {
+  font-size: 1.6rem;
+  color: var(--lonja-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.mercado__destacado--vacio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.5rem;
+}
+
+/* Sección de lotes */
+.mercado-lotes {
+  margin-top: 1rem;
+}
+
+.mercado-lotes__cabecera,
+.panel__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.mercado-lotes__cabecera h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--lonja-navy);
+}
+
+.mercado-lotes__cabecera p {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--lonja-text-muted);
+}
+
+.mercado-lotes__orden,
+.tienda-orden {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--lonja-text-muted);
+}
+
+.mercado-lotes__orden .form-select,
+.tienda-orden .form-select {
+  width: auto;
+}
+
+.mercado-lotes__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+
+.mercado-lotes__chips .tienda-chip {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.tienda-chip--enlace {
+  border-style: dashed;
+}
+
+/* Tarjeta de lote */
+.tienda .tienda-grid,
+.tienda-parecidos .tienda-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.lote-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--lonja-border);
+  border-radius: 10px;
+  background: var(--lonja-surface);
+  transition: border-color 0.15s ease;
+}
+
+.lote-card:hover,
+.lote-card:focus-within {
+  border-color: var(--lonja-border-hover);
+}
+
+.lote-card__media {
+  display: grid;
+  place-items: center;
+  height: 110px;
+  overflow: hidden;
+}
+
+.lote-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lote-card__chip {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--lonja-surface);
+  color: var(--lonja-text);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.lote-card .lote-card__corazon {
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--rd-oscuro);
+}
+
+.lote-card .lote-card__corazon.activo {
+  background: var(--lonja-coral);
+  color: #ffffff;
+}
+
+.lote-card__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.85rem 0.85rem;
+  flex-grow: 1;
+}
+
+.lote-card__titulo {
+  margin: 0;
+  font-family: var(--font-base);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.lote-card__titulo a {
+  color: var(--lonja-text);
+  text-decoration: none;
+}
+
+.lote-card__titulo a:hover {
+  text-decoration: underline;
+}
+
+.lote-card__meta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--lonja-text-muted);
+}
+
+.lote-card__aviso {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #b45309;
+}
+
+.lote-card__aviso--precio {
+  color: var(--rd-teal-texto);
+}
+
+[data-theme='dark'] .lote-card__aviso {
+  color: #fbbf24;
+}
+
+.lote-card__pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+.lote-card__precio {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--lonja-text);
+}
+
+.lote-card__precio small {
+  font-family: var(--font-base);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--lonja-text-muted);
+}
+
+.lote-card__agregar {
+  border: 1px solid var(--lonja-border-hover);
+  background: var(--lonja-surface);
+  color: var(--lonja-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.lote-card__agregar:hover,
+.lote-card__agregar:focus-visible {
+  border-color: var(--lonja-navy);
+  color: var(--lonja-navy);
+}
+
+.lote-card__agregar-mas {
+  display: none;
+}
+
+/* Cómo comprar */
+.mercado-pasos {
+  margin: 2.5rem 0 1rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--lonja-border);
+}
+
+.mercado-pasos h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--lonja-navy);
+}
+
+.mercado-pasos ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mercado-pasos li {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.mercado-pasos p {
+  margin: 0.2rem 0 0;
+  font-size: 0.875rem;
+  color: var(--lonja-text-muted);
+}
+
+.mercado-pasos__num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-weight: 700;
+  background: var(--lonja-teal-light);
+  color: var(--rd-teal-texto);
+}
+
+/* ---------- Catálogo con filtros (Tienda B) ---------- */
+.catalogo-cabecera {
+  margin: 1.25rem 0 1.25rem;
+}
+
+.catalogo-cabecera .tienda-migas {
+  font-size: 0.75rem;
+}
+
+.catalogo-cabecera__fila {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.catalogo-cabecera h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--lonja-navy);
+}
+
+.catalogo-cabecera__buscar {
+  display: flex;
+  gap: 0.4rem;
+  width: min(100%, 360px);
+}
+
+.tienda-catalogo {
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.tienda-filtros {
+  padding: 1rem;
+  border: 1px solid var(--lonja-border);
+  border-radius: 10px;
+  background: var(--lonja-surface);
+}
+
+.tienda-filtros .tienda-filtros__titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.tienda-filtros__titulo h2 {
+  margin: 0;
+  font-family: var(--font-base);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.tienda-filtros__titulo a {
+  font-size: 0.75rem;
+  color: var(--rd-teal-texto);
+}
+
+fieldset.tienda-filtros__grupo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.tienda-filtros__grupo legend.form-label {
+  float: none;
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.filtro-opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  font-size: 0.82rem;
+}
+
+.filtro-opcion .form-check-input {
+  margin: 0;
+}
+
+.filtro-opcion__n {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--lonja-text-muted);
+}
+
+.filtro-rango {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.filtro-rango span,
+.filtro-escala {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--lonja-text-muted);
+}
+
+.filtro-escala {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tienda-resultados__cabecera {
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.catalogo-activos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--lonja-text-muted);
+}
+
+.catalogo-activo {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--lonja-teal-light);
+  color: var(--lonja-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.catalogo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.catalogo-fila {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) minmax(140px, 180px) auto;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 0.6rem;
+  border: 1px solid var(--lonja-border);
+  border-radius: 10px;
+  background: var(--lonja-surface);
+}
+
+.catalogo-fila__media {
+  display: grid;
+  place-items: center;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.catalogo-fila__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.catalogo-fila__titulo {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-base);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.catalogo-fila__titulo a {
+  color: var(--lonja-text);
+  text-decoration: none;
+}
+
+.catalogo-fila__titulo a:hover {
+  text-decoration: underline;
+}
+
+.catalogo-fila__meta {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--lonja-text-muted);
+}
+
+.catalogo-fila__promedio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.catalogo-fila__rotulo {
+  font-size: 0.68rem;
+  color: var(--lonja-text-muted);
+}
+
+.catalogo-fila__comparacion {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lonja-text-muted);
+}
+
+.catalogo-fila__comparacion.es-bajo {
+  color: var(--rd-teal-texto);
+}
+
+.catalogo-fila__comparacion.es-alto {
+  color: #c2410c;
+}
+
+.barra--caro::-webkit-progress-value {
+  background: #c2410c;
+}
+
+.barra--caro::-moz-progress-bar {
+  background: #c2410c;
+}
+
+.catalogo-fila__precio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.catalogo-fila__precio strong {
+  font-size: 1.15rem;
+  color: var(--lonja-navy);
+}
+
+.catalogo-fila__precio small {
+  font-family: var(--font-base);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--lonja-text-muted);
+}
+
+/* ---------- Tienda C: móvil ---------- */
+@media (max-width: 991.98px) {
+  .mercado {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .tienda .tienda-grid,
+  .tienda-parecidos .tienda-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tienda-catalogo {
+    grid-template-columns: 1fr;
+  }
+
+  .catalogo-fila {
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+  }
+
+  .catalogo-fila__promedio {
+    grid-column: 2 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .mercado__destacado {
+    display: none;
+  }
+
+  .mercado__titulo {
+    font-size: 1.6rem;
+  }
+
+  .mercado-pasos ol {
+    grid-template-columns: 1fr;
+  }
+
+  /* Las tarjetas pasan a filas con botón «+», como en la propuesta móvil */
+  .tienda .tienda-grid,
+  .tienda-parecidos .tienda-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  .lote-card > :not(.lote-card__media):not(.lote-card__cuerpo) {
+    display: none;
+  }
+
+  /* El formulario de favorito lleva .d-inline (!important): se saca del flujo de la rejilla. */
+  .lote-card > form {
+    position: absolute;
+  }
+
+  .lote-card > .lote-card__media {
+    grid-area: 1 / 1;
+  }
+
+  .lote-card > .lote-card__cuerpo {
+    grid-area: 1 / 2;
+  }
+
+  .lote-card {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.6rem;
+  }
+
+  .lote-card__media {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+  }
+
+  .lote-card__media .media-pez {
+    width: 26px;
+  }
+
+  .lote-card__chip,
+  .lote-card .lote-card__corazon,
+  .lote-card .lote-card__elegir-lista,
+  .lote-card__aviso {
+    display: none;
+  }
+
+  .lote-card__cuerpo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0;
+    column-gap: 0.5rem;
+  }
+
+  .lote-card__titulo,
+  .lote-card__meta {
+    grid-column: 1;
+  }
+
+  .lote-card__pie {
+    display: contents;
+  }
+
+  .lote-card__precio {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .lote-card__agregar {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: var(--lonja-teal);
+    color: #ffffff;
+    font-size: 1.2rem;
+  }
+
+  .lote-card__agregar-texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .lote-card__agregar-mas {
+    display: inline;
+  }
+
+  .catalogo-fila {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 0.6rem 0.75rem;
+  }
+
+  .catalogo-fila__promedio,
+  .catalogo-fila__precio {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .catalogo-fila__precio {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* ---------- Ficha de lote ---------- */
+.ficha-lote__rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.ficha-lote__miniaturas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha-lote__miniaturas img {
+  width: 88px;
+  height: 66px;
+  border: 1px solid var(--lonja-border);
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.ficha-lote__nota {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--lonja-text-muted);
+}
+
+.ficha-lote__secciones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.ficha-lote__pregunta {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--lonja-border);
+}
+
+/* ---------- Ficha de especie ---------- */
+.especie-heroe {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) minmax(220px, 300px);
+  gap: 1.75rem;
+  align-items: center;
+  margin: 1rem 0 1.5rem;
+  padding: 1.75rem;
+  border-radius: var(--rd-radio);
+  background: var(--rd-oscuro);
+  color: var(--rd-sobre-oscuro);
+}
+
+.especie-heroe img {
+  width: 100%;
+  height: 160px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.especie-heroe__tipo {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--rd-acento);
+}
+
+.especie-heroe h1 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--rd-sobre-oscuro);
+}
+
+.especie-heroe p {
+  margin-bottom: 0.6rem;
+  color: var(--rd-sobre-oscuro-tenue);
+}
+
+.especie-heroe__valoracion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--rd-sobre-oscuro-tenue);
+}
+
+.especie-heroe__cifras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.especie-heroe__cifras dt {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--rd-sobre-oscuro-tenue);
+}
+
+.especie-heroe__cifras dd {
+  margin: 0.1rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.especie-rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.especie-rejilla__lotes {
+  grid-row: span 2;
+}
+
+/* ---------- Análisis mensual ---------- */
+.analisis__herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.periodo {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.periodo .form-select {
+  min-width: 11rem;
+  min-height: 38px;
+}
+
+.analisis__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.analisis__eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--rd-teal-texto);
+}
+
+.analisis__titulo {
+  margin: 0.15rem 0 0.25rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--rd-radio);
+  background: var(--rd-oscuro);
+  color: var(--rd-sobre-oscuro);
+}
+
+.kpi--principal {
+  background: var(--rd-oscuro-2);
+}
+
+.kpi__rotulo {
+  font-size: 0.78rem;
+  color: var(--rd-sobre-oscuro-tenue);
+}
+
+.kpi__valor {
+  font-size: 1.45rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__var {
+  font-size: 0.78rem;
+  color: var(--rd-sobre-oscuro-tenue);
+}
+
+.kpi .variacion-sube,
+.kpi .variacion-baja {
+  color: var(--rd-acento);
+}
+
+.pendientes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--lonja-border);
+  border-radius: var(--rd-radio);
+  background: var(--lonja-surface);
+  font-size: 0.9rem;
+}
+
+.pendientes a {
+  color: var(--lonja-text);
+}
+
+.analisis__rejilla {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel {
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--lonja-border);
+  border-radius: var(--rd-radio);
+  background: var(--lonja-surface);
+}
+
+.panel h2 {
+  margin-bottom: 0.85rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.panel__cabecera {
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.panel__cabecera h2 {
+  margin: 0;
+}
+
+.panel--ancho {
+  grid-column: span 2;
+}
+
+.panel--doble {
+  grid-column: span 2;
+}
+
+.barras-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barras-lista__fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.barra {
+  display: block;
+  width: 100%;
+  height: 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  appearance: none;
+  background: var(--lonja-surface-subtle);
+  color: var(--lonja-navy);
+}
+
+.barra::-webkit-progress-bar {
+  background: var(--lonja-surface-subtle);
+}
+
+.barra::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--lonja-navy);
+}
+
+.barra::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--lonja-navy);
+}
+
+.barra--teal::-webkit-progress-value {
+  background: var(--lonja-teal);
+}
+
+.barra--teal::-moz-progress-bar {
+  background: var(--lonja-teal);
+}
+
+/* ---------- Pestañas, filtros en línea y maestro-detalle ---------- */
+.pestanas {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--lonja-border);
+}
+
+.pestanas__item {
+  padding: 0.55rem 0.85rem;
+  border-bottom: 2px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--lonja-text-muted);
+  text-decoration: none;
+}
+
+.pestanas__item:hover {
+  color: var(--lonja-text);
+}
+
+.pestanas__item.activa {
+  border-bottom-color: var(--lonja-teal);
+  color: var(--lonja-text);
+}
+
+.filtros-linea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filtros-linea > * {
+  width: auto;
+}
+
+.filtros-linea__busqueda {
+  flex: 1 1 220px;
+}
+
+.maestro-detalle {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+.maestro-detalle.con-detalle {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+}
+
+.panel-detalle {
+  position: sticky;
+  top: 1rem;
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--lonja-border);
+  border-radius: var(--rd-radio);
+  background: var(--lonja-surface);
+}
+
+.panel-detalle__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.panel-detalle__cabecera h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.panel-detalle__sub {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lonja-text-muted);
+}
+
+.panel-detalle__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panel-detalle__items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--lonja-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-detalle__totales {
+  margin: 0.75rem 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-detalle__totales > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.15rem 0;
+}
+
+.panel-detalle__totales dt {
+  font-weight: 400;
+  color: var(--lonja-text-muted);
+}
+
+.panel-detalle__totales dd {
+  margin: 0;
+}
+
+.panel-detalle__totales .total {
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--lonja-border);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.panel-detalle__totales .total dt {
+  color: var(--lonja-text);
+  font-weight: 700;
+}
+
+.panel-detalle__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.texto-preformateado {
+  white-space: pre-line;
+}
+
+/* ---------- Línea de tiempo del pedido ---------- */
+.linea-tiempo {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linea-tiempo__paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  column-gap: 0.75rem;
+  padding-bottom: 0.9rem;
+  color: var(--lonja-text-muted);
+}
+
+.linea-tiempo__paso:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 1.1rem;
+  bottom: 0;
+  left: calc(0.625rem - 1px);
+  width: 2px;
+  background: var(--lonja-border);
+}
+
+.linea-tiempo__paso.hecho:not(:last-child)::after {
+  background: var(--lonja-teal);
+}
+
+.linea-tiempo__punto {
+  grid-row: span 2;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--lonja-border-hover);
+  border-radius: 50%;
+  background: var(--lonja-surface);
+}
+
+.linea-tiempo__paso.hecho .linea-tiempo__punto {
+  border-color: var(--lonja-teal);
+  background: var(--lonja-teal);
+}
+
+.linea-tiempo__paso.actual .linea-tiempo__punto {
+  border-color: var(--lonja-teal);
+  box-shadow: inset 0 0 0 3px var(--lonja-surface);
+  background: var(--lonja-teal);
+}
+
+.linea-tiempo__paso.hecho,
+.linea-tiempo__paso.actual {
+  color: var(--lonja-text);
+}
+
+.linea-tiempo__paso.actual .linea-tiempo__rotulo {
+  font-weight: 700;
+}
+
+.linea-tiempo__fecha {
+  font-size: 0.8rem;
+  color: var(--lonja-text-muted);
+}
+
+.linea-tiempo__cerrado {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: var(--rd-cerrado-bg);
+  color: var(--rd-cerrado);
+}
+
+/* ---------- Ticket de mostrador (80 mm) ---------- */
+.ticket {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto 2rem;
+  padding: 1.75rem 1.4rem;
+  border: 1px solid var(--lonja-border);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket > * + * {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1.5px dashed #6b7280;
+}
+
+.ticket__cabecera {
+  text-align: center;
+}
+
+.ticket__cabecera img {
+  max-width: 170px;
+  height: auto;
+}
+
+.ticket__cabecera p,
+.ticket__pie p {
+  margin: 0.4rem 0 0;
+  font-size: 0.75rem;
+  color: #374151;
+}
+
+.ticket__datos,
+.ticket__totales {
+  margin-bottom: 0;
+}
+
+.ticket__datos > div,
+.ticket__totales > div,
+.ticket__fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ticket__datos dt,
+.ticket__totales dt {
+  font-weight: 400;
+}
+
+.ticket__datos dd,
+.ticket__totales dd {
+  margin: 0;
+  text-align: right;
+}
+
+.ticket__totales .total {
+  margin: 0.3rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.ticket__totales .total dt {
+  font-weight: 700;
+}
+
+.ticket__detalle {
+  font-size: 0.75rem;
+  color: #374151;
+}
+
+.ticket__pie {
+  text-align: center;
+}
+
+.ticket__codigo {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 1rem;
+  letter-spacing: 0.25em;
+}
+
+@media print {
+  .ticket {
+    max-width: 80mm;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1199.98px) {
+  .kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .especie-heroe {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .especie-heroe__cifras {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 991.98px) {
+  .ficha-lote__rejilla,
+  .ficha-lote__secciones,
+  .especie-rejilla,
+  .maestro-detalle.con-detalle {
+    grid-template-columns: 1fr;
+  }
+
+  .analisis__rejilla {
+    grid-template-columns: 1fr;
+  }
+
+  .panel--ancho,
+  .panel--doble,
+  .especie-rejilla__lotes {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .panel-detalle {
+    position: static;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .kpis,
+  .especie-heroe__cifras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .especie-heroe {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+}
+
+/* ---------- Selección múltiple en tablas ---------- */
+.col-casilla {
+  width: 2.5rem;
+}
+
+.barra-bloque {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--rd-radio);
+  background: var(--rd-oscuro);
+  color: var(--rd-sobre-oscuro);
+}
+
+.barra-bloque[hidden] {
+  display: none;
+}
+
+.barra-bloque .btn-outline-secondary,
+.barra-bloque .btn-link {
+  color: var(--rd-sobre-oscuro);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.barra-bloque .btn-outline-danger {
+  color: #ffb4b4;
+  border-color: #ffb4b4;
+}
+
+/* ---------- Cabecera azul marino ---------- */
+.navbar-lonja.cabecera {
+  padding: 0.55rem 1rem;
+  border-bottom: 0;
+  background: var(--rd-oscuro);
+  box-shadow: none;
+}
+
+.navbar-lonja.cabecera--tienda > .lonja-header {
+  max-width: 1232px;
+  margin-inline: auto;
+}
+
+.cabecera .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.cabecera__marca {
+  font-family: var(--font-titulos);
+  font-size: 1.05rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cabecera__marca-icono {
+  color: var(--rd-acento);
+}
+
+.cabecera .nav-link,
+.navbar-lonja.cabecera .nav-link {
+  color: var(--rd-sobre-oscuro-tenue);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.navbar-lonja.cabecera .nav-link:hover,
+.navbar-lonja.cabecera .nav-link:focus {
+  color: var(--rd-sobre-oscuro);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-lonja.cabecera .nav-link.active {
+  color: var(--rd-sobre-oscuro);
+  background: transparent;
+  box-shadow: inset 0 -2px 0 var(--rd-acento);
+  border-radius: 0;
+}
+
+.cabecera .header-icon {
+  position: relative;
+  color: var(--rd-sobre-oscuro);
+}
+
+.cabecera .header-contador {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #f5a524;
+  color: #1f1300;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+}
+
+.cabecera .tienda-buscador .form-control {
+  height: 38px;
+  border: 0;
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.cabecera .tienda-buscador__icono {
+  color: #64748b;
+}
+
+/* Enter envía la búsqueda; el botón queda para lectores de pantalla. */
+.cabecera .tienda-buscador__caja > .btn {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.cabecera__acceder {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: var(--rd-sobre-oscuro);
+  font-weight: 600;
+}
+
+.cabecera__acceder:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--rd-sobre-oscuro);
+}
+
+.cabecera .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.cabecera .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+@media (max-width: 1199.98px) {
+  .navbar-lonja.cabecera .navbar-collapse {
+    background: var(--rd-oscuro-2);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .navbar-lonja.cabecera .tienda-buscador-header {
+    margin: 0.15rem 0 0.35rem;
+  }
+}
+
+/* ---------- Tienda C: banda superior y barra inferior en móvil ---------- */
+.mercado-movil,
+.barra-movil {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  .mercado-movil {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin: -1.5rem calc(var(--bs-gutter-x, 1.5rem) * -0.5) 0;
+    padding: 0.4rem 1rem 1rem;
+    background: var(--rd-oscuro);
+    color: #ffffff;
+  }
+
+  .mercado-movil__eyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--rd-acento);
+  }
+
+  .mercado-movil__titulo {
+    margin: 0;
+    color: #ffffff;
+    font-family: var(--font-titulos);
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  /* Como en la propuesta móvil: banda, categorías y lista; sin héroe ni encabezado de sección. */
+  .mercado,
+  .mercado-lotes__cabecera {
+    display: none;
+  }
+
+  .mercado-lotes {
+    margin-top: 0.9rem;
+  }
+
+  .mercado-lotes__chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-inline: -0.75rem;
+    padding: 0 0.75rem 0.25rem;
+    scrollbar-width: none;
+  }
+
+  .mercado-lotes__chips .tienda-chip {
+    flex: none;
+  }
+
+  .barra-movil {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1020;
+    display: block;
+  }
+
+  body:has(.barra-movil) {
+    padding-bottom: 4.5rem;
+  }
+
+  body:has(.barra-movil__carrito) {
+    padding-bottom: 8rem;
+  }
+
+  .barra-movil__carrito {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0.75rem 0.5rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    background: var(--rd-oscuro-2);
+    color: #ffffff;
+    font-size: 0.8rem;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(6, 34, 51, 0.3);
+  }
+
+  .barra-movil__carrito-cta {
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    background: var(--rd-acento);
+    color: var(--rd-oscuro-2);
+    font-weight: 700;
+  }
+
+  .barra-movil__nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--lonja-border);
+    background: var(--lonja-surface);
+  }
+
+  .barra-movil__nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    min-height: 52px;
+    padding: 0.45rem 0;
+    color: var(--lonja-text-muted);
+    font-size: 0.68rem;
+    text-decoration: none;
+  }
+
+  .barra-movil__nav a.activo {
+    color: var(--lonja-navy);
+    font-weight: 700;
+  }
+
+  .tienda-toasts {
+    bottom: 5rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  /* Cabecera móvil compacta: favoritos y carrito pasan a la barra inferior; moneda e idioma a Configuración. */
+  .cabecera .header-tools > .dropdown:not(.ms-1),
+  .cabecera .header-tools > .header-icon {
+    display: none;
+  }
+}
+
+/* Cabecera del personal: sin buscador de tienda, la navegación ocupa ese espacio. */
+@media (min-width: 1200px) {
+  .navbar-lonja.cabecera:not(.cabecera--tienda) > .lonja-header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .cabecera:not(.cabecera--tienda) .header-navigation {
+    grid-column: 2;
+  }
+
+  .cabecera:not(.cabecera--tienda) .header-tools {
+    grid-column: 3;
+  }
+
+  .navbar-lonja.cabecera:not(.cabecera--tienda) .header-navigation .nav-link {
+    padding-inline: 0.5rem !important;
+  }
+}

@@ -1,37 +1,60 @@
-# Propuesta visual: oficina y tienda
+# Diseño visual: oficina y tienda
 
-Propuesta para revisión, pendiente de implementación. Las aplicaciones, pantallas, permisos y recorridos actuales siguen vigentes. La corrección de sintaxis y el formato del CSS no aplican este rediseño.
+El rediseño está implementado en el cliente desde el 19 de noviembre de 2026. Esta guía resume las decisiones, dónde viven en el código y lo que quedó fuera. Los permisos, recorridos y contratos REST no cambiaron salvo por las ampliaciones descritas en [Datos nuevos de la API](#datos-nuevos-de-la-api).
 
 ## Dirección compartida
 
-Conservar la marca Lonja Veracruz, reducir la saturación y usar un solo acento verde petróleo. Fondo claro neutro, texto gris oscuro y modo oscuro equivalente. Evitar degradados, sombras grandes, carruseles automáticos, botones excesivamente redondeados y bloques promocionales repetidos. Separar secciones con espacio y divisores finos.
+Se conserva la marca Lonja Veracruz con un acento verde petróleo (`#087e8b`) sobre azul marino (`#0b3954`), fondo claro neutro y un modo oscuro equivalente. No hay carruseles, degradados decorativos ni bloques promocionales repetidos; las secciones se separan con espacio y divisores finos.
 
-Usar tipografía del sistema, cuerpo de 14–16 px, títulos contenidos y números alineados para precios, kilos e importes. Iconos de 16–20 px como apoyo; conservar etiquetas en acciones de trabajo. Un botón principal por sección y acciones secundarias discretas. Los estados necesitan texto además de color.
+Tipografía: Inter para el texto y Space Grotesk para títulos y cifras destacadas, servidas desde `client/public/fonts/` porque la CSP solo admite recursos del propio origen. Si la persona elige otra fuente en Configuración, títulos y cuerpo usan esa fuente. Los números de precios, kilos e importes usan cifras tabulares. Los estados llevan siempre texto además de color.
 
-## Trabajadores: oficina operativa
+Los estilos del rediseño están en `client/public/css/rediseno.css`, cargado después de `lonja.css`, `tienda.css` y `header.css`. Define tokens propios (`--rd-*`) para los fondos oscuros, porque `--lonja-navy` se aclara en el tema oscuro. La CSP prohíbe estilos en línea: las barras de proporción usan `<progress>` y las gráficas, Chart.js.
 
-- Navegación lateral estable por áreas: resumen, pedidos, compras, lotes, compradores, catálogo, reportes y usuarios. Mostrar solo las áreas permitidas por el rol. En móvil convertirla en un menú compacto accesible.
-- Cabecera baja con marca, contexto y cuenta. Mantener accesos discretos a tienda y escritorio; las herramientas no compiten con el contenido.
-- Listados como contenido principal: búsqueda, filtros de estado, tabla, paginación e importes alineados. Mantener búsqueda y filtros al abrir un registro o volver de una edición.
-- Estados sobrios: pendiente, en preparación, entregado y cancelado. Reservar el color intenso para incidencias que requieren atención.
-- Formularios con etiquetas arriba, campos agrupados por tarea y resumen de validación. Acción principal al final, cancelación visible y confirmación específica antes de borrar o cobrar.
-- El resumen diario muestra solo los indicadores necesarios para operar; gráficos y comparaciones se consultan en reportes, sin llenar de tarjetas la pantalla de captura.
+## Tienda
 
-La vista de referencia es el seguimiento de pedidos: tabla central, filtros y detalle ligero. Los datos que aparecen en la propuesta son de muestra; sus interacciones no crean ventas ni cobran.
+| Pantalla                                  | Vista                                     | Contenido                                                                                                                                                                                        |
+| ----------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Portada «Mercado del día» (`/`)           | `store/index.ejs`                         | Héroe claro con lotes disponibles, kilos en venta y precio más bajo; lote destacado; chips de tipo; «Ordenar por»; cuadrícula de cuatro columnas; «Cómo comprar en la lonja».                    |
+| Catálogo con filtros (`/?vista=catalogo`) | `store/index.ejs`, `store/_fila-lote.ejs` | Se abre también con búsqueda o con filtros distintos del tipo. Filtros de tipo, especie, precio «Desde / Hasta» y peso mínimo; chips de lo activo; filas con barra «Frente al promedio del día». |
+| Ficha de lote                             | `store/lote.ejs`                          | Imagen, panel de compra del lote completo, especies, preguntas y otros lotes de la misma especie.                                                                                                |
+| Ficha de especie                          | `store/especie.ejs`                       | Banda con disponibilidad, tabla de lotes con «Mejor precio», tendencia de 7 días y opiniones.                                                                                                    |
 
-## Clientes: tienda minimalista
+La cabecera (`partials/_cabecera.ejs`) es azul marino con la marca, «Lotes del día / Catálogo / Cómo comprar» y, para compradores, «Mis pedidos», el buscador, favoritos y el carrito con contador. Los invitados ven «Acceder». Las tarjetas (`store/_tarjeta-lote.ejs`) llevan fondo tenue por tipo; si el lote no tiene foto propia, `store/_media-lote.ejs` dibuja el pez de línea en lugar de la ilustración genérica.
 
-- Cabecera corta con marca, tienda, pedidos, cuenta y carrito. Opciones de idioma y moneda dentro de preferencias para reducir ruido, manteniéndolas accesibles.
-- Sustituir el carrusel protagonista por un título breve y el buscador. Ofrecer categorías claras y el catálogo inmediatamente después.
-- Cada lote muestra especie, disponibilidad, kilos, precio por kg, importe del lote y una sola acción para seleccionarlo. Conservar la compra por lote completo; el rediseño no inventa venta por kilos sueltos.
-- Fotografías pequeñas y consistentes en una implementación posterior, sin superponer textos ni usar imágenes de fondo para información esencial. La propuesta usa una lista limpia para evaluar primero jerarquía y densidad.
-- Carrito con contenido, subtotal y condiciones de envío visibles. No ocultar costes en iconos ni sustituir la confirmación final por una compra inmediata.
-- Formularios de acceso, dirección y compra con pocas decisiones simultáneas y mensajes concretos. Sin ventanas promocionales ni animaciones decorativas.
+En pantallas de hasta 575 px la portada sigue la variante móvil: banda «¿Qué llegó esta mañana?», chips en una línea deslizable, lotes como filas con botón «+» y barra inferior (`partials/_barra-movil.ejs`) con Tienda, Favoritos, Pedidos y Cuenta. Cuando hay lotes en el carrito aparece un aviso para abrirlo. La cabecera móvil deja solo marca, avatar y menú; moneda e idioma quedan en Configuración.
 
-## Criterios de implementación
+Se mantiene la compra por lote completo: no hay selector de cajas ni venta por kilos sueltos.
 
-Aplicar primero los elementos compartidos: colores, tipografía, botones, campos y foco. Después, separar el contenedor de trabajo y el de tienda; reutilizar componentes y datos sin duplicar lógica ni modificar los contratos REST.
+## Oficina
 
-Verificar 320, 375, 768, 1024 y 1440 px, zoom al 200 %, teclado, ambos temas y menús abiertos. No debe haber desbordamiento horizontal en formularios o cabeceras. Las tablas pueden pasar a filas apiladas con etiquetas, conservando todos los datos y acciones. Mantener contraste suficiente y objetivos táctiles de al menos 44 px.
+| Pantalla                        | Vista                                          | Contenido                                                                                                                                                                      |
+| ------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Análisis mensual (`/dashboard`) | `dashboard.ejs`                                | Selector de los últimos 12 meses, indicadores con variación, pendientes de operación, ingresos por día frente al mes anterior, canal, mezcla por tipo, especies y compradores. |
+| Lotes (`/lotes`)                | `lots/index.ejs`, `public/js/lonja-lotes.js`   | Pestañas Todos / Disponibles / Vendidos, chips de estado, selección múltiple, exportación CSV de lo seleccionado y eliminación en bloque para administradores.                 |
+| Pedidos (`/pedidos`)            | `orders/index.ejs`, `orders/_linea-tiempo.ejs` | Pestañas por estado y panel de detalle (`?ver=<id>`) con línea de tiempo, contenido y totales sin perder filtros ni página.                                                    |
+| Factura carta                   | `purchases/_hoja-factura.ejs`                  | Folio con pedido, tarjetas «Facturado a» y «Entrega y pago», importe con letra y «Página 1 de 1». El PDF de la API dibuja la misma distribución.                               |
+| Ticket (`/compras/:id/ticket`)  | `purchases/ticket.ejs`                         | Comprobante de 80 mm para imprimir, con los mismos datos que la factura.                                                                                                       |
 
-Antes de aprobar el rediseño completo, revisar una pantalla de pedidos y una de catálogo, junto con sus estados de carga, vacío, error, validación y selección. Después extender el patrón a las demás vistas y repetir las pruebas de sesión, origen y compra. La propuesta visual no sustituye esas pruebas.
+Las cuentas del personal usan la misma cabecera azul marino con sus enlaces de trabajo; sin buscador de tienda, la navegación ocupa el ancho disponible. La confirmación de cobro en efectivo y la eliminación en bloque piden confirmación antes de enviarse.
+
+## Datos nuevos de la API
+
+Las ampliaciones son campos adicionales en respuestas existentes y una operación nueva; están en [OpenAPI](../contracts/openapi.yaml) y en la [referencia REST](../api/docs/03-rutas-y-permisos.md).
+
+- `GET /dashboard?mes=AAAA-MM` añade `analitico`. El mes en curso se compara con los mismos días del mes anterior; un mes cerrado, con el anterior completo.
+- `GET /tienda/portada` añade a `limites` el precio medio por kilo y los kilos totales disponibles.
+- `GET /tienda/especies/{id}` añade `resumenLotes` y `tendencia`, el precio final medio de 7 días ponderado por kilos.
+- `GET /tienda/lotes/{id}` devuelve `parecidos` también cuando el lote sigue a la venta.
+- `GET /compras/{id}/factura` añade pedido, canal e importe con letra.
+- `POST /lotes/eliminacion` elimina varios lotes de forma atómica. Un lote reservado, vendido o que aparece en pedidos anteriores bloquea la operación completa; la eliminación individual informa el mismo motivo.
+
+## Fuera del alcance
+
+- Selección de varios tipos a la vez en el catálogo: la API filtra un solo tipo.
+- Hora de cierre de reservas en la portada: el sistema no la maneja.
+- Código QR en la factura: no hay un servicio que lo genere o valide.
+- Acciones en bloque distintas de exportar y eliminar.
+
+## Verificación
+
+Se revisaron en navegador la portada, el catálogo, las fichas, el análisis mensual, lotes, pedidos, factura y ticket a 390 y 1440 px, con invitado, comprador y administrador, sin desbordamiento horizontal. No se revisaron el modo oscuro, zoom al 200 % ni todos los tamaños intermedios; la tabla de [pruebas del cliente](../client/docs/06-pruebas.md) recoge el alcance automático.

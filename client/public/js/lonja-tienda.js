@@ -1,5 +1,5 @@
 /**
- * Tienda pública: héroe rotativo, filas deslizables, sugerencias del buscador
+ * Tienda pública: filas deslizables, sugerencias del buscador
  * y avisos flotantes. El carrito usa peticiones JSON y conserva el flujo
  * accesible por formulario cuando JavaScript no está disponible.
  */
@@ -42,106 +42,6 @@ import { indiceSiguiente, extremosDeFila } from './tienda-utils.js';
       caja.style.transition = 'opacity .25s ease';
       setTimeout(() => caja.remove(), 260);
     }, 3600);
-  }
-
-  // ------------------------------------------------------------------
-  // Héroe: rota los destacados y sincroniza los puntos.
-  // ------------------------------------------------------------------
-  function iniciarHeroe() {
-    const heroe = qs('[data-heroe]');
-    if (!heroe) return;
-    const region = heroe.closest('.tienda-heroe');
-    const slides = qsa('.tienda-heroe__slide', heroe);
-    const puntos = qsa('[data-heroe-punto]', heroe);
-    if (slides.length < 2) return;
-
-    const anterior = qs('[data-heroe-prev]', heroe);
-    const siguiente = qs('[data-heroe-next]', heroe);
-    const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let actual = Math.max(
-      0,
-      slides.findIndex((slide) => slide.classList.contains('activo')),
-    );
-    let pausa = false;
-    let temporizador;
-    let inicioToque = null;
-
-    const pintar = (indice) => {
-      actual = (indice + slides.length) % slides.length;
-      slides.forEach((slide, i) => {
-        slide.classList.toggle('activo', i === actual);
-        slide.setAttribute('aria-hidden', i === actual ? 'false' : 'true');
-      });
-      puntos.forEach((punto, i) => {
-        punto.classList.toggle('activo', i === actual);
-        punto.setAttribute('aria-current', i === actual ? 'true' : 'false');
-      });
-    };
-    const programar = () => {
-      clearTimeout(temporizador);
-      if (reducirMovimiento.matches || pausa || document.hidden) return;
-      temporizador = setTimeout(() => {
-        pintar(actual + 1);
-        programar();
-      }, 6000);
-    };
-    const ir = (indice) => {
-      pintar(indice);
-      programar();
-    };
-    const avanzar = (direccion) => ir(actual + direccion);
-
-    anterior?.addEventListener('click', () => avanzar(-1));
-    siguiente?.addEventListener('click', () => avanzar(1));
-    puntos.forEach((punto) => punto.addEventListener('click', () => ir(Number(punto.dataset.heroePunto))));
-    region?.addEventListener('keydown', (ev) => {
-      if (ev.key === 'ArrowLeft') {
-        ev.preventDefault();
-        avanzar(-1);
-      }
-      if (ev.key === 'ArrowRight') {
-        ev.preventDefault();
-        avanzar(1);
-      }
-    });
-    heroe.addEventListener('mouseenter', () => {
-      pausa = true;
-      clearTimeout(temporizador);
-    });
-    heroe.addEventListener('mouseleave', () => {
-      pausa = false;
-      programar();
-    });
-    heroe.addEventListener('focusin', () => {
-      pausa = true;
-      clearTimeout(temporizador);
-    });
-    heroe.addEventListener('focusout', (ev) => {
-      if (!heroe.contains(ev.relatedTarget)) {
-        pausa = false;
-        programar();
-      }
-    });
-    heroe.addEventListener(
-      'touchstart',
-      (ev) => {
-        inicioToque = ev.changedTouches[0]?.clientX ?? null;
-      },
-      { passive: true },
-    );
-    heroe.addEventListener(
-      'touchend',
-      (ev) => {
-        if (inicioToque === null) return;
-        const delta = (ev.changedTouches[0]?.clientX ?? inicioToque) - inicioToque;
-        if (Math.abs(delta) >= 40) avanzar(delta < 0 ? 1 : -1);
-        inicioToque = null;
-      },
-      { passive: true },
-    );
-    document.addEventListener('visibilitychange', programar);
-    reducirMovimiento.addEventListener?.('change', programar);
-    programar();
   }
 
   // ------------------------------------------------------------------
@@ -523,7 +423,6 @@ import { indiceSiguiente, extremosDeFila } from './tienda-utils.js';
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    iniciarHeroe();
     iniciarFilas();
     iniciarFiltrosTienda();
     iniciarAcciones();

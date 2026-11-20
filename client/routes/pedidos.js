@@ -100,10 +100,18 @@ export function crearRutasPedidos({ pedir }) {
   rutas.get('/cuenta/pedidos/:id/factura/:id_cmp.pdf', (req, res) => factura(req, res, true));
   rutas.get('/cuenta/pedidos/:id/factura/:id_cmp', (req, res) => factura(req, res, false));
   rutas.get('/pedidos', async (req, res) => {
-    const query = new URLSearchParams(Object.entries(req.query).filter(([, v]) => typeof v === 'string'));
-    const { datos, meta } = await pedir(req, 'pedidos?' + query);
+    const query = new URLSearchParams(
+      Object.entries(req.query).filter(([k, v]) => typeof v === 'string' && k !== 'ver'),
+    );
+    // ?ver=<id> abre el panel de detalle junto a la tabla sin perder filtros ni página.
+    const ver = /^\d+$/.test(String(req.query.ver || '')) ? req.query.ver : null;
+    const [{ datos, meta }, seleccionado] = await Promise.all([
+      pedir(req, 'pedidos?' + query),
+      ver ? pedir(req, 'pedidos/' + ver).then((r) => r.datos) : null,
+    ]);
     res.render('orders/index', {
       pedidos: datos,
+      seleccionado,
       estados: ['pendiente_pago', 'pagado', 'preparando', 'enviado', 'entregado', 'cancelado', 'expirado'],
       filtros: req.query,
       pagina: meta.pagina,

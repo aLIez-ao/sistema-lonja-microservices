@@ -1,0 +1,25 @@
+<%
+  // Seguimiento del pedido. Parámetro: pedido.
+  const _pasos = [
+    ['pendiente_pago', 'Pedido creado', fechaHora(pedido.fecha)],
+    ['pagado', 'Pago confirmado', pedido.fecha_pago ? fechaHora(pedido.fecha_pago) : null],
+    ['preparando', 'En preparación', null],
+    ['enviado', pedido.entrega === 'domicilio' ? 'En camino' : 'Listo para recoger', null],
+    ['entregado', 'Entregado', null],
+  ];
+  const _cerrado = ['cancelado', 'expirado'].includes(pedido.estado);
+  const _actual = _pasos.findIndex(([e]) => e === pedido.estado);
+%>
+<% if (_cerrado) { %>
+  <p class="linea-tiempo__cerrado"><%- icono('x-circle', 16, 'me-1') %>Pedido <%= pedido.estado %>. Los lotes reservados volvieron a la tienda.</p>
+<% } else { %>
+  <ol class="linea-tiempo">
+    <% _pasos.forEach(([estado, rotulo, fecha], i) => { const clase = i < _actual ? 'hecho' : i === _actual ? 'actual' : ''; %>
+      <li class="linea-tiempo__paso <%= clase %>" <%= i === _actual ? 'aria-current=step' : '' %>>
+        <span class="linea-tiempo__punto" aria-hidden="true"></span>
+        <span class="linea-tiempo__rotulo"><%= rotulo %><span class="visually-hidden"><%= i < _actual ? ' (completado)' : i === _actual ? ' (estado actual)' : ' (pendiente)' %></span></span>
+        <% if (fecha && i <= _actual) { %><span class="linea-tiempo__fecha"><%= fecha %></span><% } %>
+      </li>
+    <% }) %>
+  </ol>
+<% } %>

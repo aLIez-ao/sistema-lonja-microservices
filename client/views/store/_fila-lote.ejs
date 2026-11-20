@@ -1,0 +1,31 @@
+<%
+  // Fila del catálogo con filtros. Parámetros: lote (preparado), medio (precio medio por kilo de lo disponible).
+  const _url = `/tienda/lote/${lote.id_lte}`;
+  const _nombre = lote.nombresEspecies || `Lote #${lote.id_lte}`;
+  const _precio = Number(lote.precio_kilo_salida);
+  const _dif = medio > 0 ? Math.round(((_precio - medio) / medio) * 100) : 0;
+  // La barra ubica el precio en una escala de 0 a dos veces el promedio: la mitad es el promedio.
+  const _barra = medio > 0 ? Math.max(4, Math.min(100, Math.round((_precio / (2 * medio)) * 100))) : 50;
+  const _tono = ({ pescado: 'escama', escama: 'escama', marisco: 'crustaceo', 'crustáceo': 'crustaceo', molusco: 'molusco' })[String(lote.tipoPrincipal || '').toLowerCase()] || 'escama';
+%>
+<li class="catalogo-fila">
+  <a class="catalogo-fila__media lote-media--<%= _tono %>" href="<%= _url %>" tabindex="-1" aria-hidden="true">
+    <%- include('_media-lote', { imagen: lote.imagen }) %>
+  </a>
+  <div class="catalogo-fila__info">
+    <h3 class="catalogo-fila__titulo"><a href="<%= _url %>"><%= _nombre %></a></h3>
+    <span class="catalogo-fila__meta">Lote #<%= lote.id_lte %> · <%= Number(lote.kilos).toLocaleString('es-MX', { maximumFractionDigits: 1 }) %> kg · <%= lote.numero_cajas %> cajas</span>
+    <span class="catalogo-fila__meta"><%= lote.tipoPrincipal %><%= lote.esDeHoy ? ' · llegó hoy' : '' %></span>
+  </div>
+  <div class="catalogo-fila__promedio">
+    <% if (medio > 0) { %>
+      <span class="catalogo-fila__rotulo">Frente al promedio del día</span>
+      <progress class="barra <%= _dif <= 0 ? 'barra--teal' : 'barra--caro' %>" max="100" value="<%= _barra %>" aria-hidden="true"><%= _barra %>%</progress>
+      <span class="catalogo-fila__comparacion <%= _dif < 0 ? 'es-bajo' : _dif > 0 ? 'es-alto' : '' %>"><%= _dif === 0 ? 'En el promedio' : `${_dif < 0 ? '−' : '+'}${Math.abs(_dif)} % más ${_dif < 0 ? 'barato' : 'caro'}` %></span>
+    <% } %>
+  </div>
+  <div class="catalogo-fila__precio">
+    <strong><%= dinero(_precio) %> <small>/kg</small></strong>
+    <a class="btn btn-sm btn-teal" href="<%= _url %>">Ver lote</a>
+  </div>
+</li>

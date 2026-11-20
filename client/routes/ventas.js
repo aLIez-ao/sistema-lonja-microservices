@@ -12,7 +12,8 @@ export function crearRutasVentas({ pedir }) {
     proteger('admin', 'capturista'),
   );
   rutas.get('/dashboard', async (req, res) => {
-    const { datos } = await pedir(req, 'dashboard');
+    const mes = typeof req.query.mes === 'string' ? req.query.mes : '';
+    const { datos } = await pedir(req, 'dashboard' + (mes ? '?' + new URLSearchParams({ mes }) : ''));
     res.render('dashboard', datos);
   });
   rutas.get('/inicio', (req, res) => res.redirect(301, '/dashboard'));
@@ -167,6 +168,10 @@ export function crearRutasVentas({ pedir }) {
       mensaje: req.query.mensaje,
       error: req.query.error,
     });
+  });
+  rutas.get('/compras/:id/ticket', async (req, res) => {
+    const { datos } = await pedir(req, 'compras/' + encodeURIComponent(req.params.id) + '/factura');
+    res.render('purchases/ticket', datos);
   });
   rutas.get('/compras/:id/factura.pdf', async (req, res) => {
     const respuesta = await pedir(req, 'compras/' + encodeURIComponent(req.params.id) + '/factura', {

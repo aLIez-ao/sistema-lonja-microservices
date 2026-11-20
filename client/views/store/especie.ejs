@@ -1,81 +1,137 @@
 <%- include('../partials/header') %>
 <%
   const _llenas = Math.round(resumenOpiniones.media || 0);
+  const _kg = (n) => Number(n).toLocaleString('es-MX', { maximumFractionDigits: 1 });
+  const _hayTendencia = tendencia.some((d) => d.precioMedio !== null);
+  const _desde = resumenLotes.precioDesde === null ? null : Number(resumenLotes.precioDesde);
 %>
 
 <div class="tienda-especie">
   <nav class="tienda-migas" aria-label="Ruta">
-    <a href="/"><%- icono('arrow-left', 14, 'me-1') %>Volver a la tienda</a>
+    <a href="/"><%- icono('arrow-left', 14, 'me-1') %>Mercado del día</a>
     <span aria-hidden="true">/</span>
-    <span><%= especie.nombre %></span>
+    <span aria-current="page"><%= especie.nombre %></span>
   </nav>
 
-  <header class="tienda-especie__cabecera">
+  <header class="especie-heroe">
     <img src="<%= especie.imagen %>" alt="<%= especie.nombre %>" width="360" height="240">
-    <div>
-      <span class="tienda-detalle__tipo"><%= especie.tipo %></span>
+    <div class="especie-heroe__texto">
+      <span class="especie-heroe__tipo"><%= especie.tipo %></span>
       <h1><%= especie.nombre %></h1>
-      <p class="tienda-especie__desc"><%= especie.descripcion || 'Especie fresca del puerto de Veracruz, disponible en los lotes de la lonja.' %></p>
-      <div class="tienda-especie__resumen">
-        <span class="tienda-estrellas" aria-label="Calificación media">
+      <p><%= especie.descripcion || 'Especie fresca del puerto de Veracruz, disponible en los lotes de la lonja.' %></p>
+      <div class="especie-heroe__valoracion">
+        <span class="tienda-estrellas" aria-hidden="true">
           <% for (let i = 1; i <= 5; i += 1) { %><%- icono(i <= _llenas ? 'star-fill' : 'star', 16) %><% } %>
         </span>
-        <span class="text-muted small">
-          <%= resumenOpiniones.total ? `${resumenOpiniones.media.toFixed(1)} de 5 · ${resumenOpiniones.total} opiniones` : 'Sin opiniones todavía' %>
-        </span>
+        <span><%= resumenOpiniones.total ? `${resumenOpiniones.media.toFixed(1)} de 5 · ${resumenOpiniones.total} opiniones` : 'Sin opiniones todavía' %></span>
       </div>
-      <div class="mt-2"><%- include('_control-favorito', { tipoFavorito: 'especie', idFavorito: especie.id, retornoFavorito: rutaActual, claseFavorito: 'btn btn-outline-secondary btn-sm' }) %></div>
+      <div class="mt-2"><%- include('_control-favorito', { tipoFavorito: 'especie', idFavorito: especie.id, retornoFavorito: rutaActual, claseFavorito: 'btn btn-outline-light btn-sm' }) %></div>
     </div>
+    <dl class="especie-heroe__cifras">
+      <div><dt>Lotes disponibles</dt><dd><%= resumenLotes.lotes %></dd></div>
+      <div><dt>Kilos en venta</dt><dd><%= _kg(resumenLotes.kilos) %> kg</dd></div>
+      <div><dt>Desde</dt><dd><%= _desde === null ? '—' : dinero(_desde) + '/kg' %></dd></div>
+      <div><dt>Precio medio</dt><dd><%= resumenLotes.precioMedio === null ? '—' : dinero(resumenLotes.precioMedio) + '/kg' %></dd></div>
+    </dl>
   </header>
 
-  <div class="row g-4">
-    <div class="col-lg-5">
-      <div class="tienda-detalle__bloque">
-        <h2>Distribución de estrellas</h2>
-        <% if (!resumenOpiniones.total) { %>
-          <p class="text-muted small mb-0">Cuando los compradores califiquen esta especie verás aquí el desglose por estrellas.</p>
-        <% } else { %>
-          <ul class="tienda-distribucion">
-            <% [5, 4, 3, 2, 1].forEach((n) => {
-              const cantidad = resumenOpiniones.distribucion[n - 1] || 0;
-              const pct = resumenOpiniones.total ? Math.round((cantidad / resumenOpiniones.total) * 100) : 0;
-            %>
-              <li><span><%= n %> <%- icono('star-fill', 12) %></span><progress class="tienda-distribucion__barra" max="100" value="<%= pct %>" aria-label="<%= pct %>%"><%= pct %>%</progress><span><%= cantidad %></span></li>
-            <% }) %>
-          </ul>
-        <% } %>
+  <div class="especie-rejilla">
+    <section class="tienda-detalle__bloque especie-rejilla__lotes" aria-labelledby="lotesEspecie">
+      <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+        <h2 class="mb-0" id="lotesEspecie">Lotes con <%= especie.nombre.toLowerCase() %></h2>
+        <span class="badge bg-secondary"><%= lotes.length %></span>
       </div>
-
-      <div class="tienda-detalle__bloque">
-        <h2>Opiniones</h2>
-        <% if (!opiniones.length) { %>
-          <p class="text-muted small mb-0">Aún no hay opiniones de esta especie.</p>
-        <% } %>
-        <% opiniones.forEach((o) => { %><article class="border-bottom py-3"><div><strong><%= o.titulo %></strong> · <%= '★'.repeat(o.estrellas) %> <span class="badge bg-success">Compra verificada</span></div><p class="mb-1"><%= o.texto %></p><small class="text-muted"><%= o.autorPublico || 'Comprador' %></small></article><% }) %>
-        <% if (usuario && usuario.rol === 'comprador') { %><form action="/tienda/especie/<%= especie.id %>/opiniones" method="post" class="mt-3"><h3 class="h6"><%= opinionPropia ? 'Edita tu opinión' : 'Comparte tu experiencia' %></h3><label class="form-label" for="estrellas">Calificación (1 a 5)</label><select id="estrellas" name="estrellas" class="form-select" required><option value="">Elige</option><% [5,4,3,2,1].forEach((n) => { %><option value="<%= n %>" <%= Number(opinionPropia?.estrellas) === n ? 'selected' : '' %>><%= n %> estrellas</option><% }) %></select><label class="form-label mt-2" for="opinion-titulo">Título</label><input id="opinion-titulo" name="titulo" maxlength="80" class="form-control" value="<%= opinionPropia?.titulo || '' %>" required><label class="form-label mt-2" for="opinion-texto">Tu opinión</label><textarea id="opinion-texto" name="texto" maxlength="1000" rows="3" class="form-control" required><%= opinionPropia?.texto || '' %></textarea><button class="btn btn-outline-primary mt-2"><%= opinionPropia ? 'Actualizar opinión' : 'Guardar opinión' %></button></form><% } %>
-      </div>
-    </div>
-
-    <div class="col-lg-7">
-      <div class="tienda-detalle__bloque">
-        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-          <h2 class="mb-0">Lotes disponibles</h2>
-          <span class="badge bg-secondary"><%= lotes.length %></span>
+      <% if (!lotes.length) { %>
+        <p class="text-muted small mb-0">Ahora mismo no hay lotes disponibles con esta especie. Vuelve a revisar la tienda más tarde.</p>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0 tabla-ligera">
+            <caption class="visually-hidden">Lotes disponibles de <%= especie.nombre %></caption>
+            <thead><tr><th scope="col">Lote</th><th scope="col" class="text-end">Kilos</th><th scope="col" class="text-end">Cajas</th><th scope="col" class="text-end">Precio/kg</th><th scope="col" class="text-end">Total</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr></thead>
+            <tbody>
+              <% lotes.forEach((lote) => { %>
+                <tr>
+                  <td>
+                    <a class="fw-semibold" href="/tienda/lote/<%= lote.id_lte %>">#<%= lote.id_lte %></a>
+                    <span class="text-muted small d-block"><%= lote.nombresEspecies %></span>
+                    <% if (_desde !== null && Number(lote.precio_kilo_salida) === _desde) { %><span class="insignia insignia--precio">Mejor precio</span><% } %>
+                    <% if (lote.esDeHoy) { %><span class="insignia insignia--hoy">Hoy</span><% } %>
+                  </td>
+                  <td class="text-end"><%= _kg(lote.kilos) %></td>
+                  <td class="text-end"><%= lote.numero_cajas %></td>
+                  <td class="text-end fw-semibold"><%= dinero(lote.precio_kilo_salida) %></td>
+                  <td class="text-end"><%= dinero(lote.total) %></td>
+                  <td class="text-end text-nowrap">
+                    <% if (usuario && usuario.rol === 'comprador') { %>
+                      <button class="btn btn-sm btn-primary" type="button" data-agregar-lote="<%= lote.id_lte %>" aria-label="Agregar lote <%= lote.id_lte %> al carrito"><%- icono('cart-plus', 14) %></button>
+                    <% } %>
+                    <a class="btn btn-sm btn-outline-secondary" href="/tienda/lote/<%= lote.id_lte %>">Ver</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
         </div>
-        <% if (!lotes.length) { %>
-          <p class="text-muted small mb-0">Ahora mismo no hay lotes disponibles con esta especie. Vuelve a revisar la tienda más tarde.</p>
-        <% } else { %>
-          <div class="tienda-grid tienda-grid--compacta">
-            <% lotes.forEach((lote, i) => { %>
-              <%- include('_tarjeta-lote', { lote, posicion: i }) %>
-            <% }) %>
-          </div>
-        <% } %>
-      </div>
-    </div>
+      <% } %>
+    </section>
+
+    <section class="tienda-detalle__bloque especie-rejilla__tendencia" aria-labelledby="tendenciaTitulo">
+      <h2 id="tendenciaTitulo">Precio final de venta, últimos 7 días</h2>
+      <p class="text-muted small">Promedio por kilo de los lotes vendidos con esta especie, ponderado por kilos.</p>
+      <% if (_hayTendencia) { %>
+        <script type="application/json" id="datosTendencia"><%- jsonSeguro({ dias: tendencia.map((d) => d.fecha.slice(0, 5)), precios: tendencia.map((d) => d.precioMedio === null ? null : Number(d.precioMedio)), moneda: monedaInfo }) %></script>
+        <div class="grafica grafica-baja"><canvas data-grafica="barras" data-color="secundario" data-fuente="datosTendencia" data-etiquetas="dias" data-serie="precios" data-formato="dinero" role="img" aria-label="Precio medio por kilo en los últimos 7 días"></canvas></div>
+        <table class="visually-hidden">
+          <caption>Precio medio por kilo por día</caption>
+          <% tendencia.forEach((d) => { %><tr><th scope="row"><%= d.fecha %></th><td><%= d.precioMedio === null ? 'Sin ventas' : dinero(d.precioMedio) %></td></tr><% }) %>
+        </table>
+      <% } else { %>
+        <div class="grafica-vacia">Sin ventas de esta especie en los últimos 7 días.</div>
+      <% } %>
+    </section>
+
+    <section class="tienda-detalle__bloque especie-rejilla__opiniones" aria-labelledby="opinionesTitulo">
+      <h2 id="opinionesTitulo">Opiniones</h2>
+      <% if (resumenOpiniones.total) { %>
+        <ul class="tienda-distribucion">
+          <% [5, 4, 3, 2, 1].forEach((n) => {
+            const cantidad = resumenOpiniones.distribucion[n - 1] || 0;
+            const pct = Math.round((cantidad / resumenOpiniones.total) * 100);
+          %>
+            <li><span><%= n %> <%- icono('star-fill', 12) %></span><progress class="tienda-distribucion__barra" max="100" value="<%= pct %>" aria-label="<%= n %> estrellas: <%= pct %>%"><%= pct %>%</progress><span><%= cantidad %></span></li>
+          <% }) %>
+        </ul>
+      <% } %>
+      <% if (!opiniones.length) { %>
+        <p class="text-muted small mb-0">Aún no hay opiniones de esta especie.</p>
+      <% } %>
+      <% opiniones.forEach((o) => { %>
+        <article class="ficha-lote__pregunta">
+          <div><strong><%= o.titulo %></strong> · <span aria-label="<%= o.estrellas %> de 5 estrellas"><%= '★'.repeat(o.estrellas) %></span> <span class="badge bg-success">Compra verificada</span></div>
+          <p class="mb-1"><%= o.texto %></p>
+          <small class="text-muted"><%= o.autorPublico || 'Comprador' %></small>
+        </article>
+      <% }) %>
+      <% if (usuario && usuario.rol === 'comprador') { %>
+        <form action="/tienda/especie/<%= especie.id %>/opiniones" method="post" class="mt-3">
+          <h3 class="h6"><%= opinionPropia ? 'Edita tu opinión' : 'Comparte tu experiencia' %></h3>
+          <label class="form-label" for="estrellas">Calificación (1 a 5)</label>
+          <select id="estrellas" name="estrellas" class="form-select" required><option value="">Elige</option><% [5,4,3,2,1].forEach((n) => { %><option value="<%= n %>" <%= Number(opinionPropia?.estrellas) === n ? 'selected' : '' %>><%= n %> estrellas</option><% }) %></select>
+          <label class="form-label mt-2" for="opinion-titulo">Título</label>
+          <input id="opinion-titulo" name="titulo" maxlength="80" class="form-control" value="<%= opinionPropia?.titulo || '' %>" required>
+          <label class="form-label mt-2" for="opinion-texto">Tu opinión</label>
+          <textarea id="opinion-texto" name="texto" maxlength="1000" rows="3" class="form-control" required><%= opinionPropia?.texto || '' %></textarea>
+          <button class="btn btn-outline-primary mt-2"><%= opinionPropia ? 'Actualizar opinión' : 'Guardar opinión' %></button>
+        </form>
+      <% } %>
+    </section>
   </div>
 </div>
 
 <div class="tienda-toasts" aria-live="polite" aria-atomic="true" data-toasts></div>
 
+<% if (_hayTendencia) { %>
+  <script src="/vendor/chartjs/chart.umd.min.js"></script>
+  <script src="/js/lonja-graficas.js"></script>
+<% } %>
 <%- include('../partials/footer') %>
