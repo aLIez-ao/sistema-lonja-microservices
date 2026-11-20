@@ -21,7 +21,8 @@ export const opcionesHtml = {
 
 /** El mismo motor de HTML Language Features, conservando las etiquetas de EJS completas. */
 export function formatearHtml(texto, nombre = 'plantilla.ejs') {
-  let resultado = texto;
+  const original = texto.replace(/\r\n?/g, '\n');
+  let resultado = original;
   let estable = false;
   for (let pasada = 0; pasada < 5; pasada++) {
     const documento = TextDocument.create(pathToFileURL(path.resolve(nombre)).href, 'html', 1, resultado);
@@ -35,7 +36,7 @@ export function formatearHtml(texto, nombre = 'plantilla.ejs') {
   if (!estable) throw new Error(`El formato HTML no se estabilizó: ${nombre}. No se escribió el archivo.`);
   if (/\.ejs$/i.test(nombre)) {
     const etiquetas = (s) => s.match(/<%[\s\S]*?%>/g) || [];
-    if (JSON.stringify(etiquetas(texto)) !== JSON.stringify(etiquetas(resultado)))
+    if (JSON.stringify(etiquetas(original)) !== JSON.stringify(etiquetas(resultado)))
       throw new Error(`El formateador alteró etiquetas EJS: ${nombre}. No se escribió el archivo.`);
   }
   return resultado;

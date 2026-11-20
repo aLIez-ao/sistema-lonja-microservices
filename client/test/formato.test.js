@@ -26,3 +26,8 @@ test('el formato HTML conserva etiquetas EJS, atributos dinámicos y contenido p
   assert.match(salida, /"valor": "a {2}b"/);
   assert.equal(formatearHtml(salida, 'prueba.ejs'), salida, 'una segunda pasada no produce diferencias');
 });
+
+test('normaliza CRLF sin cambiar el código EJS en clones de Windows', () => {
+  const plantilla = '<%\nconst nombre = "Lonja";\n%><p><%= nombre %></p>\n';
+  assert.equal(formatearHtml(plantilla.replaceAll('\n', '\r\n')), formatearHtml(plantilla));
+});
